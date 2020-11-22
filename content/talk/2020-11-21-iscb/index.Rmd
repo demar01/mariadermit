@@ -1,0 +1,32 @@
+---
+title: ISCB
+subtitle: International Society for Computational Biology.
+summary: Talk on [PeCorA](https://github.com/jessegmeyerlab/PeCorA) given at [Virtual RSG Belgium Student Symposium](http://www.rsg-belgium.iscbsc.org/event/student-symposium/student-symposium-04-12-2020/).
+draft: false
+author: Maria
+date: '2020-12-04'
+categories:
+  - R
+tags:
+  - R
+  - proteomics
+event: ~
+event_url: "http://www.rsg-belgium.iscbsc.org/event/student-symposium/student-symposium-04-12-2020/"
+location: Belgium,(virtual)
+abstract: "I will show how PeCorA algorithm can help quantifying proteoforms from shoutgun proteomics"
+date_end: '2020-12-04'
+all_day: no
+publishDate: '2020-11-21'
+featured: yes
+image: 
+  url: http://www.rsg-belgium.iscbsc.org/assets/img/rsg_logo_update_300dpi.png
+  caption: ''
+  focal_point: 'center'
+  preview_only: no
+
+---
+
+## Presentation slides 
+
+- Selected talk
+  - [Talk slides: Peptide Correlation Analysis (PeCorA) Reveals Differential Proteoform Regulation](https://docs.google.com/presentation/d/16WN2ldl0r4f5Iv1pR5DAdSIC29H5JcM1Dr0RrYH9qx4/edit?usp=sharing)

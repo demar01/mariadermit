@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Publications | Maria Dermit</title>
+    <link>https://mariadermit.netlify.app/publication/</link>
+      <atom:link href="https://mariadermit.netlify.app/publication/index.xml" rel="self" type="application/rss+xml" />
+    <description>Publications</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>© Maria Dermit, {2020}</copyright><lastBuildDate>Mon, 09 Nov 2020 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>https://mariadermit.netlify.app/images/icon_hu89765a528fbe3e89fbea23b995128687_292554_512x512_fill_lanczos_center_2.png</url>
+      <title>Publications</title>
+      <link>https://mariadermit.netlify.app/publication/</link>
+    </image>
+    
+    <item>
+      <title>Subcellular mRNA Localization Regulates Ribosome Biogenesis in Migrating Cells</title>
+      <link>https://mariadermit.netlify.app/publication/maddie-ehr-delivery-episode-algorithm/</link>
+      <pubDate>Mon, 09 Nov 2020 00:00:00 +0000</pubDate>
+      <guid>https://mariadermit.netlify.app/publication/maddie-ehr-delivery-episode-algorithm/</guid>
+      <description>
+&lt;link href=&#34;../rmarkdown-libs/anchor-sections/anchor-sections.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;script src=&#34;../rmarkdown-libs/anchor-sections/anchor-sections.js&#34;&gt;&lt;/script&gt;
+
+
+&lt;div class=&#34;figure&#34;&gt;
+&lt;img src=&#34;RPmRNA_poster.png&#34; alt=&#34;&#34; /&gt;
+&lt;p class=&#34;caption&#34;&gt;&lt;a href=&#34;RPmRNA_poster.pdf&#34;&gt;2020 RPmRNA Poster (letter)&lt;/a&gt;&lt;/p&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>
