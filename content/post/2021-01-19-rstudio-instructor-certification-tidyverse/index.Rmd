@@ -18,6 +18,16 @@ image:
   caption: '[Illustration from Freepik](https://www.freepik.com/free-vector/employees-giving-hands-helping-colleagues-walk-upstairs_7732609.htm#page=1&query=community&position=4)'
   focal_point: Center
   preview_only: no
+output:
+  blogdown::html_page:
+    toc: yes
+    number_sections: no
+    toc_depth: 1
+links:
+  - icon: 
+    icon_pack: fab
+    name: Example teaching exam materials
+    url: https://education.rstudio.com/blog/2020/08/more-example-exams/
 ---
 
 # Fundations of my motivation
