@@ -2,14 +2,14 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Authors | Maria Dermit</title>
-    <link>https://mariadermit.netlify.app/authors/</link>
-      <atom:link href="https://mariadermit.netlify.app/authors/index.xml" rel="self" type="application/rss+xml" />
+    <link>/authors/</link>
+      <atom:link href="/authors/index.xml" rel="self" type="application/rss+xml" />
     <description>Authors</description>
     <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>© Maria Dermit, {2020}</copyright><lastBuildDate>Mon, 09 Nov 2020 00:00:00 +0000</lastBuildDate>
     <image>
-      <url>https://mariadermit.netlify.app/images/icon_hu89765a528fbe3e89fbea23b995128687_292554_512x512_fill_lanczos_center_2.png</url>
+      <url>/images/icon_hu89765a528fbe3e89fbea23b995128687_292554_512x512_fill_lanczos_center_2.png</url>
       <title>Authors</title>
-      <link>https://mariadermit.netlify.app/authors/</link>
+      <link>/authors/</link>
     </image>
     
   </channel>

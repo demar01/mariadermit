@@ -17,8 +17,8 @@ social:
 interests:
 - RNA binding proteins 
 - Proteomics
-- RNA localization
-- Data science for good
+- Reproducible science
+- Data science
 - R education
 
 education:

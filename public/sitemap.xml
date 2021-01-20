@@ -3,136 +3,147 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://mariadermit.netlify.app/courses/example/example1/</loc>
+    <loc>/courses/example/example1/</loc>
     <lastmod>2019-05-05T00:00:00+01:00</lastmod>
   </url>
   
   <url>
-    <loc>https://mariadermit.netlify.app/courses/example/</loc>
+    <loc>/courses/example/</loc>
     <lastmod>2018-09-09T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://mariadermit.netlify.app/courses/example/example2/</loc>
+    <loc>/courses/example/example2/</loc>
     <lastmod>2019-05-05T00:00:00+01:00</lastmod>
   </url>
   
   <url>
-    <loc>https://mariadermit.netlify.app/categories/</loc>
+    <loc>/categories/</loc>
+    <lastmod>2021-01-20T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/2021-01-20-rstudio-instructor-certification-tidyverse/</loc>
+    <lastmod>2021-01-20T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/</loc>
+    <lastmod>2021-01-20T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/post/</loc>
+    <lastmod>2021-01-20T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/categories/r/</loc>
+    <lastmod>2021-01-20T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/r/</loc>
+    <lastmod>2021-01-20T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/</loc>
+    <lastmod>2021-01-20T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/tidyverse/</loc>
+    <lastmod>2021-01-20T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/talk/2020-11-26-eurobioc/</loc>
     <lastmod>2020-12-14T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://mariadermit.netlify.app/talk/2020-11-26-eurobioc/</loc>
+    <loc>/tags/proteomics/</loc>
     <lastmod>2020-12-14T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://mariadermit.netlify.app/</loc>
+    <loc>/talk/</loc>
     <lastmod>2020-12-14T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://mariadermit.netlify.app/tags/proteomics/</loc>
-    <lastmod>2020-12-14T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://mariadermit.netlify.app/tags/r/</loc>
-    <lastmod>2020-12-14T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://mariadermit.netlify.app/categories/r/</loc>
-    <lastmod>2020-12-14T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://mariadermit.netlify.app/talk/</loc>
-    <lastmod>2020-12-14T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://mariadermit.netlify.app/tags/</loc>
-    <lastmod>2020-12-14T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://mariadermit.netlify.app/talk/2020-11-21-iscb/</loc>
+    <loc>/talk/2020-11-21-iscb/</loc>
     <lastmod>2020-12-04T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://mariadermit.netlify.app/publication_types/2/</loc>
+    <loc>/publication_types/2/</loc>
     <lastmod>2020-11-09T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://mariadermit.netlify.app/authors/</loc>
+    <loc>/authors/</loc>
     <lastmod>2020-11-09T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://mariadermit.netlify.app/tags/cancer/</loc>
+    <loc>/tags/cancer/</loc>
     <lastmod>2020-11-09T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://mariadermit.netlify.app/authors/maria-dermit/</loc>
+    <loc>/authors/maria-dermit/</loc>
     <lastmod>2020-11-09T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://mariadermit.netlify.app/publication_types/</loc>
+    <loc>/publication_types/</loc>
     <lastmod>2020-11-09T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://mariadermit.netlify.app/publication/</loc>
+    <loc>/publication/</loc>
     <lastmod>2020-11-09T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://mariadermit.netlify.app/tags/ribosome/</loc>
+    <loc>/tags/ribosome/</loc>
     <lastmod>2020-11-09T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://mariadermit.netlify.app/tags/rpmrna/</loc>
+    <loc>/tags/rpmrna/</loc>
     <lastmod>2020-11-09T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://mariadermit.netlify.app/publication/maddie-ehr-delivery-episode-algorithm/</loc>
+    <loc>/publication/maddie-ehr-delivery-episode-algorithm/</loc>
     <lastmod>2020-11-09T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://mariadermit.netlify.app/courses/</loc>
+    <loc>/courses/</loc>
     <lastmod>2019-05-05T00:00:00+01:00</lastmod>
   </url>
   
   <url>
-    <loc>https://mariadermit.netlify.app/slides/</loc>
+    <loc>/slides/</loc>
     <lastmod>2019-02-05T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://mariadermit.netlify.app/slides/example/</loc>
+    <loc>/slides/example/</loc>
     <lastmod>2019-02-05T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://mariadermit.netlify.app/license/</loc>
+    <loc>/license/</loc>
     <lastmod>2018-06-28T00:00:00+01:00</lastmod>
   </url>
   
   <url>
-    <loc>https://mariadermit.netlify.app/authors/maria/</loc>
-  </url>
-  
-  <url>
-    <loc>https://mariadermit.netlify.app/post/</loc>
+    <loc>/authors/maria/</loc>
   </url>
   
 </urlset>

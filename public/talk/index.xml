@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Recent &amp; Upcoming Talks | Maria Dermit</title>
-    <link>https://mariadermit.netlify.app/talk/</link>
-      <atom:link href="https://mariadermit.netlify.app/talk/index.xml" rel="self" type="application/rss+xml" />
+    <link>/talk/</link>
+      <atom:link href="/talk/index.xml" rel="self" type="application/rss+xml" />
     <description>Recent &amp; Upcoming Talks</description>
     <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>© Maria Dermit, {2020}</copyright><lastBuildDate>Mon, 14 Dec 2020 00:00:00 +0000</lastBuildDate>
     <image>
-      <url>https://mariadermit.netlify.app/images/icon_hu89765a528fbe3e89fbea23b995128687_292554_512x512_fill_lanczos_center_2.png</url>
+      <url>/images/icon_hu89765a528fbe3e89fbea23b995128687_292554_512x512_fill_lanczos_center_2.png</url>
       <title>Recent &amp; Upcoming Talks</title>
-      <link>https://mariadermit.netlify.app/talk/</link>
+      <link>/talk/</link>
     </image>
     
     <item>
       <title>EuroBioc</title>
-      <link>https://mariadermit.netlify.app/talk/2020-11-26-eurobioc/</link>
+      <link>/talk/2020-11-26-eurobioc/</link>
       <pubDate>Mon, 14 Dec 2020 00:00:00 +0000</pubDate>
-      <guid>https://mariadermit.netlify.app/talk/2020-11-26-eurobioc/</guid>
+      <guid>/talk/2020-11-26-eurobioc/</guid>
       <description>
 &lt;link href=&#34;../rmarkdown-libs/anchor-sections/anchor-sections.css&#34; rel=&#34;stylesheet&#34; /&gt;
 &lt;script src=&#34;../rmarkdown-libs/anchor-sections/anchor-sections.js&#34;&gt;&lt;/script&gt;
@@ -28,9 +28,9 @@
     
     <item>
       <title>ISCB</title>
-      <link>https://mariadermit.netlify.app/talk/2020-11-21-iscb/</link>
+      <link>/talk/2020-11-21-iscb/</link>
       <pubDate>Fri, 04 Dec 2020 00:00:00 +0000</pubDate>
-      <guid>https://mariadermit.netlify.app/talk/2020-11-21-iscb/</guid>
+      <guid>/talk/2020-11-21-iscb/</guid>
       <description>
 &lt;link href=&#34;../rmarkdown-libs/anchor-sections/anchor-sections.css&#34; rel=&#34;stylesheet&#34; /&gt;
 &lt;script src=&#34;../rmarkdown-libs/anchor-sections/anchor-sections.js&#34;&gt;&lt;/script&gt;
