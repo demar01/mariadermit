@@ -76,7 +76,7 @@ Greg also asked us to send an email with what we remember and so I did this conc
 - [Overview](https://silvia.rbind.io/2020-10-07-rstudio-instructor-certification-tidyverse/) by [Silvia Canelon](https://education.rstudio.com/trainers/people/canelon+silvia/) 
 of the RStudio Instructor certification process. Check her post since she has an amazing  collection of resources to support anyone on their certification journey.
 
-4. **Active learning **.
+5. **Active learning **.
 
 - With some of the materials I use during my learning, I created some exercises using the [learnr](https://rstudio.github.io/learnr/) package, which is such a powerful and versatile way to create interactive exercises.
 [This](https://clif.shinyapps.io/01-Replacement-es/) is my humble contribution to fading exercises with [Penguins](https://github.com/allisonhorst/palmerpenguins) and I hope to extend these materials in [user!2021](https://user2021.r-project.org/) later this year
