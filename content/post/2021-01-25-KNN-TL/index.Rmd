@@ -49,8 +49,10 @@ library(BiocStyle)
 Within the cell, the localization of a given protein is determined by its biological 
 function. Subcellular proteomics is the method to study  protein sub-cellular 
 localization in a systematic manner. There are two complementary ways to analysis localized proteins: 
+
 - On one hand biochemical sub-cellular fractionation experiments allow  empirical quantification of protein across sub-cellular and sub-organellar compartments. Proteins are allocated to a given subcellular niche
 if the detected intensity is higher than a threshold. We can say that this type of data has high signal-to-noise ratio, but is available in limited amounts (*primary* data).
+
 - On the other hand, databases such as [GO](http://geneontology.org/) contain large amount of information about sub-cellular proteins localisation, but this is information is blended for a many biological systems. We can say that this type of data has high low signal-to-noise, but is available in large amounts (*auxiliary* data).
 
 So we want to know _how to optimally combine_ primary and auxiliary data.`r emo::ji("chart")`
@@ -68,13 +70,7 @@ We start with  `HEK293T2011` proteomics data available in the `r Biocexptpkg("pR
 data(HEK293T2011)
 ```
 
-If we do `r class(HEK293T2011)` we can see that this is a [MSnSet](http://www.bioconductor.org/packages/release/bioc/html/MSnbase.html) instance, an efficient and established to store and handle MS data and metainformation efficiently. I am not going to discuss much about this class of objects since the field is moving towards other types of data storage such as  [SummarizedExperiment objects](https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html)
-
-We can have an overview of of the structure of this dataset looks like
-```{r, eval=FALSE}
-HEK293T2011
-```
-
+The class of (HEK293T2011) is`r class(HEK293T2011)`  instance, an efficient and established to [store and handle MS data and metainformation efficiently](http://www.bioconductor.org/packages/release/bioc/html/MSnbase.html). I am not going to discuss much about this class of objects since the field is moving towards other types of data storage such as  [SummarizedExperiment objects](https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html)
 
 We can also get an overview experimental data and query how many proteins across how many conditions were quantified. 
 ```{r}
@@ -82,11 +78,11 @@ head(exprs(HEK293T2011),2)
 dim(exprs(HEK293T2011))
 ```
 What is important to know is that 1371 proteins were quantified across eight iTRAQ 8-plex labelled fractions (
-one could know a bit more about the experiment on `?HEK293T2011`))
+one could know a bit more about the experiment with `?HEK293T2011`)
 
 
 Next thing we can do is see how well these organelles have been resolved in the experiment using a PCA plot
-```{r, fig.cap = "PCA plot of `HEK293T2011`"}
+```{r, fig.cap = "PCA plot of `HEK293T2011 subcellular proteomics dataset`"}
 plot2D(HEK293T2011)
 addLegend(HEK293T2011, where = "topright", cex = 0.6)
 ```
@@ -166,7 +162,7 @@ The optimisation is performed on the labelled marker examples only. `topt` resul
 ```{r fig.cap = "Result stores for the reduced optimisation step", eval=FALSE} 
 plot(topt)
 ```
-![Result stocores for the optimisation step. Note that this figure is the result using extensive optimisation on the whole HEK293T2011 dataset and auxiliary andygoset data sets, not only with only a random subset of 50 candidate weights.](https://raw.githubusercontent.com/lgatto/pRoloc/master/vignettes/Figures/bubble-andy.png)
+![Result stocores for the optimisation step. Note that this figure is the result using extensive optimisation on the whole HEK293T2011 dataset and auxiliary HEK293T2011goset dataset, not only with only a random subset of 50 candidate weights.](https://raw.githubusercontent.com/lgatto/pRoloc/master/vignettes/Figures/bubble-andy.png)
 
 We see that the cytosol and cytosol/nucleus and ER  are predominantly scored with high heights, consistent with high reliability of the primary data. Golgi, PM and the 40S ribosomal clusters are scored with smaller scores, indicating a substantial benefit of the auxiliary data.
 
@@ -192,7 +188,7 @@ HEK293T2011 <- knntlClassification(HEK293T2011, HEK293T2011goset,
                                 fcol = "markers.tl")
 ```
 In this step, annotation predictors scores and parameters get added into the MSnSet data. We can access the predicted localization conveniently using the `getPredictions` assessor.
-```{r, echo=FALSE}
+```{r, echo=FALSE, eval=FALSE}
 head(fData(HEK293T2011)$knntl)
 head(fData(HEK293T2011)$knntl.scores)
 ```
@@ -216,11 +212,11 @@ addLegend(HEK293T2011, where = "topright",
           bty = "n", cex = .7)
 ```
 
-![PCA plot of `HEK293T2011` after transfer learning classification. The size of the points is proportional to the classification scores](TL_PCA.png)
+![PCA plot of `HEK293T2011` after transfer learning classification. The size of the points is proportional to the classification scores.](TL_PCA.png)
 
 # Conclusions
 
-A *weighted k-nearest neighbour transfer learning* algorithm can be very useful to predict of protein
+A *weighted k-nearest neighbor transfer learning* algorithm can be very useful to predict of protein
 sub-cellular localisation using quantitative proteomics data as primary data source and Gene Ontology-derived binary data as auxiliary data source.
 
 

@@ -141,10 +141,12 @@ library(BiocStyle)&lt;/code&gt;&lt;/pre&gt;
 &lt;h1&gt;Introduction&lt;/h1&gt;
 &lt;p&gt;Within the cell, the localization of a given protein is determined by its biological
 function. Subcellular proteomics is the method to study protein sub-cellular
-localization in a systematic manner. There are two complementary ways to analysis localized proteins:
-- On one hand biochemical sub-cellular fractionation experiments allow empirical quantification of protein across sub-cellular and sub-organellar compartments. Proteins are allocated to a given subcellular niche
-if the detected intensity is higher than a threshold. We can say that this type of data has high signal-to-noise ratio, but is available in limited amounts (&lt;em&gt;primary&lt;/em&gt; data).
-- On the other hand, databases such as &lt;a href=&#34;http://geneontology.org/&#34;&gt;GO&lt;/a&gt; contain large amount of information about sub-cellular proteins localisation, but this is information is blended for a many biological systems. We can say that this type of data has high low signal-to-noise, but is available in large amounts (&lt;em&gt;auxiliary&lt;/em&gt; data).&lt;/p&gt;
+localization in a systematic manner. There are two complementary ways to analysis localized proteins:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;On one hand biochemical sub-cellular fractionation experiments allow empirical quantification of protein across sub-cellular and sub-organellar compartments. Proteins are allocated to a given subcellular niche
+if the detected intensity is higher than a threshold. We can say that this type of data has high signal-to-noise ratio, but is available in limited amounts (&lt;em&gt;primary&lt;/em&gt; data).&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;On the other hand, databases such as &lt;a href=&#34;http://geneontology.org/&#34;&gt;GO&lt;/a&gt; contain large amount of information about sub-cellular proteins localisation, but this is information is blended for a many biological systems. We can say that this type of data has high low signal-to-noise, but is available in large amounts (&lt;em&gt;auxiliary&lt;/em&gt; data).&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
 &lt;p&gt;So we want to know &lt;em&gt;how to optimally combine&lt;/em&gt; primary and auxiliary data.💹&lt;/p&gt;
 &lt;p&gt;To do so, we need to weight both types of data. If we imagine a multivariate
 distribution (like a &lt;a href=&#34;https://github.com/TommyJones/tidylda&#34;&gt;Dirichlet distribution&lt;/a&gt;) were all the components take values between (0,1) and all values sum up to one, we can imagine that a weight of 1 indicates that the final annotation rely exclusively on the experimental data and ignore completely the auxiliary data and a weight of 0 represents the opposite situation, where the primary data is ignored and only the auxiliary data is considered.&lt;/p&gt;
@@ -155,9 +157,7 @@ distribution (like a &lt;a href=&#34;https://github.com/TommyJones/tidylda&#34;&
 &lt;h1&gt;Getting the data&lt;/h1&gt;
 &lt;p&gt;We start with &lt;code&gt;HEK293T2011&lt;/code&gt; proteomics data available in the &lt;em&gt;&lt;a href=&#34;https://bioconductor.org/packages/3.10/pRolocdata&#34;&gt;pRolocdata&lt;/a&gt;&lt;/em&gt; package.&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;data(HEK293T2011)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;If we do MSnSet we can see that this is a &lt;a href=&#34;http://www.bioconductor.org/packages/release/bioc/html/MSnbase.html&#34;&gt;MSnSet&lt;/a&gt; instance, an efficient and established to store and handle MS data and metainformation efficiently. I am not going to discuss much about this class of objects since the field is moving towards other types of data storage such as &lt;a href=&#34;https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html&#34;&gt;SummarizedExperiment objects&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;We can have an overview of of the structure of this dataset looks like&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;HEK293T2011&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The class of (HEK293T2011) isMSnSet instance, an efficient and established to &lt;a href=&#34;http://www.bioconductor.org/packages/release/bioc/html/MSnbase.html&#34;&gt;store and handle MS data and metainformation efficiently&lt;/a&gt;. I am not going to discuss much about this class of objects since the field is moving towards other types of data storage such as &lt;a href=&#34;https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html&#34;&gt;SummarizedExperiment objects&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;We can also get an overview experimental data and query how many proteins across how many conditions were quantified.&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;head(exprs(HEK293T2011),2)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;##             X113      X114       X115      X116      X117       X118       X119
@@ -169,14 +169,14 @@ distribution (like a &lt;a href=&#34;https://github.com/TommyJones/tidylda&#34;&
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;dim(exprs(HEK293T2011))&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;## [1] 1371    8&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;What is important to know is that 1371 proteins were quantified across eight iTRAQ 8-plex labelled fractions (
-one could know a bit more about the experiment on &lt;code&gt;?HEK293T2011&lt;/code&gt;))&lt;/p&gt;
+one could know a bit more about the experiment with &lt;code&gt;?HEK293T2011&lt;/code&gt;)&lt;/p&gt;
 &lt;p&gt;Next thing we can do is see how well these organelles have been resolved in the experiment using a PCA plot&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;plot2D(HEK293T2011)
 addLegend(HEK293T2011, where = &amp;quot;topright&amp;quot;, cex = 0.6)&lt;/code&gt;&lt;/pre&gt;
-&lt;div class=&#34;figure&#34;&gt;&lt;span id=&#34;fig:unnamed-chunk-5&#34;&gt;&lt;/span&gt;
-&lt;img src=&#34;../2021-01-20-transfer-learning-for-spatial-proteomics/index_files/figure-html/unnamed-chunk-5-1.png&#34; alt=&#34;PCA plot of `HEK293T2011`&#34; width=&#34;672&#34; /&gt;
+&lt;div class=&#34;figure&#34;&gt;&lt;span id=&#34;fig:unnamed-chunk-4&#34;&gt;&lt;/span&gt;
+&lt;img src=&#34;../2021-01-20-transfer-learning-for-spatial-proteomics/index_files/figure-html/unnamed-chunk-4-1.png&#34; alt=&#34;PCA plot of `HEK293T2011 subcellular proteomics dataset`&#34; width=&#34;672&#34; /&gt;
 &lt;p class=&#34;caption&#34;&gt;
-Figure 1: PCA plot of &lt;code&gt;HEK293T2011&lt;/code&gt;
+Figure 1: PCA plot of &lt;code&gt;HEK293T2011 subcellular proteomics dataset&lt;/code&gt;
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;p&gt;We see that some organelles such as cytosol and cytosol/nucleus are well resolved - and so they will get a high weigh- while others such as the Golgi or the ER are less so - so they will get a low weight.
@@ -195,7 +195,7 @@ There are some proteins that do not get annotation because the resolution of the
 ##  Using the &amp;#39;ENSEMBL_MART_ENSEMBL&amp;#39; BioMart database
 ##  Using the &amp;#39;hsapiens_gene_ensembl&amp;#39; dataset
 ##  Using &amp;#39;uniprotswissprot&amp;#39; as filter
-##  Created on Tue Jan 26 15:15:19 2021&lt;/code&gt;&lt;/pre&gt;
+##  Created on Tue Jan 26 15:47:22 2021&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;We can annotate our innitial &lt;code&gt;HEK293T2011&lt;/code&gt; data by creating a new &lt;code&gt;MSnSet&lt;/code&gt; instance populated with a GO term as a binary matrix (so the auxiliary data with information about 889 cellular compartment GO terms has been added).&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;HEK293T2011goset  &amp;lt;- makeGoSet(HEK293T2011)&lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
@@ -264,7 +264,7 @@ topt &amp;lt;- knntlOptimisation(HEK293T2011, HEK293T2011goset,
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;plot(topt)&lt;/code&gt;&lt;/pre&gt;
 &lt;div class=&#34;figure&#34;&gt;
 &lt;img src=&#34;https://raw.githubusercontent.com/lgatto/pRoloc/master/vignettes/Figures/bubble-andy.png&#34; alt=&#34;&#34; /&gt;
-&lt;p class=&#34;caption&#34;&gt;Result stocores for the optimisation step. Note that this figure is the result using extensive optimisation on the whole HEK293T2011 dataset and auxiliary andygoset data sets, not only with only a random subset of 50 candidate weights.&lt;/p&gt;
+&lt;p class=&#34;caption&#34;&gt;Result stocores for the optimisation step. Note that this figure is the result using extensive optimisation on the whole HEK293T2011 dataset and auxiliary HEK293T2011goset dataset, not only with only a random subset of 50 candidate weights.&lt;/p&gt;
 &lt;/div&gt;
 &lt;p&gt;We see that the cytosol and cytosol/nucleus and ER are predominantly scored with high heights, consistent with high reliability of the primary data. Golgi, PM and the 40S ribosomal clusters are scored with smaller scores, indicating a substantial benefit of the auxiliary data.&lt;/p&gt;
 &lt;p&gt;The best grid search parameters can be accessed with:&lt;/p&gt;
@@ -281,8 +281,6 @@ step. We can get the best weights with:&lt;/p&gt;
                                 k = c(3, 3),
                                 fcol = &amp;quot;markers.tl&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;In this step, annotation predictors scores and parameters get added into the MSnSet data. We can access the predicted localization conveniently using the &lt;code&gt;getPredictions&lt;/code&gt; assessor.&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;## NULL&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## NULL&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;HEK293T2011 &amp;lt;- getPredictions(HEK293T2011, fcol = &amp;quot;knntl&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 &lt;div id=&#34;plotting-the-results&#34; class=&#34;section level2&#34;&gt;
@@ -298,7 +296,7 @@ addLegend(HEK293T2011, where = &amp;quot;topright&amp;quot;,
           bty = &amp;quot;n&amp;quot;, cex = .7)&lt;/code&gt;&lt;/pre&gt;
 &lt;div class=&#34;figure&#34;&gt;
 &lt;img src=&#34;TL_PCA.png&#34; alt=&#34;&#34; /&gt;
-&lt;p class=&#34;caption&#34;&gt;PCA plot of &lt;code&gt;HEK293T2011&lt;/code&gt; after transfer learning classification. The size of the points is proportional to the classification scores&lt;/p&gt;
+&lt;p class=&#34;caption&#34;&gt;PCA plot of &lt;code&gt;HEK293T2011&lt;/code&gt; after transfer learning classification. The size of the points is proportional to the classification scores.&lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;

@@ -53,10 +53,12 @@ library(BiocStyle)</code></pre>
 <h1>Introduction</h1>
 <p>Within the cell, the localization of a given protein is determined by its biological
 function. Subcellular proteomics is the method to study protein sub-cellular
-localization in a systematic manner. There are two complementary ways to analysis localized proteins:
-- On one hand biochemical sub-cellular fractionation experiments allow empirical quantification of protein across sub-cellular and sub-organellar compartments. Proteins are allocated to a given subcellular niche
-if the detected intensity is higher than a threshold. We can say that this type of data has high signal-to-noise ratio, but is available in limited amounts (<em>primary</em> data).
-- On the other hand, databases such as <a href="http://geneontology.org/">GO</a> contain large amount of information about sub-cellular proteins localisation, but this is information is blended for a many biological systems. We can say that this type of data has high low signal-to-noise, but is available in large amounts (<em>auxiliary</em> data).</p>
+localization in a systematic manner. There are two complementary ways to analysis localized proteins:</p>
+<ul>
+<li><p>On one hand biochemical sub-cellular fractionation experiments allow empirical quantification of protein across sub-cellular and sub-organellar compartments. Proteins are allocated to a given subcellular niche
+if the detected intensity is higher than a threshold. We can say that this type of data has high signal-to-noise ratio, but is available in limited amounts (<em>primary</em> data).</p></li>
+<li><p>On the other hand, databases such as <a href="http://geneontology.org/">GO</a> contain large amount of information about sub-cellular proteins localisation, but this is information is blended for a many biological systems. We can say that this type of data has high low signal-to-noise, but is available in large amounts (<em>auxiliary</em> data).</p></li>
+</ul>
 <p>So we want to know <em>how to optimally combine</em> primary and auxiliary data.💹</p>
 <p>To do so, we need to weight both types of data. If we imagine a multivariate
 distribution (like a <a href="https://github.com/TommyJones/tidylda">Dirichlet distribution</a>) were all the components take values between (0,1) and all values sum up to one, we can imagine that a weight of 1 indicates that the final annotation rely exclusively on the experimental data and ignore completely the auxiliary data and a weight of 0 represents the opposite situation, where the primary data is ignored and only the auxiliary data is considered.</p>
@@ -67,9 +69,7 @@ distribution (like a <a href="https://github.com/TommyJones/tidylda">Dirichlet d
 <h1>Getting the data</h1>
 <p>We start with <code>HEK293T2011</code> proteomics data available in the <em><a href="https://bioconductor.org/packages/3.10/pRolocdata">pRolocdata</a></em> package.</p>
 <pre class="r"><code>data(HEK293T2011)</code></pre>
-<p>If we do MSnSet we can see that this is a <a href="http://www.bioconductor.org/packages/release/bioc/html/MSnbase.html">MSnSet</a> instance, an efficient and established to store and handle MS data and metainformation efficiently. I am not going to discuss much about this class of objects since the field is moving towards other types of data storage such as <a href="https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html">SummarizedExperiment objects</a></p>
-<p>We can have an overview of of the structure of this dataset looks like</p>
-<pre class="r"><code>HEK293T2011</code></pre>
+<p>The class of (HEK293T2011) isMSnSet instance, an efficient and established to <a href="http://www.bioconductor.org/packages/release/bioc/html/MSnbase.html">store and handle MS data and metainformation efficiently</a>. I am not going to discuss much about this class of objects since the field is moving towards other types of data storage such as <a href="https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html">SummarizedExperiment objects</a></p>
 <p>We can also get an overview experimental data and query how many proteins across how many conditions were quantified.</p>
 <pre class="r"><code>head(exprs(HEK293T2011),2)</code></pre>
 <pre><code>##             X113      X114       X115      X116      X117       X118       X119
@@ -81,14 +81,14 @@ distribution (like a <a href="https://github.com/TommyJones/tidylda">Dirichlet d
 <pre class="r"><code>dim(exprs(HEK293T2011))</code></pre>
 <pre><code>## [1] 1371    8</code></pre>
 <p>What is important to know is that 1371 proteins were quantified across eight iTRAQ 8-plex labelled fractions (
-one could know a bit more about the experiment on <code>?HEK293T2011</code>))</p>
+one could know a bit more about the experiment with <code>?HEK293T2011</code>)</p>
 <p>Next thing we can do is see how well these organelles have been resolved in the experiment using a PCA plot</p>
 <pre class="r"><code>plot2D(HEK293T2011)
 addLegend(HEK293T2011, where = &quot;topright&quot;, cex = 0.6)</code></pre>
-<div class="figure"><span id="fig:unnamed-chunk-5"></span>
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-5-1.png" alt="PCA plot of `HEK293T2011`" width="672" />
+<div class="figure"><span id="fig:unnamed-chunk-4"></span>
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-4-1.png" alt="PCA plot of `HEK293T2011 subcellular proteomics dataset`" width="672" />
 <p class="caption">
-Figure 1: PCA plot of <code>HEK293T2011</code>
+Figure 1: PCA plot of <code>HEK293T2011 subcellular proteomics dataset</code>
 </p>
 </div>
 <p>We see that some organelles such as cytosol and cytosol/nucleus are well resolved - and so they will get a high weigh- while others such as the Golgi or the ER are less so - so they will get a low weight.
@@ -107,7 +107,7 @@ There are some proteins that do not get annotation because the resolution of the
 ##  Using the &#39;ENSEMBL_MART_ENSEMBL&#39; BioMart database
 ##  Using the &#39;hsapiens_gene_ensembl&#39; dataset
 ##  Using &#39;uniprotswissprot&#39; as filter
-##  Created on Tue Jan 26 15:15:19 2021</code></pre>
+##  Created on Tue Jan 26 15:47:22 2021</code></pre>
 <p>We can annotate our innitial <code>HEK293T2011</code> data by creating a new <code>MSnSet</code> instance populated with a GO term as a binary matrix (so the auxiliary data with information about 889 cellular compartment GO terms has been added).</p>
 <pre class="r"><code>HEK293T2011goset  &lt;- makeGoSet(HEK293T2011)</code></pre>
 </div>
@@ -176,7 +176,7 @@ topt &lt;- knntlOptimisation(HEK293T2011, HEK293T2011goset,
 <pre class="r"><code>plot(topt)</code></pre>
 <div class="figure">
 <img src="https://raw.githubusercontent.com/lgatto/pRoloc/master/vignettes/Figures/bubble-andy.png" alt="" />
-<p class="caption">Result stocores for the optimisation step. Note that this figure is the result using extensive optimisation on the whole HEK293T2011 dataset and auxiliary andygoset data sets, not only with only a random subset of 50 candidate weights.</p>
+<p class="caption">Result stocores for the optimisation step. Note that this figure is the result using extensive optimisation on the whole HEK293T2011 dataset and auxiliary HEK293T2011goset dataset, not only with only a random subset of 50 candidate weights.</p>
 </div>
 <p>We see that the cytosol and cytosol/nucleus and ER are predominantly scored with high heights, consistent with high reliability of the primary data. Golgi, PM and the 40S ribosomal clusters are scored with smaller scores, indicating a substantial benefit of the auxiliary data.</p>
 <p>The best grid search parameters can be accessed with:</p>
@@ -193,8 +193,6 @@ step. We can get the best weights with:</p>
                                 k = c(3, 3),
                                 fcol = &quot;markers.tl&quot;)</code></pre>
 <p>In this step, annotation predictors scores and parameters get added into the MSnSet data. We can access the predicted localization conveniently using the <code>getPredictions</code> assessor.</p>
-<pre><code>## NULL</code></pre>
-<pre><code>## NULL</code></pre>
 <pre class="r"><code>HEK293T2011 &lt;- getPredictions(HEK293T2011, fcol = &quot;knntl&quot;)</code></pre>
 </div>
 <div id="plotting-the-results" class="section level2">
@@ -210,7 +208,7 @@ addLegend(HEK293T2011, where = &quot;topright&quot;,
           bty = &quot;n&quot;, cex = .7)</code></pre>
 <div class="figure">
 <img src="TL_PCA.png" alt="" />
-<p class="caption">PCA plot of <code>HEK293T2011</code> after transfer learning classification. The size of the points is proportional to the classification scores</p>
+<p class="caption">PCA plot of <code>HEK293T2011</code> after transfer learning classification. The size of the points is proportional to the classification scores.</p>
 </div>
 </div>
 </div>
