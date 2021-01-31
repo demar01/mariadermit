@@ -174,7 +174,7 @@ We see more connections here, and some of the relationships are still obvious (e
 
 
 # Conclusions
-Text mining of Bioconductor packages metadata is a straight forward visual way to understand the relationships between packages. One could go beyond this and for example find words that are
+Text mining of Bioconductor packages metadata is a straight forward visual way to understand the relationships between packages. One could go beyond this and for example finding words that are
 especially important across package Descriptions by calculating [tf-idf statistic](https://www.tidytextmining.com/tfidf.html#tfidf). One could also set up a GitHub Action executed as a CRON job to get updates periodically. This could turn into a challenge for [BiocChallenges](https://kevinrue.github.io/BiocChallenges/index.html). This post was inspired by [Chapter 8](https://www.tidytextmining.com/nasa.html) of the Tidytext book and [BiocRoulette](https://kevinrue.github.io/post/biocpkgtools/). 
 
 

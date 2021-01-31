@@ -82,7 +82,7 @@ library(lubridate)
 library(emo)&lt;/code&gt;&lt;/pre&gt;
 &lt;div id=&#34;motivation&#34; class=&#34;section level1&#34;&gt;
 &lt;h1&gt;Motivation&lt;/h1&gt;
-&lt;p&gt;Bioconductor has a total of 5796 at the present day 2021-01-31. Therefore, navigating across Bioconductor packages can be a daunting experience. Luckily, &lt;a href=&#34;https://seandavi.github.io/BiocPkgTools/&#34;&gt;BiocPkgTools&lt;/a&gt; offers a rich ecosystem of metadata around Bioconductor packages 📝.&lt;/p&gt;
+&lt;p&gt;Bioconductor has a total of 5796 at the present day 2021-01-31. Therefore, navigating across Bioconductor packages can be a daunting experience. Luckily, &lt;a href=&#34;https://seandavi.github.io/BiocPkgTools/&#34;&gt;BiocPkgTools&lt;/a&gt; offers a rich ecosystem of metadata around Bioconductor packages 📜.&lt;/p&gt;
 &lt;/div&gt;
 &lt;div id=&#34;statistics-of-bioconductor-downloads&#34; class=&#34;section level1&#34;&gt;
 &lt;h1&gt;Statistics of Bioconductor downloads&lt;/h1&gt;
@@ -246,7 +246,7 @@ Figure 2: Word network in Bioconductor packages Description
 &lt;/div&gt;
 &lt;div id=&#34;conclusions&#34; class=&#34;section level1&#34;&gt;
 &lt;h1&gt;Conclusions&lt;/h1&gt;
-&lt;p&gt;Text mining of Bioconductor packages metadata is a straight forward visual way to understand the relationships between packages. One could go beyond this and for example find words that are
+&lt;p&gt;Text mining of Bioconductor packages metadata is a straight forward visual way to understand the relationships between packages. One could go beyond this and for example finding words that are
 especially important across package Descriptions by calculating &lt;a href=&#34;https://www.tidytextmining.com/tfidf.html#tfidf&#34;&gt;tf-idf statistic&lt;/a&gt;. One could also set up a GitHub Action executed as a CRON job to get updates periodically. This could turn into a challenge for &lt;a href=&#34;https://kevinrue.github.io/BiocChallenges/index.html&#34;&gt;BiocChallenges&lt;/a&gt;. This post was inspired by &lt;a href=&#34;https://www.tidytextmining.com/nasa.html&#34;&gt;Chapter 8&lt;/a&gt; of the Tidytext book and &lt;a href=&#34;https://kevinrue.github.io/post/biocpkgtools/&#34;&gt;BiocRoulette&lt;/a&gt;.&lt;/p&gt;
 &lt;/div&gt;
 </description>
