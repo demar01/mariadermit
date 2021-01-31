@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>widyr | Maria Dermit</title>
+    <link>/tags/widyr/</link>
+      <atom:link href="/tags/widyr/index.xml" rel="self" type="application/rss+xml" />
+    <description>widyr</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>© Maria Dermit, {2020}</copyright><lastBuildDate>Sat, 30 Jan 2021 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>/images/icon_hu89765a528fbe3e89fbea23b995128687_292554_512x512_fill_lanczos_center_2.png</url>
+      <title>widyr</title>
+      <link>/tags/widyr/</link>
+    </image>
+    
+    <item>
+      <title>Word network of Bioconductor packages</title>
+      <link>/2021-01-30-network-visualization-of-bioconductor-packages/</link>
+      <pubDate>Sat, 30 Jan 2021 00:00:00 +0000</pubDate>
+      <guid>/2021-01-30-network-visualization-of-bioconductor-packages/</guid>
+      <description>
+&lt;script src=&#34;../../2021-01-30-network-visualization-of-bioconductor-packages/index_files/header-attrs/header-attrs.js&#34;&gt;&lt;/script&gt;
+
+&lt;div id=&#34;TOC&#34;&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;#motivation&#34;&gt;Motivation&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#statistics-of-bioconductor-downloads&#34;&gt;Statistics of Bioconductor downloads&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#full-details-of-bioconductor-packages&#34;&gt;Full details of Bioconductor packages&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#word-network-of-bioconductor-packages&#34;&gt;Word network of Bioconductor packages&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#conclusions&#34;&gt;Conclusions&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(BiocPkgTools)
+library(tidyverse)
+library(tidytext)
+library(widyr)
+library(igraph)
+library(ggraph)
+library(lubridate)
+library(emo)&lt;/code&gt;&lt;/pre&gt;
+&lt;div id=&#34;motivation&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Motivation&lt;/h1&gt;
+&lt;p&gt;Bioconductor has a total of 5796 at the present day 2021-01-31. Therefore, navigating across Bioconductor packages can be a daunting experience. Luckily, &lt;a href=&#34;https://seandavi.github.io/BiocPkgTools/&#34;&gt;BiocPkgTools&lt;/a&gt; offers a rich ecosystem of metadata around Bioconductor packages 📝.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;statistics-of-bioconductor-downloads&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Statistics of Bioconductor downloads&lt;/h1&gt;
+&lt;p&gt;We can get a tidy data.frame with download stats for all packages using the function &lt;code&gt;biocDownloadStats&lt;/code&gt;.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;#  Getting a tidy tibble summarizing monthly download statistics 
+bio_download_stats &amp;lt;- biocDownloadStats()&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;bio_download_stats %&amp;gt;% 
+  head(13)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 13 x 7
+##    Package  Year Month Nb_of_distinct_IPs Nb_of_downloads repo     Date      
+##    &amp;lt;chr&amp;gt;   &amp;lt;int&amp;gt; &amp;lt;chr&amp;gt;              &amp;lt;int&amp;gt;           &amp;lt;int&amp;gt; &amp;lt;chr&amp;gt;    &amp;lt;date&amp;gt;    
+##  1 ABarray  2021 Jan                   54             114 Software 2021-01-01
+##  2 ABarray  2021 Feb                    0               0 Software 2021-02-01
+##  3 ABarray  2021 Mar                    0               0 Software 2021-03-01
+##  4 ABarray  2021 Apr                    0               0 Software 2021-04-01
+##  5 ABarray  2021 May                    0               0 Software 2021-05-01
+##  6 ABarray  2021 Jun                    0               0 Software 2021-06-01
+##  7 ABarray  2021 Jul                    0               0 Software 2021-07-01
+##  8 ABarray  2021 Aug                    0               0 Software 2021-08-01
+##  9 ABarray  2021 Sep                    0               0 Software 2021-09-01
+## 10 ABarray  2021 Oct                    0               0 Software 2021-10-01
+## 11 ABarray  2021 Nov                    0               0 Software 2021-11-01
+## 12 ABarray  2021 Dec                    0               0 Software 2021-12-01
+## 13 ABarray  2021 all                   54             114 Software NA&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As we see observations for all the months of the year are generated once that the year starts (download values for events in the future are filled up with &lt;em&gt;0&lt;/em&gt;). Also note that there is a summary statistic for month called &lt;code&gt;all&lt;/code&gt; embedded inside the tibble, and the &lt;code&gt;Date&lt;/code&gt; value for that observation is NA (this would makes group by date very convenient).&lt;/p&gt;
+&lt;p&gt;This tibble contains information about packages that expands from 2009 to 2021. There are 3 categories of packages, with the total number of package per category as follows:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;bio_download_stats %&amp;gt;% 
+  distinct(Package, repo) %&amp;gt;%
+  count(repo) %&amp;gt;%
+  knitr::kable()&lt;/code&gt;&lt;/pre&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;left&#34;&gt;repo&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;n&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;AnnotationData&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2659&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;ExperimentData&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;821&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Software&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2316&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;div id=&#34;full-details-of-bioconductor-packages&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Full details of Bioconductor packages&lt;/h1&gt;
+&lt;p&gt;The complete information for the packages as described in the &lt;code&gt;DESCRIPTION&lt;/code&gt; file can be obtained with &lt;code&gt;biocPkgList&lt;/code&gt;.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;bpi = biocPkgList()
+colnames(bpi)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##  [1] &amp;quot;Package&amp;quot;               &amp;quot;Version&amp;quot;               &amp;quot;Depends&amp;quot;              
+##  [4] &amp;quot;Suggests&amp;quot;              &amp;quot;License&amp;quot;               &amp;quot;MD5sum&amp;quot;               
+##  [7] &amp;quot;NeedsCompilation&amp;quot;      &amp;quot;Title&amp;quot;                 &amp;quot;Description&amp;quot;          
+## [10] &amp;quot;biocViews&amp;quot;             &amp;quot;Author&amp;quot;                &amp;quot;Maintainer&amp;quot;           
+## [13] &amp;quot;git_url&amp;quot;               &amp;quot;git_branch&amp;quot;            &amp;quot;git_last_commit&amp;quot;      
+## [16] &amp;quot;git_last_commit_date&amp;quot;  &amp;quot;Date/Publication&amp;quot;      &amp;quot;source.ver&amp;quot;           
+## [19] &amp;quot;win.binary.ver&amp;quot;        &amp;quot;mac.binary.ver&amp;quot;        &amp;quot;vignettes&amp;quot;            
+## [22] &amp;quot;vignetteTitles&amp;quot;        &amp;quot;hasREADME&amp;quot;             &amp;quot;hasNEWS&amp;quot;              
+## [25] &amp;quot;hasINSTALL&amp;quot;            &amp;quot;hasLICENSE&amp;quot;            &amp;quot;Rfiles&amp;quot;               
+## [28] &amp;quot;dependencyCount&amp;quot;       &amp;quot;Imports&amp;quot;               &amp;quot;Enhances&amp;quot;             
+## [31] &amp;quot;dependsOnMe&amp;quot;           &amp;quot;VignetteBuilder&amp;quot;       &amp;quot;suggestsMe&amp;quot;           
+## [34] &amp;quot;LinkingTo&amp;quot;             &amp;quot;Archs&amp;quot;                 &amp;quot;URL&amp;quot;                  
+## [37] &amp;quot;SystemRequirements&amp;quot;    &amp;quot;BugReports&amp;quot;            &amp;quot;importsMe&amp;quot;            
+## [40] &amp;quot;Video&amp;quot;                 &amp;quot;linksToMe&amp;quot;             &amp;quot;OS_type&amp;quot;              
+## [43] &amp;quot;PackageStatus&amp;quot;         &amp;quot;License_restricts_use&amp;quot; &amp;quot;License_is_FOSS&amp;quot;      
+## [46] &amp;quot;organism&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;There is lots of information in here. We could use this metadata information to understand the connections between packages.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;word-network-of-bioconductor-packages&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Word network of Bioconductor packages&lt;/h1&gt;
+&lt;p&gt;The most informative variables about the packages are &lt;code&gt;Title&lt;/code&gt; and &lt;code&gt;Description&lt;/code&gt; so we can explore the connections between packages doing some &lt;strong&gt;text mining&lt;/strong&gt; using a &lt;a href=&#34;https://www.tidytextmining.com/index.html&#34;&gt;Tidytext&lt;/a&gt; approach.&lt;/p&gt;
+&lt;p&gt;To prepare our dataset we need to initially tokenize the text. The Wikipedia definition for &lt;a href=&#34;https://en.wikipedia.org/wiki/Lexical_analysis#Tokenization&#34;&gt;tokenization&lt;/a&gt; on lexical analysis is as follows:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Tokenization is the process of demarcating and possibly classifying sections of a string of input characters&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;The &lt;em&gt;sections&lt;/em&gt; can be words, sentence, ngram or chapter (for example if analysis a book). In this case we are gonna break down package Titles or Description into words using the function &lt;code&gt;unnest_tokens&lt;/code&gt;.
+In addition, we can remove &lt;a href=&#34;https://en.wikipedia.org/wiki/Stop_word&#34;&gt;stop words&lt;/a&gt; (included in the Tidytext dataset).&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;bpi_title &amp;lt;- bpi %&amp;gt;% 
+  dplyr::select(Package, Title) %&amp;gt;%
+  unnest_tokens(word, Title) %&amp;gt;% 
+  anti_join(stop_words)
+
+bpi_description &amp;lt;- bpi %&amp;gt;%
+  dplyr::select(Package, Description) %&amp;gt;%
+  unnest_tokens(word, Description) %&amp;gt;%
+  anti_join(stop_words)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Note that the number of words from Title is 11932 and the number
+of words from Description is 59370, so package Descriptions
+contain on average 5 times the words of package Titles.&lt;/p&gt;
+&lt;p&gt;We can have a look at how the tokenised titles for each package look like:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;bpi_title&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 11,932 x 2
+##    Package word      
+##    &amp;lt;chr&amp;gt;   &amp;lt;chr&amp;gt;     
+##  1 a4      automated 
+##  2 a4      affymetrix
+##  3 a4      array     
+##  4 a4      analysis  
+##  5 a4      umbrella  
+##  6 a4      package   
+##  7 a4Base  automated 
+##  8 a4Base  affymetrix
+##  9 a4Base  array     
+## 10 a4Base  analysis  
+## # … with 11,922 more rows&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Them, we can use &lt;code&gt;pairwise_count&lt;/code&gt; from the &lt;a href=&#34;https://cran.r-project.org/web/packages/widyr/vignettes/intro.html&#34;&gt;widyr&lt;/a&gt; package to count how many times each pair of words occurs together in the package Title. This function works as a mutate in that it takes the variables to compare and returns a tibble with the pairwise columns and an extra column called &lt;code&gt;n&lt;/code&gt; containing the number of words co-occurrences. I think this function is very sweet 🍯!&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;bpi_titlepairs &amp;lt;- bpi_title %&amp;gt;%
+pairwise_count(Package, word, sort = TRUE, upper = FALSE)
+
+bpi_desciptionpairs &amp;lt;- bpi_description %&amp;gt;%
+pairwise_count(Package, word, sort = TRUE, upper = FALSE)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This data is ready for visualization of network of co-occurring words in package Titles. We can use the &lt;code&gt;ggraph&lt;/code&gt; package for visualizing this network. We are going to represent just the top co-occurring words, or otherwise we get a very populated network which is impossible to read.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;set.seed(1234)
+bpi_titlepairs %&amp;gt;%
+  filter(n &amp;gt;= 6) %&amp;gt;%
+  graph_from_data_frame() %&amp;gt;%
+  ggraph(layout = &amp;quot;fr&amp;quot;) +
+  geom_edge_link(aes(edge_alpha = n, edge_width = n), edge_colour = &amp;quot;purple&amp;quot;) +
+  geom_node_point(size = 5) +
+  geom_node_text(aes(label = name), repel = TRUE, 
+                 point.padding = unit(0.2, &amp;quot;lines&amp;quot;)) +
+  theme_void()+
+  theme(legend.position=&amp;quot;none&amp;quot;)+
+  labs(title = &amp;quot;  Number of word co-ocurrences in packages titles&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;figure&#34;&gt;&lt;span id=&#34;fig:unnamed-chunk-10&#34;&gt;&lt;/span&gt;
+&lt;img src=&#34;../../2021-01-30-network-visualization-of-bioconductor-packages/index_files/figure-html/unnamed-chunk-10-1.png&#34; alt=&#34;Word network in Bioconductor packages Titles&#34; width=&#34;672&#34; /&gt;
+&lt;p class=&#34;caption&#34;&gt;
+Figure 1: Word network in Bioconductor packages Titles
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;p&gt;We see some clear and logical clustering of packages in this network.For example, DESEq and DESeq2 packages cluster together, as one would expect since they DESeq2 is the successor of DESeq. There are other obvious connections such as MSstatsTMTPTM and MSstatsTMTP since the former has added functionality to analyse PTMs on TMT shotgun mass spectrometry-based proteomic experiments.
+There is a big cluster on the bottom left corner with packages to analyse RNASeq and single cell RNASeq.&lt;/p&gt;
+&lt;p&gt;What about the network build from words of the Description?&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;set.seed(1234)
+bpi_desciptionpairs %&amp;gt;%
+  filter(n &amp;gt;= 15) %&amp;gt;%
+  graph_from_data_frame() %&amp;gt;%
+  ggraph(layout = &amp;quot;fr&amp;quot;) +
+  geom_edge_link(aes(edge_alpha = n, edge_width = n), edge_colour = &amp;quot;orange&amp;quot;) +
+  geom_node_point(size = 5) +
+  geom_node_text(aes(label = name), repel = TRUE, 
+                 point.padding = unit(0.2, &amp;quot;lines&amp;quot;)) +
+  theme_void()+
+  theme(legend.position=&amp;quot;none&amp;quot;)+
+  labs(title = &amp;quot;Number of word co-ocurrences in packages Description&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;figure&#34;&gt;&lt;span id=&#34;fig:unnamed-chunk-11&#34;&gt;&lt;/span&gt;
+&lt;img src=&#34;../../2021-01-30-network-visualization-of-bioconductor-packages/index_files/figure-html/unnamed-chunk-11-1.png&#34; alt=&#34;Word network in Bioconductor packages Description&#34; width=&#34;672&#34; /&gt;
+&lt;p class=&#34;caption&#34;&gt;
+Figure 2: Word network in Bioconductor packages Description
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;p&gt;We see more connections here, and some of the relationships are still obvious (e.g HiCcompare and multiHiCcompare, anota and anota2seq, AnnotationHub and ExperimentHub). This network is richer, and one would have to dive a bit deeper to get a better sense of this network.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;conclusions&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Conclusions&lt;/h1&gt;
+&lt;p&gt;Text mining of Bioconductor packages metadata is a straight forward visual way to understand the relationships between packages. One could go beyond this and for example find words that are
+especially important across package Descriptions by calculating &lt;a href=&#34;https://www.tidytextmining.com/tfidf.html#tfidf&#34;&gt;tf-idf statistic&lt;/a&gt;. One could also set up a GitHub Action executed as a CRON job to get updates periodically. This could turn into a challenge for &lt;a href=&#34;https://kevinrue.github.io/BiocChallenges/index.html&#34;&gt;BiocChallenges&lt;/a&gt;. This post was inspired by &lt;a href=&#34;https://www.tidytextmining.com/nasa.html&#34;&gt;Chapter 8&lt;/a&gt; of the Tidytext book and &lt;a href=&#34;https://kevinrue.github.io/post/biocpkgtools/&#34;&gt;BiocRoulette&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,22 +1,23 @@
-{{ if site.Params.comments.disqus.shortname }}
-<div id="disqus_thread"></div>
-<script>
-  let disqus_config = function () {
-    {{with .Params.disqus_identifier }}this.page.identifier = '{{ . }}';{{end}}
-    {{with .Params.disqus_title }}this.page.title = '{{ . }}';{{end}}
-    {{with .Params.disqus_url }}this.page.url = '{{ . | html  }}';{{end}}
-  };
-  (function() {
-    if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
-      document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
-      return;
-    }
-    var d = document, s = d.createElement('script'); s.async = true;
-    s.src = 'https://' + {{site.Params.comments.disqus.shortname}} + '.disqus.com/embed.js';
-    s.setAttribute('data-timestamp', +new Date());
-    (d.head || d.body).appendChild(s);
-  })();
-</script>
-<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-{{end}}
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="1671.6">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; line-height: 14.0px; font: 12.0px Times; color: #000000; -webkit-text-stroke: #000000}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; line-height: 14.0px; font: 12.0px Times; color: #000000; -webkit-text-stroke: #000000; min-height: 12.0px}
+    p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; line-height: 14.0px; font: 12.0px Times; color: #0000e9; -webkit-text-stroke: #0000e9}
+    span.s1 {font-kerning: none}
+    span.s2 {font-kerning: none; color: #000000; -webkit-text-stroke: 0px #000000}
+    span.s3 {text-decoration: underline ; font-kerning: none; color: #0000e9; -webkit-text-stroke: 0px #0000e9}
+  </style>
+</head>
+<body>
+<p class="p1"><span class="s1">{{ if site.Params.comments.disqus.shortname }}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p3"><span class="s2">Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript"><span class="s3">comments powered by Disqus.</span></a> <a href="https://disqus.com/"><span class="s3">comments powered by Disqus</span></a> {{end}}<span class="Apple-converted-space"> </span></span></p>
+</body>
+</html>
