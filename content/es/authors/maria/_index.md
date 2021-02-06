@@ -11,26 +11,26 @@ organizations:
 - name: Barts Cancer Institute
   url: ""
 
-role: Postdoctoral Research Scientist
+role: Investigadora postdoctoral
 social:
 
 interests:
-- RNA binding proteins 
-- Proteomics
-- Reproducible science
-- Data science
-- R education
+- Proteinas que se unen al ARN
+- Proteomica
+- Ciencia reproducible
+- Ciencia de datos
+- Educación de R
 
 education:
   courses:
-  - course: Ph.D. in proteomics
+  - course: Ph.D. en proteomica
     institution: Queen Mary University
     year: 2017
-  - course: Postgraduate in Bioinformatics 
+  - course: Postgraduado en Bioinformatica
     institution: Cambridge University
     year: 2013
-  - course: B.S. in Biochemistry 
-    institution: University of Navarra
+  - course: B.S. in Bioquimica
+    institution: Universidad de Navarra
     year: 2011
 
 social:
@@ -55,6 +55,6 @@ user_groups:
 - Visitors
 ---
 
-**¡Hola te doy la bienvenida!** Yo soy una investigadora postoctoral en el centro [Barts Cancer Institute](https://www.bartscancer.london/). Trabajo en el laboratorio del [ Dr Mardakheh ](http://www.mardakhehlab.info/) donde utilizo enfoques multi-ómicos, para revelar sistemáticamente la relación entre la localización del ARN y la expresión de proteínas en células de mamíferos. Más información sobre mis intereses de investigación en [publicaciones](publicaciones).
+**¡Hola te doy la bienvenida!** Yo soy una investigadora postdoctoral en el centro [Barts Cancer Institute](https://www.bartscancer.london/). Trabajo en el laboratorio del [ Dr Mardakheh ](http://www.mardakhehlab.info/) donde utilizo enfoques multi-ómicos, para revelar sistemáticamente la relación entre la localización del ARN y la expresión de proteínas en células de mamíferos. Más información sobre mis intereses de investigación en [publicaciones](publicaciones).
 
 IDisfruto utilizando [R](https://www.r-project.org/about.html) para optimizar mi trabajo y me gusta compartir mis experiencias en el Tidyverse con otros. Mantente informado de mis exploraciones  con R visitando [posts](post) y para proyectos más largos en [charlas](charlas). **¡Gracias** por pasarte por aqui!
