@@ -55,6 +55,6 @@ user_groups:
 - Visitors
 ---
 
-**¡Hola te doy la bienvenida!** Yo soy una investigadora postdoctoral en el centro [Barts Cancer Institute](https://www.bartscancer.london/). Trabajo en el laboratorio del [ Dr Mardakheh ](http://www.mardakhehlab.info/) donde utilizo enfoques multi-ómicos, para revelar sistemáticamente la relación entre la localización del ARN y la expresión de proteínas en células de mamíferos. Más información sobre mis intereses de investigación en [publicaciones](publicaciones).
+**¡Hola te doy la bienvenida!** Yo soy una investigadora postdoctoral en el centro [Barts Cancer Institute](https://www.bartscancer.london/). Trabajo en el laboratorio del [ Dr Mardakheh ](http://www.mardakhehlab.info/) donde utilizo enfoques multi-ómicos, para revelar sistemáticamente la relación entre la localización del ARN y la expresión de proteínas en células de mamíferos. Más información sobre mis intereses de investigación en [publicaciones](publication).
 
-IDisfruto utilizando [R](https://www.r-project.org/about.html) para optimizar mi trabajo y me gusta compartir mis experiencias en el Tidyverse con otros. Mantente informado de mis exploraciones  con R visitando [posts](post) y para proyectos más largos en [charlas](charlas). **¡Gracias** por pasarte por aqui!
+Disfruto utilizando [R](https://www.r-project.org/about.html) para optimizar mi trabajo y me gusta compartir mis experiencias en el Tidyverse con otros. Mantente informado de mis exploraciones  con R visitando [posts](post) y para proyectos más largos en [charlas](talk). **¡Gracias** por pasarte por aqui!

@@ -123,21 +123,6 @@
   </url>
   
   <url>
-    <loc>/2021-02-04-unsupervised-machine-learning-with-tidymodels/</loc>
-    <lastmod>2021-02-04T00:00:00+00:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="es"
-                href="/es/2021-02-04-unsupervised-machine-learning-with-tidymodels/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/2021-02-04-unsupervised-machine-learning-with-tidymodels/"
-                />
-  </url>
-  
-  <url>
     <loc>/post/</loc>
     <lastmod>2021-02-04T00:00:00+00:00</lastmod>
     <xhtml:link
