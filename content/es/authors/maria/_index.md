@@ -55,6 +55,6 @@ user_groups:
 - Visitors
 ---
 
-**Hello, and welcome!** I'm a Postdoctoral Research scientist in  [Barts Cancer Institute](https://www.bartscancer.london/). I work in the [Mardakheh Lab](http://www.mardakhehlab.info/) where I use multi-omics approaches, to systematically reveal the relationship between RNA localisation and protein expression in mammalian cells. Learn more about my research interests in [publications](publication).
+**¡Hola te doy la bienvenida!** Yo soy una investigadora postoctoral en el centro [Barts Cancer Institute](https://www.bartscancer.london/). Trabajo en el laboratorio del [ Dr Mardakheh ](http://www.mardakhehlab.info/) donde utilizo enfoques multi-ómicos, para revelar sistemáticamente la relación entre la localización del ARN y la expresión de proteínas en células de mamíferos. Más información sobre mis intereses de investigación en [publicaciones](publicaciones).
 
-I enjoy using [R](https://www.r-project.org/about.html) to optimize my research workflow and I enjoy sharing my experiences in the Tidyverse with others. Keep up with my data exploration using R in [posts](post) and teaching in [talks](talk). **Thanks** for reading!
+IDisfruto utilizando [R](https://www.r-project.org/about.html) para optimizar mi trabajo y me gusta compartir mis experiencias en el Tidyverse con otros. Mantente informado de mis exploraciones  con R visitando [posts](post) y para proyectos más largos en [charlas](charlas). **¡Gracias** por pasarte por aqui!
