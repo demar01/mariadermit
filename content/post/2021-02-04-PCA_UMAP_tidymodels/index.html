@@ -1,0 +1,224 @@
+---
+title: PCA and UMAP classification of vegetable oils with tidymodels & base R 
+author: maria
+date: '2021-02-04'
+categories:
+  - R
+tags:
+  - r
+  - modeldata
+  - PCA
+  - UMAP
+  - tidymodels
+slug:  unsupervised machine learning
+subtitle: Comparing the steps followed in Tidymodels and base R to do dimensionality reduction.
+summary: Create a recipe, prep it and juice it to do PCA and UMAP with Tidymodels.
+lastmod: '2021-02-04'
+featured: yes
+draft: no
+image:
+  placement: 1
+  caption: 'UMAP representation of market vegatable oils'
+  focal_point: Center
+  preview_only: no
+output:
+  blogdown::html_page:
+    toc: yes
+    number_sections: no
+    toc_depth: 1
+links:
+  - icon: 
+    icon_pack: fab
+    name: Data from the model data pacakge 
+    url: https://github.com/tidymodels/modeldata
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+<div id="TOC">
+<ul>
+<li><a href="#motivation-and-data">Motivation and data</a></li>
+<li><a href="#pca-in-base-r">PCA in base R</a></li>
+<li><a href="#pca-in-tidymodels">PCA in Tidymodels</a></li>
+<li><a href="#umap-in-tidymodels">UMAP in Tidymodels</a></li>
+<li><a href="#conclusionss">Conclusionss</a></li>
+</ul>
+</div>
+
+<pre class="r"><code>library(tidymodels)
+library(modeldata)
+library(ggfortify)
+library(tidyverse)
+library(embed)</code></pre>
+<div id="motivation-and-data" class="section level1">
+<h1>Motivation and data</h1>
+<p>While exploring the <a href="https://github.com/tidymodels/modeldata">modeldata</a> 📦, I found the dataset <code>oils</code>, which has gas chromatography information used to determine the fatty acid composition of 96 samples corresponding to 7 different vegatable oils of the market. These data is the <a href="https://www.sciencedirect.com/science/article/abs/pii/S0169743904001200">published work</a> of a chemistry lab. These data is something very close to what we would get in a proteomics lab, and the first thing we tend to do to explore these complex data is to do a PCA to have a simplify idea of its overall distribution in the reduced space.</p>
+<div id="eda" class="section level2">
+<h2>EDA</h2>
+<pre class="r"><code>data(oils)</code></pre>
+<pre class="r"><code>str(oils)</code></pre>
+<pre><code>## tibble [96 × 8] (S3: tbl_df/tbl/data.frame)
+##  $ palmitic  : num [1:96] 9.7 11.1 11.5 10 12.2 9.8 10.5 10.5 11.5 10 ...
+##  $ stearic   : num [1:96] 5.2 5 5.2 4.8 5 4.2 5 5 5.2 4.8 ...
+##  $ oleic     : num [1:96] 31 32.9 35 30.4 31.1 43 31.8 31.8 35 30.4 ...
+##  $ linoleic  : num [1:96] 52.7 49.8 47.2 53.5 50.5 39.2 51.3 51.3 47.2 53.5 ...
+##  $ linolenic : num [1:96] 0.4 0.3 0.2 0.3 0.3 2.4 0.4 0.4 0.2 0.3 ...
+##  $ eicosanoic: num [1:96] 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 ...
+##  $ eicosenoic: num [1:96] 0.1 0.1 0.1 0.1 0.1 0.5 0.1 0.1 0.1 0.1 ...
+##  $ class     : Factor w/ 7 levels &quot;corn&quot;,&quot;olive&quot;,..: 4 4 4 4 4 4 4 4 4 4 ...</code></pre>
+<pre class="r"><code>oils %&gt;%
+  count(class)</code></pre>
+<pre><code>## # A tibble: 7 x 2
+##   class         n
+## * &lt;fct&gt;     &lt;int&gt;
+## 1 corn          2
+## 2 olive         7
+## 3 peanut        3
+## 4 pumpkin      37
+## 5 rapeseed     10
+## 6 soybean      11
+## 7 sunflower    26</code></pre>
+<p>This looks like fun dataset to project in a reduced dimension space like PCA or UMAP!</p>
+</div>
+</div>
+<div id="pca-in-base-r" class="section level1">
+<h1>PCA in base R</h1>
+<p>The steps to generate the components for PCA in base R would be:</p>
+<pre class="r"><code>pca_res &lt;- oils %&gt;%
+  dplyr::select(where(is.numeric)) %&gt;% # select only the numeric variables
+  tidyr::drop_na() %&gt;% # to drop any NA
+  scale() %&gt;% # to initially normalise the variances
+  prcomp() # to convert numeric data to principal components</code></pre>
+<pre class="r"><code>pca_res</code></pre>
+<pre><code>## Standard deviations (1, .., p=7):
+## [1] 1.78631393 1.21432295 1.11849881 0.80775705 0.49010697 0.43543634 0.03437479
+## 
+## Rotation (n x k) = (7 x 7):
+##                   PC1         PC2         PC3         PC4         PC5
+## palmitic   -0.1724393 -0.69299469 -0.04593832  0.46972220 -0.19508286
+## stearic    -0.4589668 -0.25101419 -0.24289349  0.18544207  0.61204669
+## oleic       0.4578722 -0.39918199  0.14986398 -0.28962122  0.08386290
+## linoleic   -0.4590266  0.44858975 -0.11564307  0.05114339 -0.07111895
+## linolenic   0.3446082  0.27607934  0.23426894  0.80580939 -0.02884460
+## eicosanoic  0.1682596 -0.01595516 -0.81991595  0.04591653 -0.46100031
+## eicosenoic  0.4384013  0.14034544 -0.41942317  0.08389933  0.60157904
+##                   PC6        PC7
+## palmitic   -0.4661816 0.10904667
+## stearic     0.5067647 0.03928963
+## oleic       0.2409267 0.67792957
+## linoleic   -0.2371904 0.71467174
+## linolenic   0.2916300 0.12220735
+## eicosanoic  0.2889776 0.03216008
+## eicosenoic -0.4929535 0.01587562</code></pre>
+<p>We can see that PC componennt for each class of oil were added in a <code>prcomp</code> object.</p>
+<p>And we could plot those component with <code>autoplot</code></p>
+<pre class="r"><code>autoplot(pca_res, data = oils, colour = &quot;class&quot;) +
+  labs(color = NULL)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-7-1.png" width="672" />
+We can see that this PCA separates olive oil far away from the other 7 types of oils. It also looks like one of the olive oils is closer to peanunt type of oil in the PCA space .</p>
+</div>
+<div id="pca-in-tidymodels" class="section level1">
+<h1>PCA in Tidymodels</h1>
+<p>Modeling is very much like cooking, and in the Tidymodels universe the language is reflects this very well 👩‍🍳. There are three things that we will need to do:</p>
+<ul>
+<li>Writing down a recipe 👨‍🍳</li>
+<li>Preparing that recipe 🍝</li>
+<li>Juicing the recipe 🍸</li>
+</ul>
+<div id="writing-down-a-recipe" class="section level2">
+<h2>Writing down a recipe</h2>
+<p>We write down the recipe by adding series of steps.</p>
+<pre class="r"><code>pca_rec &lt;- recipe(~., data = oils) %&gt;% # start writing the recipe with all the data
+  update_role(class, new_role = &quot;id&quot;) %&gt;% # to keep this column around but not include it in the model
+  step_normalize(all_predictors()) %&gt;% # to normalise the data
+  step_pca(all_predictors()) # to convert numeric data to principal components</code></pre>
+<p>As we see the steps that we need to follow to write the recipe are very similar to the steps followed in base R.
+However, this is not all. In fact, if we explore how the recipe looks like:</p>
+<pre class="r"><code>pca_rec</code></pre>
+<pre><code>## Data Recipe
+## 
+## Inputs:
+## 
+##       role #variables
+##         id          1
+##  predictor          7
+## 
+## Operations:
+## 
+## Centering and scaling for all_predictors()
+## No PCA components were extracted.</code></pre>
+<p>We can see that the design matrix with id and predictor variables was created. The recipe tells us that the <em>No PCA components were extracted</em>. This is because a recipe specifies what we want to do, but it doesn’t really do anything to the data yet. We need to extract those components by preparing the recipe.</p>
+</div>
+<div id="preparing-that-recipe" class="section level2">
+<h2>Preparing that recipe</h2>
+<p>We can use the function <code>prep</code> for preparing to train this data recipe. Prep returns an updated recipe with the estimates.</p>
+<pre class="r"><code>pca_prep &lt;- prep(pca_rec)
+pca_prep</code></pre>
+<pre><code>## Data Recipe
+## 
+## Inputs:
+## 
+##       role #variables
+##         id          1
+##  predictor          7
+## 
+## Training data contained 96 data points and no missing data.
+## 
+## Operations:
+## 
+## Centering and scaling for palmitic, stearic, oleic, linoleic, ... [trained]
+## PCA extraction with palmitic, stearic, oleic, linoleic, ... [trained]</code></pre>
+<p>In the operations we see that the data has been [trained].</p>
+<p>Great! But these are still not the components 🤔. We need to finalise that prepared recipe by <strong>juicing it</strong>!</p>
+</div>
+<div id="juicing-the-recipe" class="section level2">
+<h2>Juicing the recipe</h2>
+<p>We need to apply these operation to the data; <code>juice</code> returns a tibble where all steps have been applied to the data.</p>
+<pre class="r"><code>pca_juiced &lt;- juice(pca_prep)
+pca_juiced</code></pre>
+<pre><code>## # A tibble: 96 x 6
+##    class      PC1    PC2     PC3      PC4      PC5
+##    &lt;fct&gt;    &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+##  1 pumpkin -1.22  -0.296 -0.245  -0.158    0.0882 
+##  2 pumpkin -1.10  -0.771 -0.198  -0.00964 -0.0901 
+##  3 pumpkin -1.08  -1.06  -0.212   0.0154   0.00279
+##  4 pumpkin -1.14  -0.266 -0.192  -0.177   -0.137  
+##  5 pumpkin -1.25  -0.995 -0.241   0.226   -0.186  
+##  6 pumpkin  0.572 -0.500 -0.0821  0.0652   0.286  
+##  7 pumpkin -1.13  -0.530 -0.202  -0.0640  -0.0592 
+##  8 pumpkin -1.13  -0.530 -0.202  -0.0640  -0.0592 
+##  9 pumpkin -1.08  -1.06  -0.212   0.0154   0.00279
+## 10 pumpkin -1.14  -0.266 -0.192  -0.177   -0.137  
+## # … with 86 more rows</code></pre>
+<p>Great! The processed data is ready to “consumed” by a plot!</p>
+<pre class="r"><code>pca_juiced %&gt;%
+  ggplot(aes(PC1, PC2, label = class)) +
+  geom_point(aes(color = class), alpha = 0.7, size = 2) +
+  labs(color = NULL)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<p>The initial PCA and this one generated with Tidymodels look very similar. Note that autoplot adds some information to the plot such as providing PCs percentage. So what’s the point of using Tidymodels if is a such a long series of steps compared to base R? Well, <a href="https://www.tidymodels.org/">Tidymodels</a> integrates a lot of modular packages which facilitates creating and evaluating different models.</p>
+</div>
+</div>
+<div id="umap-in-tidymodels" class="section level1">
+<h1>UMAP in Tidymodels</h1>
+<p>In addition to PCA, we could plot a <a href="https://umap-learn.readthedocs.io/en/latest/">UMAP representation</a>. To do that we would need a new recipe, one that includes a step specify UMAP dimension reduction technique; this step is naturally called <code>step_umap</code>. Once that we have this recipe, the process is the same. Recipe, prep, juice.</p>
+<pre class="r"><code>umap_rec &lt;- recipe(~., data = oils) %&gt;%
+  update_role(class, new_role = &quot;id&quot;) %&gt;%
+  step_normalize(all_predictors()) %&gt;%
+  step_umap(all_predictors()) # this step makes a different recipe </code></pre>
+<pre class="r"><code>umap_prep &lt;- prep(umap_rec)</code></pre>
+<pre class="r"><code>umap_juiced &lt;- juice(umap_prep)</code></pre>
+<pre class="r"><code>umap_juiced %&gt;%
+  ggplot(aes(umap_1, umap_2, label = class)) +
+  geom_point(aes(color = class), alpha = 0.7, size = 2) +
+  labs(color = NULL)</code></pre>
+<div class="figure">
+<img src="featured.jpg" alt="" />
+<p class="caption">UMAP representation of market vegatable oils</p>
+</div>
+<p>This model separates the data in the space somewhat differently to PCA. PCA and UMAP are fundamentally different in that PCA is a linear dimensionality reduction algorithm whereas UMAP is non-linear. Moreover, there are few important parameters that can impact how the UMAP representation looks like. This is nicely explained in the README of umapr package from the <a href="https://github.com/ropenscilabs/umapr">ropenscilabs</a>. You can see additional arguments offered by <code>step_umap</code> with <code>?step_umap</code>. Also note that we have trained our models with a tiny set of data (we have not done resampling) and we have not evaluated their performance.</p>
+</div>
+<div id="conclusionss" class="section level1">
+<h1>Conclusionss</h1>
+<p>The data processing for doing unsupervised machine learning with Tidymodels are very similar to base R. Linear and non-linear dimensionality reduction algorithms separate the data in the reduced space differently. Resampling and model evaluation could help to better understand how these models perform.</p>
+</div>

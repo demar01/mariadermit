@@ -1,0 +1,1311 @@
+<!DOCTYPE html><html lang="en-us" >
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Source Themes Academic 4.8.0">
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  <meta name="author" content="Maria Dermit">
+
+  
+  
+  
+    
+  
+  <meta name="description" content="Create a recipe, prep it and juice it to do PCA and UMAP with Tidymodels.">
+
+  
+  <link rel="alternate" hreflang="en-us" href="../2021-02-04-unsupervised-machine-learning/">
+
+  
+
+
+  
+  
+  
+  <meta name="theme-color" content="#278757">
+  
+
+  
+  
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.8.6/css/academicons.min.css" integrity="sha256-uFVgMKfistnJAfoCUQigIl+JfUaP47GrRKjf6CTPVmw=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.0-1/css/all.min.css" integrity="sha256-4w9DunooKSr3MFXHXWyFER38WmPdm361bQS/2KUWZbU=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+    
+    
+    
+      
+    
+    
+      
+      
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/atelier-estuary-light.min.css" crossorigin="anonymous" title="hl-light">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/atelier-estuary-light.min.css" crossorigin="anonymous" title="hl-dark" disabled>
+      
+    
+
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.5.1/leaflet.css" integrity="sha256-SHMGCYmST46SoyGgo4YR/9AlK1vf3ff84Aq9yK4hdqM=" crossorigin="anonymous">
+    
+
+    
+
+    
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/lazysizes/5.1.2/lazysizes.min.js" integrity="sha256-Md1qLToewPeKjfAHU1zyPwOutccPAm5tahnaw7Osw0A=" crossorigin="anonymous" async></script>
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+        
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora:400,700%7CRoboto+Mono%7CRoboto:400,700%7COpen Sans:400,700%7CFira+Sans%7CFira:400,700&display=swap">
+  
+
+  
+  
+  
+  
+  <link rel="stylesheet" href="../css/academic.css">
+
+  
+
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5LS876JJVT"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+      dataLayer.push(arguments);
+  }
+
+  function trackOutboundLink(url, target) {
+    gtag('event', 'click', {
+         'event_category': 'outbound',
+         'event_label': url,
+         'transport_type': 'beacon',
+         'event_callback': function () {
+           if (target !== '_blank') {
+             document.location = url;
+           }
+         }
+    });
+    console.debug("Outbound link clicked: " + url);
+  }
+
+  function onClickCallback(event) {
+    if ((event.target.tagName !== 'A') || (event.target.host === window.location.host)) {
+      return;
+    }
+    trackOutboundLink(event.target, event.target.getAttribute('target'));  
+  }
+
+  gtag('js', new Date());
+  gtag('config', 'G-5LS876JJVT', {});
+
+  
+  document.addEventListener('click', onClickCallback, false);
+</script>
+
+
+  
+
+
+  
+  
+
+  
+
+  <link rel="manifest" href="../index.webmanifest">
+  <link rel="icon" type="image/png" href="../images/icon_hu89765a528fbe3e89fbea23b995128687_292554_32x32_fill_lanczos_center_2.png">
+  <link rel="apple-touch-icon" type="image/png" href="../images/icon_hu89765a528fbe3e89fbea23b995128687_292554_192x192_fill_lanczos_center_2.png">
+
+  <link rel="canonical" href="../2021-02-04-unsupervised-machine-learning/">
+
+  
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <meta property="twitter:card" content="summary_large_image">
+  
+  <meta property="twitter:site" content="@dermitmaria">
+  <meta property="twitter:creator" content="@dermitmaria">
+  
+  <meta property="og:site_name" content="Maria Dermit">
+  <meta property="og:url" content="/2021-02-04-unsupervised-machine-learning/">
+  <meta property="og:title" content="PCA and UMAP classification of vegetable oils with tidymodels | Maria Dermit">
+  <meta property="og:description" content="Create a recipe, prep it and juice it to do PCA and UMAP with Tidymodels."><meta property="og:image" content="/2021-02-04-unsupervised-machine-learning/featured.jpg">
+  <meta property="twitter:image" content="/2021-02-04-unsupervised-machine-learning/featured.jpg"><meta property="og:locale" content="en-us">
+  
+    
+      <meta property="article:published_time" content="2021-02-04T00:00:00&#43;00:00">
+    
+    <meta property="article:modified_time" content="2021-02-04T00:00:00&#43;00:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/2021-02-04-unsupervised-machine-learning/"
+  },
+  "headline": "PCA and UMAP classification of vegetable oils with tidymodels",
+  
+  "image": [
+    "/2021-02-04-unsupervised-machine-learning/featured.jpg"
+  ],
+  
+  "datePublished": "2021-02-04T00:00:00Z",
+  "dateModified": "2021-02-04T00:00:00Z",
+  
+  "author": {
+    "@type": "Person",
+    "name": "Maria Dermit"
+  },
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "Maria Dermit",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/images/icon_hu89765a528fbe3e89fbea23b995128687_292554_192x192_fill_lanczos_center_2.png"
+    }
+  },
+  "description": "Create a recipe, prep it and juice it to do PCA and UMAP with Tidymodels."
+}
+</script>
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  <title>PCA and UMAP classification of vegetable oils with tidymodels | Maria Dermit</title>
+
+</head>
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" >
+
+  <aside class="search-results" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search">
+        
+      </div>
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+  
+
+
+
+
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light compensate-for-scrollbar" id="navbar-main">
+  <div class="container">
+
+    
+    <div class="d-none d-lg-inline-flex">
+      <a class="navbar-brand" href="../">Maria Dermit</a>
+    </div>
+    
+
+    
+    <button type="button" class="navbar-toggler" data-toggle="collapse"
+            data-target="#navbar-content" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+    <span><i class="fas fa-bars"></i></span>
+    </button>
+    
+
+    
+    <div class="navbar-brand-mobile-wrapper d-inline-flex d-lg-none">
+      <a class="navbar-brand" href="../">Maria Dermit</a>
+    </div>
+    
+
+    
+    
+    <div class="navbar-collapse main-menu-item collapse justify-content-start" id="navbar-content">
+
+      
+      <ul class="navbar-nav d-md-inline-flex">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="../#talks"><span>Talks</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="../#posts"><span>Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="../#publications"><span>Publications</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+      </ul>
+    </div>
+
+    <ul class="nav-icons navbar-nav flex-row ml-auto d-flex pl-md-2">
+      
+      <li class="nav-item">
+        <a class="nav-link js-search" href="#"><i class="fas fa-search" aria-hidden="true"></i></a>
+      </li>
+      
+
+      
+      <li class="nav-item dropdown theme-dropdown">
+        <a href="#" class="nav-link js-theme-selector" data-toggle="dropdown" aria-haspopup="true">
+          <i class="fas fa-palette" aria-hidden="true"></i>
+        </a>
+        <div class="dropdown-menu">
+          <a href="#" class="dropdown-item js-set-theme-light">
+            <span>Light</span>
+          </a>
+          <a href="#" class="dropdown-item js-set-theme-dark">
+            <span>Dark</span>
+          </a>
+          <a href="#" class="dropdown-item js-set-theme-auto">
+            <span>Automatic</span>
+          </a>
+        </div>
+      </li>
+      
+
+      
+
+    </ul>
+
+  </div>
+</nav>
+
+
+  <article class="article">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+
+<div class="article-container pt-3">
+  <h1>PCA and UMAP classification of vegetable oils with tidymodels</h1>
+
+  
+  <p class="page-subtitle">Comparision of the steps followed in Tidymodels and base R to do dimensionality reduction.</p>
+  
+
+  
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Feb 4, 2021
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    6 min read
+  </span>
+  
+
+  
+  
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="../categories/r/">R</a></span>
+  
+
+</div>
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="btn-links mb-3">
+  
+  
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+    
+  
+  
+  
+  
+  
+    
+  
+  <a class="btn btn-outline-primary my-1 mr-1" href="https://github.com/tidymodels/modeldata" target="_blank" rel="noopener">
+    
+    Data from the model data pacakge
+  </a>
+
+
+</div>
+
+
+</div>
+
+
+<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 720px; max-height: 532px;">
+  <div style="position: relative">
+    <img src="../2021-02-04-unsupervised-machine-learning/featured_hud3f906394e33c42b903908d2e33c2bfb_501565_720x0_resize_q90_lanczos.jpg" alt="" class="featured-image">
+    <span class="article-header-caption">PCA with Tidymodels</span>
+  </div>
+</div>
+
+
+
+  <div class="article-container">
+
+    <div class="article-style">
+      
+<script src="../2021-02-04-unsupervised-machine-learning/index_files/header-attrs/header-attrs.js"></script>
+
+<div id="TOC">
+<ul>
+<li><a href="#motivation-and-data">Motivation and data</a></li>
+<li><a href="#pca-in-base-r">PCA in base R</a></li>
+<li><a href="#pca-in-tidymodels">PCA in Tidymodels</a></li>
+<li><a href="#umap-in-tidymodels">UMAP in Tidymodels</a></li>
+<li><a href="#conclusions">Conclusions</a></li>
+</ul>
+</div>
+
+<pre class="r"><code>library(tidymodels)
+library(modeldata)
+library(ggfortify)
+library(tidyverse)
+library(embed)</code></pre>
+<div id="motivation-and-data" class="section level1">
+<h1>Motivation and data</h1>
+<p>Exploring the modeldata 📦, I found this dataset that has GC … This is something very similar to what I would get in the lab and the first thing to do when getting this kind of data is to do a PCA of it to get an idea…</p>
+<pre class="r"><code>data(oils)</code></pre>
+<pre class="r"><code>str(oils)</code></pre>
+<pre><code>## tibble [96 × 8] (S3: tbl_df/tbl/data.frame)
+##  $ palmitic  : num [1:96] 9.7 11.1 11.5 10 12.2 9.8 10.5 10.5 11.5 10 ...
+##  $ stearic   : num [1:96] 5.2 5 5.2 4.8 5 4.2 5 5 5.2 4.8 ...
+##  $ oleic     : num [1:96] 31 32.9 35 30.4 31.1 43 31.8 31.8 35 30.4 ...
+##  $ linoleic  : num [1:96] 52.7 49.8 47.2 53.5 50.5 39.2 51.3 51.3 47.2 53.5 ...
+##  $ linolenic : num [1:96] 0.4 0.3 0.2 0.3 0.3 2.4 0.4 0.4 0.2 0.3 ...
+##  $ eicosanoic: num [1:96] 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 ...
+##  $ eicosenoic: num [1:96] 0.1 0.1 0.1 0.1 0.1 0.5 0.1 0.1 0.1 0.1 ...
+##  $ class     : Factor w/ 7 levels &quot;corn&quot;,&quot;olive&quot;,..: 4 4 4 4 4 4 4 4 4 4 ...</code></pre>
+<pre class="r"><code>oils %&gt;% 
+  count(class)</code></pre>
+<pre><code>## # A tibble: 7 x 2
+##   class         n
+## * &lt;fct&gt;     &lt;int&gt;
+## 1 corn          2
+## 2 olive         7
+## 3 peanut        3
+## 4 pumpkin      37
+## 5 rapeseed     10
+## 6 soybean      11
+## 7 sunflower    26</code></pre>
+</div>
+<div id="pca-in-base-r" class="section level1">
+<h1>PCA in base R</h1>
+<pre class="r"><code>pca_res&lt;-oils %&gt;% 
+     dplyr::select(where(is.numeric)) %&gt;% #select only the numeric variables
+     tidyr::drop_na() %&gt;% #to drop any NA 
+     scale() %&gt;% #to initially normalise the variances
+     prcomp() #to convert numeric data to principal components</code></pre>
+<pre class="r"><code>autoplot(pca_res, data = oils, colour = &#39;class&#39;) +
+    labs(color = NULL)</code></pre>
+<p><img src="../2021-02-04-unsupervised-machine-learning/index_files/figure-html/unnamed-chunk-6-1.png" width="672" />
+We can see that this PCA separates olive oil far away from the other 7 types of oils. It also looks like one of the olive oils seem to be closer to peanunt type of oil.</p>
+</div>
+<div id="pca-in-tidymodels" class="section level1">
+<h1>PCA in Tidymodels</h1>
+<p>Modeling is very much like cooking, and in the Tidymodels universe the language is reflects this very well.There are three things that we will need to do:
+- Writing down a recipe
+- Preparing that recipe
+- Juicing the recipe</p>
+<div id="writing-down-a-recipe" class="section level2">
+<h2>Writing down a recipe</h2>
+<p>We write down the recipe by adding series of steps.</p>
+<pre class="r"><code>pca_rec &lt;- recipe(~., data = oils) %&gt;% #start writing the recipe with all the data
+  update_role(class, new_role = &quot;id&quot;) %&gt;% #to keep this column around but not include it in the model
+  step_normalize(all_predictors()) %&gt;% #to normalise the data
+  step_pca(all_predictors()) #to convert numeric data to principal components</code></pre>
+<p>As we see the steps that we need to follow to write the recipe are very similar to the steps followed in base R.
+However, this is not all. In fact, if we explore the recipe</p>
+<pre class="r"><code>pca_rec</code></pre>
+<pre><code>## Data Recipe
+## 
+## Inputs:
+## 
+##       role #variables
+##         id          1
+##  predictor          7
+## 
+## Operations:
+## 
+## Centering and scaling for all_predictors()
+## No PCA components were extracted.</code></pre>
+<p>We see that <code>No PCA components were extracted.</code></p>
+<p>We need to extract those components by preparing the recipe</p>
+</div>
+<div id="preparing-that-recipe" class="section level2">
+<h2>Preparing that recipe</h2>
+<p>We can use the function <code>prep</code> for preparing to train this data recipe. Prep returns an updated recipe with the estimates.</p>
+<pre class="r"><code>pca_prep &lt;- prep(pca_rec)
+pca_prep</code></pre>
+<pre><code>## Data Recipe
+## 
+## Inputs:
+## 
+##       role #variables
+##         id          1
+##  predictor          7
+## 
+## Training data contained 96 data points and no missing data.
+## 
+## Operations:
+## 
+## Centering and scaling for palmitic, stearic, oleic, linoleic, ... [trained]
+## PCA extraction with palmitic, stearic, oleic, linoleic, ... [trained]</code></pre>
+<p>In the operations we see that the data has been [trained].</p>
+<p>Great! But these are still not the components 🤔. We need to finalise that prepared recipe by juicing it!</p>
+</div>
+<div id="juicing-the-recipe" class="section level2">
+<h2>Juicing the recipe</h2>
+<p>We need to apply these operation to the data; <code>juice</code>returns a tibble where all steps have been applied to the data.</p>
+<pre class="r"><code>pca_juiced &lt;-juice(pca_prep)
+pca_juiced</code></pre>
+<pre><code>## # A tibble: 96 x 6
+##    class      PC1    PC2     PC3      PC4      PC5
+##    &lt;fct&gt;    &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+##  1 pumpkin -1.22  -0.296 -0.245  -0.158    0.0882 
+##  2 pumpkin -1.10  -0.771 -0.198  -0.00964 -0.0901 
+##  3 pumpkin -1.08  -1.06  -0.212   0.0154   0.00279
+##  4 pumpkin -1.14  -0.266 -0.192  -0.177   -0.137  
+##  5 pumpkin -1.25  -0.995 -0.241   0.226   -0.186  
+##  6 pumpkin  0.572 -0.500 -0.0821  0.0652   0.286  
+##  7 pumpkin -1.13  -0.530 -0.202  -0.0640  -0.0592 
+##  8 pumpkin -1.13  -0.530 -0.202  -0.0640  -0.0592 
+##  9 pumpkin -1.08  -1.06  -0.212   0.0154   0.00279
+## 10 pumpkin -1.14  -0.266 -0.192  -0.177   -0.137  
+## # … with 86 more rows</code></pre>
+<p>Great! The processed data is ready to “consumed” by a plot!</p>
+<pre class="r"><code>pca_juiced %&gt;%
+    ggplot(aes(PC1, PC2, label = class)) +
+    geom_point(aes(color = class), alpha = 0.7, size = 2) +
+    labs(color = NULL)</code></pre>
+<p><img src="../2021-02-04-unsupervised-machine-learning/index_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<p>The initial PCA and this one generated with Tidymodels look very similar. Note that autoplot takes care of several data transformation such as providing the percentage… (maybe plot pca_res with ggplot and not autoplot?)</p>
+</div>
+</div>
+<div id="umap-in-tidymodels" class="section level1">
+<h1>UMAP in Tidymodels</h1>
+<p>To plot a UMAP representation we need a new recipe, one that does has a step to include UMAP. This step is naturally called <code>step_umap</code>, and creates a specification of a recipe step that will project a set of features into a smaller space. Once that we have this recipe, the process is the same. Recipe, prep, juice.</p>
+<pre class="r"><code>umap_rec &lt;- recipe(~., data = oils) %&gt;%
+  update_role(class, new_role = &quot;id&quot;) %&gt;%
+  step_normalize(all_predictors()) %&gt;%
+   step_umap(all_predictors())  # this step makes a different recipe </code></pre>
+<pre class="r"><code>umap_prep &lt;- prep(umap_rec)</code></pre>
+<pre class="r"><code>umap_juiced &lt;-juice(umap_prep)</code></pre>
+<pre class="r"><code>umap_juiced %&gt;%
+  ggplot(aes(umap_1, umap_2, label = class)) +
+  geom_point(aes(color = class), alpha = 0.7, size = 2) + 
+  labs(color = NULL)</code></pre>
+<p>This model separates the data in the space somewhat differently. PCA and UMAP are fundamentally different in that
+PCA is a linear dimensionality reduction algorithm (and tend to perform faster), whereas
+UMAP is non-linear. Moreover, there are few important parameters that can impact how the UMAP representation looks like as nicely shown in the umapr package README from the <a href="https://github.com/ropenscilabs/umapr">ropenscilabs</a>. You can see additional arguments offered by <code>step_umap</code> with <code>?step_umap</code>. Also note that we have trained our models with a tiny set of data (we have not done resampling) and we have neither measured the performance of the models nor compared them side by side in a stack of models.</p>
+</div>
+<div id="conclusions" class="section level1">
+<h1>Conclusions</h1>
+<p>The steps for doing unsupervised machine learning with Tidymodels are very similar to base R. Linear and non-linear dimensionality reduction algorithms separate the data in the reduced space differently. Resampling and model comparison could help to formally determine which model performs better.</p>
+</div>
+
+    </div>
+
+    
+
+
+
+
+
+<div class="article-tags">
+  
+  <a class="badge badge-light" href="../tags/r/">r</a>
+  
+  <a class="badge badge-light" href="../tags/modeldata/">modeldata</a>
+  
+  <a class="badge badge-light" href="../tags/pca/">PCA</a>
+  
+  <a class="badge badge-light" href="../tags/umap/">UMAP</a>
+  
+  <a class="badge badge-light" href="../tags/tidymodels/">tidymodels</a>
+  
+</div>
+
+
+
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=../2021-02-04-unsupervised-machine-learning/&amp;text=PCA%20and%20UMAP%20classification%20of%20vegetable%20oils%20with%20tidymodels" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=/2021-02-04-unsupervised-machine-learning/&amp;t=PCA%20and%20UMAP%20classification%20of%20vegetable%20oils%20with%20tidymodels" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=PCA%20and%20UMAP%20classification%20of%20vegetable%20oils%20with%20tidymodels&amp;body=/2021-02-04-unsupervised-machine-learning/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=../2021-02-04-unsupervised-machine-learning/&amp;title=PCA%20and%20UMAP%20classification%20of%20vegetable%20oils%20with%20tidymodels" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=PCA%20and%20UMAP%20classification%20of%20vegetable%20oils%20with%20tidymodels%20/2021-02-04-unsupervised-machine-learning/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://service.weibo.com/share/share.php?url=../2021-02-04-unsupervised-machine-learning/&amp;title=PCA%20and%20UMAP%20classification%20of%20vegetable%20oils%20with%20tidymodels" target="_blank" rel="noopener" class="share-btn-weibo">
+          <i class="fab fa-weibo"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+  
+    
+    
+    
+      
+    
+    
+    
+    <div class="media author-card content-widget-hr">
+      
+        
+        <img class="avatar mr-3 avatar-circle" src="../authors/maria/avatar_hub70a68398416d4ef6109d91f659513f2_5268_270x270_fill_lanczos_center_2.png" alt="Maria Dermit">
+      
+
+      <div class="media-body">
+        <h5 class="card-title"><a href="../">Maria Dermit</a></h5>
+        <h6 class="card-subtitle">Postdoctoral Research Scientist</h6>
+        <p class="card-text">Postdoctoral researcher interested in translation control and data science for biomedical research.</p>
+        <ul class="network-icon" aria-hidden="true">
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://twitter.com/dermitmaria" target="_blank" rel="noopener">
+        <i class="fab fa-twitter"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://github.com/demar01" target="_blank" rel="noopener">
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="http://orcid.org/0000-0002-6287-8367" target="_blank" rel="noopener">
+        <i class="ai ai-orcid"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://scholar.google.com/citations?hl=en&amp;user=c161dhUAAAAJ&amp;view_op=list_works&amp;sortby=pubdate" target="_blank" rel="noopener">
+        <i class="ai ai-google-scholar"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://linkedin.com/in/mariadermit" target="_blank" rel="noopener">
+        <i class="fab fa-linkedin"></i>
+      </a>
+    </li>
+  
+</ul>
+
+      </div>
+    </div>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <div class="article-widget content-widget-hr">
+    <h3>Related</h3>
+    <ul>
+      
+      <li><a href="../2021-01-30-network-visualization-of-bioconductor-packages/">Word network of Bioconductor packages</a></li>
+      
+      <li><a href="../2021-01-30-network-visualization-of-bioconductor-packages/">Word network of Bioconductor packages</a></li>
+      
+      <li><a href="../2021-01-20-rstudio-instructor-certification-tidyverse/">Joining the RStudio Tidyverse Instructor community</a></li>
+      
+      <li><a href="../2021-01-20-transfer-learning-for-spatial-proteomics/">Transfer learning for spatial proteomics</a></li>
+      
+    </ul>
+  </div>
+  
+
+
+
+  </div>
+</article>
+
+      
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js" integrity="sha256-eOgo0OtLL4cdq7RdwRUiGKLX9XsIJ7nGhWEKbohmVAQ=" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/languages/r.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/languages/yaml.min.js"></script>
+        
+      
+
+    
+
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.5.1/leaflet.js" integrity="sha256-EErZamuLefUnbMBQbsEqu1USa+btR2oIlCpBJbyD4/g=" crossorigin="anonymous"></script>
+    
+
+    
+    
+    <script>const code_highlighting = true;</script>
+    
+
+    
+    
+    <script>const isSiteThemeDark = false;</script>
+    
+
+    
+    
+    
+    
+    
+    
+    <script>
+      const search_config = {"indexURI":"/index.json","minLength":1,"threshold":0.3};
+      const i18n = {"no_results":"No results found","placeholder":"Search...","results":"results found"};
+      const content_type = {
+        'post': "Posts",
+        'project': "Projects",
+        'publication' : "Publications",
+        'talk' : "Talks"
+        };
+    </script>
+    
+
+    
+    
+
+    
+    
+    <script id="search-hit-fuse-template" type="text/x-template">
+      <div class="search-hit" id="summary-{{key}}">
+      <div class="search-hit-content">
+        <div class="search-hit-name">
+          <a href="{{relpermalink}}">{{title}}</a>
+          <div class="article-metadata search-hit-type">{{type}}</div>
+          <p class="search-hit-description">{{snippet}}</p>
+        </div>
+      </div>
+      </div>
+    </script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      
+    
+    
+    
+    
+    <script src="../js/academic.min.37431be2d92d7fb0160054761ab79602.js"></script>
+
+    
+
+
+
+
+
+
+  
+  
+  <div class="container">
+    <footer class="site-footer">
+  
+  <p class="powered-by">
+      <a href="../license/">LICENSE: CC-BY-SA <br> <i class="fab fa-creative-commons fa-2x"></i><i class="fab fa-creative-commons-by fa-2x"></i><i class="fab fa-creative-commons-sa fa-2x"></i> </a><br>
+  </p>
+  
+
+  <p class="powered-by">
+    © Maria Dermit, {2020} &middot; 
+
+    <i class="fas fa-lightbulb" style="color:#e5be00"></i></a>
+    Created with curiosity, 
+    <a href="https://github.com/demar01/mariadermit" target="_blank" rel="noopener">
+      <i class="fas fa-code-branch" style="color:#e5be00"></i></a>, the
+    <a href="https://cran.r-project.org/" target="_blank" rel="noopener">
+      <i class="fab fa-r-project"></i> </a>
+    <a href="https://github.com/rstudio/blogdown" target="_blank" rel="noopener">blogdown</a> package, and the
+    <a href="https://sourcethemes.com/academic/" target="_blank" rel="noopener">Academic theme</a> for
+    <a href="https://gohugo.io" target="_blank" rel="noopener">Hugo</a>.
+
+    
+    <span class="float-right" aria-hidden="true">
+      <a href="#" class="back-to-top">
+        <span class="button_icon">
+          <i class="fas fa-chevron-up fa-2x"></i>
+        </span>
+      </a>
+    </span>
+    
+  </p>
+</footer>
+
+  </div>
+  
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
