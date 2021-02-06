@@ -123,6 +123,11 @@
   </url>
   
   <url>
+    <loc>/2021-02-04-unsupervised-machine-learning-with-tidymodels/</loc>
+    <lastmod>2021-02-04T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
     <loc>/post/</loc>
     <lastmod>2021-02-04T00:00:00+00:00</lastmod>
     <xhtml:link
@@ -215,151 +220,51 @@
   <url>
     <loc>/tags/bioconductor/</loc>
     <lastmod>2021-01-30T00:00:00+00:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="es"
-                href="/es/tags/bioconductor/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/tags/bioconductor/"
-                />
   </url>
   
   <url>
     <loc>/tags/biocpkgtools/</loc>
     <lastmod>2021-01-30T00:00:00+00:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="es"
-                href="/es/tags/biocpkgtools/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/tags/biocpkgtools/"
-                />
   </url>
   
   <url>
     <loc>/tags/ggraph/</loc>
     <lastmod>2021-01-30T00:00:00+00:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="es"
-                href="/es/tags/ggraph/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/tags/ggraph/"
-                />
   </url>
   
   <url>
     <loc>/tags/tidytext/</loc>
     <lastmod>2021-01-30T00:00:00+00:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="es"
-                href="/es/tags/tidytext/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/tags/tidytext/"
-                />
   </url>
   
   <url>
     <loc>/tags/widyr/</loc>
     <lastmod>2021-01-30T00:00:00+00:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="es"
-                href="/es/tags/widyr/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/tags/widyr/"
-                />
   </url>
   
   <url>
     <loc>/2021-01-30-network-visualization-of-bioconductor-packages/</loc>
     <lastmod>2021-01-30T00:00:00+00:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="es"
-                href="/es/2021-01-30-network-visualization-of-bioconductor-packages/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/2021-01-30-network-visualization-of-bioconductor-packages/"
-                />
   </url>
   
   <url>
     <loc>/tags/computational-proteomics/</loc>
     <lastmod>2021-01-24T00:00:00+00:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="es"
-                href="/es/tags/computational-proteomics/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/tags/computational-proteomics/"
-                />
   </url>
   
   <url>
     <loc>/2021-01-20-rstudio-instructor-certification-tidyverse/</loc>
     <lastmod>2021-01-20T00:00:00+00:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="es"
-                href="/es/2021-01-20-rstudio-instructor-certification-tidyverse/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/2021-01-20-rstudio-instructor-certification-tidyverse/"
-                />
   </url>
   
   <url>
     <loc>/tags/tidyverse/</loc>
     <lastmod>2021-01-20T00:00:00+00:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="es"
-                href="/es/tags/tidyverse/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/tags/tidyverse/"
-                />
   </url>
   
   <url>
     <loc>/2021-01-20-transfer-learning-for-spatial-proteomics/</loc>
     <lastmod>2021-01-24T00:00:00+00:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="es"
-                href="/es/2021-01-20-transfer-learning-for-spatial-proteomics/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/2021-01-20-transfer-learning-for-spatial-proteomics/"
-                />
   </url>
   
   <url>

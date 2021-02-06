@@ -29,7 +29,7 @@ output:
 links:
   - icon: 
     icon_pack: fab
-    name: Data from the modeldata pacakge 
+    name: Data from the modeldata package 
     url: https://github.com/tidymodels/modeldata
 ---
 

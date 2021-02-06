@@ -1,5 +1,5 @@
 ---
-title: PCA and UMAP classification of vegetable oils with tidymodels & base R 
+title: Clasificación PCA y UMAP de aceites vegetales con tidymodels & base R 
 author: maria
 date: '2021-02-04'
 categories:
@@ -10,15 +10,15 @@ tags:
   - PCA
   - UMAP
   - tidymodels
-slug:  unsupervised machine learning with Tidymodels
-subtitle: Comparing the steps followed in Tidymodels and base R to do dimensionality reduction.
-summary: Create a recipe, prep it and juice it to do PCA and UMAP with Tidymodels.
+slug:  prendizaje no supervisado con Tidymodels
+subtitle: Comparando los pasos seguidos en Tidymodels y base R para hacer la reducción de dimensionalidad.
+summary: Crea una receta, prepárala y exprímela para hacer PCA y UMAP con Tidymodels.
 lastmod: '2021-02-04'
 featured: yes
 draft: no
 image:
   placement: 1
-  caption: 'Fatty acids content in vegetable oils'
+  caption: 'Contenido de ácidos grasos en aceites vegetales'
   focal_point: Center
   preview_only: no
 output:
@@ -29,7 +29,7 @@ output:
 links:
   - icon: 
     icon_pack: fab
-    name: Data from the modeldata pacakge 
+    name: Datos del pauqete modeldata  
     url: https://github.com/tidymodels/modeldata
 ---
 
@@ -37,11 +37,11 @@ links:
 
 <div id="TOC">
 <ul>
-<li><a href="#motivation-and-data">Motivation and data</a></li>
+<li><a href="#motivación-y-datos">Motivación y datos</a></li>
 <li><a href="#pca-in-base-r">PCA in base R</a></li>
-<li><a href="#pca-in-tidymodels">PCA in Tidymodels</a></li>
-<li><a href="#umap-in-tidymodels">UMAP in Tidymodels</a></li>
-<li><a href="#conclusionss">Conclusionss</a></li>
+<li><a href="#pca-con-tidymodels">PCA con Tidymodels</a></li>
+<li><a href="#umap-con-tidymodels">UMAP con Tidymodels</a></li>
+<li><a href="#conclusiones">Conclusiones</a></li>
 </ul>
 </div>
 
@@ -50,11 +50,12 @@ library(modeldata)
 library(ggfortify)
 library(tidyverse)
 library(embed)</code></pre>
-<div id="motivation-and-data" class="section level1">
-<h1>Motivation and data</h1>
-<p>While exploring the <a href="https://github.com/tidymodels/modeldata">modeldata</a> 📦, I found the dataset <code>oils</code>, which has gas chromatography information used to determine the fatty acid composition of 96 samples corresponding to 7 different vegatable oils of the market. These data is the <a href="https://www.sciencedirect.com/science/article/abs/pii/S0169743904001200">published work</a> of a chemistry lab. These data is something very close to what we would get in a proteomics lab, and the first thing we tend to do to explore these complex data is to do a PCA to have a simplify idea of its overall distribution in the reduced space.</p>
-<div id="eda" class="section level2">
-<h2>EDA</h2>
+<div id="motivación-y-datos" class="section level1">
+<h1>Motivación y datos</h1>
+<p>Mientras explora el 📦
+<a href="https://github.com/tidymodels/modeldata">modeldata</a> encontré el conjunto de datos “aceites”, que tiene información de cromatografía de gases utilizada para determinar la composición de ácidos grasos de 96 muestras correspondientes a 7 aceites vegetales diferentes del mercado. Estos datos fueron <a href="https://www.sciencedirect.com/science/article/abs/pii/S0169743904001200">publicados</a> por un laboratorio de química. Estos datos son muy parecidos a lo que obtenemos en un laboratorio de proteómica, y lo primero que tendemos a hacer para explorar estos datos complejos es hacer un PCA para tener una idea simplificada de su distribución general en el espacio reducido.</p>
+<div id="exploracion-de-datos" class="section level2">
+<h2>Exploracion de datos</h2>
 <pre class="r"><code>data(oils)</code></pre>
 <pre class="r"><code>str(oils)</code></pre>
 <pre><code>## tibble [96 × 8] (S3: tbl_df/tbl/data.frame)
@@ -78,12 +79,12 @@ library(embed)</code></pre>
 ## 5 rapeseed     10
 ## 6 soybean      11
 ## 7 sunflower    26</code></pre>
-<p>This looks like fun dataset to project in a reduced dimension space like PCA or UMAP!</p>
+<p>¡Esto parece un conjunto de datos divertido para proyectar en un espacio de dimensión reducida como PCA o UMAP!</p>
 </div>
 </div>
 <div id="pca-in-base-r" class="section level1">
 <h1>PCA in base R</h1>
-<p>The steps to generate the components for PCA in base R would be:</p>
+<p>Los pasos para generar los componentes para PCA en base R serían:</p>
 <pre class="r"><code>pca_res &lt;- oils %&gt;%
   dplyr::select(where(is.numeric)) %&gt;% # select only the numeric variables
   tidyr::drop_na() %&gt;% # to drop any NA
@@ -110,30 +111,28 @@ library(embed)</code></pre>
 ## linolenic   0.2916300 0.12220735
 ## eicosanoic  0.2889776 0.03216008
 ## eicosenoic -0.4929535 0.01587562</code></pre>
-<p>We can see that PC componennt for each class of oil were added in a <code>prcomp</code> object.</p>
-<p>And we could plot those component with <code>autoplot</code></p>
+<p>Podemos ver que los componentes de PC para cada clase de aceite se agregaron en un objeto <code>prcomp</code>.</p>
+<p>Y podríamos trazar esos componentes con “autoplot”</p>
 <pre class="r"><code>autoplot(pca_res, data = oils, colour = &quot;class&quot;) +
-  labs(color = NULL) +theme_minimal()</code></pre>
+  labs(color = NULL) + theme_minimal()</code></pre>
 <p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-7-1.png" width="672" />
-We can see that this PCA separates olive oil far away from the other 7 types of oils. It also looks like one of the olive oils is closer to peanunt type of oil in the PCA space .</p>
+Podemos ver que este PCA separa mucho el aceite de oliva de los otros 7 tipos de aceites. También parece que uno de los aceites de oliva está más cerca del tipo de aceite de maní en el espacio PCA.</p>
 </div>
-<div id="pca-in-tidymodels" class="section level1">
-<h1>PCA in Tidymodels</h1>
-<p>Modeling is very much like cooking, and in the Tidymodels universe the language is reflects this very well 👨‍🍳. There are three things that we will need to do:</p>
-<ul>
-<li>Writing down a recipe 👨‍🍳</li>
-<li>Preparing that recipe 🍝</li>
-<li>Juicing the recipe 🥛</li>
-</ul>
-<div id="writing-down-a-recipe" class="section level2">
-<h2>Writing down a recipe</h2>
-<p>We write down the recipe by adding series of steps.</p>
+<div id="pca-con-tidymodels" class="section level1">
+<h1>PCA con Tidymodels</h1>
+<p>Modelar es muy parecido a cocinar, y en el universo de Tidymodels el lenguaje refleja muy bien esto 👨‍🍳. Hay tres cosas que tendremos que hacer:
+- Escribir una receta 👨‍🍳
+- Preparar esa receta 🍝
+- Sacarle jugo a la receta 🍵</p>
+<div id="escribir-una-receta" class="section level2">
+<h2>Escribir una receta</h2>
+<p>Escribimos la receta agregando una serie de pasos.</p>
 <pre class="r"><code>pca_rec &lt;- recipe(~., data = oils) %&gt;% # start writing the recipe with all the data
   update_role(class, new_role = &quot;id&quot;) %&gt;% # to keep this column around but not include it in the model
   step_normalize(all_predictors()) %&gt;% # to normalise the data
   step_pca(all_predictors()) # to convert numeric data to principal components</code></pre>
-<p>As we see the steps that we need to follow to write the recipe are very similar to the steps followed in base R.
-However, this is not all. In fact, if we explore how the recipe looks like:</p>
+<p>Como vemos los pasos que debemos seguir para escribir la receta son muy similares a los pasos seguidos en base R.</p>
+<p>Sin embargo, esto no es todo. De hecho, si exploramos cómo se ve la receta:</p>
 <pre class="r"><code>pca_rec</code></pre>
 <pre><code>## Data Recipe
 ## 
@@ -147,11 +146,11 @@ However, this is not all. In fact, if we explore how the recipe looks like:</p>
 ## 
 ## Centering and scaling for all_predictors()
 ## No PCA components were extracted.</code></pre>
-<p>We can see that the design matrix with id and predictor variables was created. The recipe tells us that the <em>No PCA components were extracted</em>. This is because a recipe specifies what we want to do, but it doesn’t really do anything to the data yet. We need to extract those components by preparing the recipe.</p>
+<p>Podemos ver que se creó la matriz de diseño con id y variables predictoras. La receta nos dice que los <em>No se extrajeron componentes de PCA</em>. Esto se debe a que una receta especifica lo que queremos hacer, pero todavía no afecta a los datos. Necesitamos extraer esos componentes preparando la receta</p>
 </div>
-<div id="preparing-that-recipe" class="section level2">
-<h2>Preparing that recipe</h2>
-<p>We can use the function <code>prep</code> for preparing to train this data recipe. Prep returns an updated recipe with the estimates.</p>
+<div id="preparar-esa-receta" class="section level2">
+<h2>Preparar esa receta</h2>
+<p>Podemos usar la función <code>prep</code> para prepararnos para entrenar esta receta de datos. Prep devuelve una receta actualizada con las estimaciones.</p>
 <pre class="r"><code>pca_prep &lt;- prep(pca_rec)
 pca_prep</code></pre>
 <pre><code>## Data Recipe
@@ -168,12 +167,12 @@ pca_prep</code></pre>
 ## 
 ## Centering and scaling for palmitic, stearic, oleic, linoleic, ... [trained]
 ## PCA extraction with palmitic, stearic, oleic, linoleic, ... [trained]</code></pre>
-<p>In the operations we see that the data has been [trained].</p>
-<p>Great! But these are still not the components 🤔. We need to finalise that prepared recipe by <strong>juicing it</strong>!</p>
+<p>En las operaciones vemos que los datos han sido [entrenados].</p>
+<p>¡Excelente! Pero estos todavía no son los componentes 🤔. ¡Necesitamos finalizar esa receta preparada <strong>haciéndola jugo</strong>!</p>
 </div>
-<div id="juicing-the-recipe" class="section level2">
-<h2>Juicing the recipe</h2>
-<p>We need to apply these operation to the data; <code>juice</code> returns a tibble where all steps have been applied to the data.</p>
+<div id="sacarle-jugo-a-la-receta" class="section level2">
+<h2>Sacarle jugo a la receta</h2>
+<p>Necesitamos aplicar esta operación a los datos; <code>juice</code> devuelve un tibble en el que se han aplicado todos los pasos a los datos.</p>
 <pre class="r"><code>pca_juiced &lt;- juice(pca_prep)
 pca_juiced</code></pre>
 <pre><code>## # A tibble: 96 x 6
@@ -190,18 +189,18 @@ pca_juiced</code></pre>
 ##  9 pumpkin -1.08  -1.06  -0.212   0.0154   0.00279
 ## 10 pumpkin -1.14  -0.266 -0.192  -0.177   -0.137  
 ## # … with 86 more rows</code></pre>
-<p>Great! The processed data is ready to “consumed” by a plot!</p>
+<p>¡Excelente! ¡Los datos procesados están listos para ser “consumidos” por un gráfico!</p>
 <pre class="r"><code>pca_juiced %&gt;%
   ggplot(aes(PC1, PC2, label = class)) +
   geom_point(aes(color = class), alpha = 0.7, size = 2) +
   labs(color = NULL) +theme_minimal()</code></pre>
 <p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
-<p>The initial PCA and this one generated with Tidymodels look very similar. Note that autoplot adds some information to the plot such as providing PCs percentage. So what’s the point of using Tidymodels if is a such a long series of steps compared to base R? Well, <a href="https://www.tidymodels.org/">Tidymodels</a> integrates a lot of modular packages which facilitates creating and evaluating different models.</p>
+<p>El PCA inicial y este generado con Tidymodels se ven muy similares. Ten en cuenta que la gráfica automática agrega información a la gráfica, como proporcionar el porcentaje de PC. Entonces, ¿cuál es el punto de usar Tidymodels si es una serie de pasos tan larga en comparación con la base R? <a href="https://www.tidymodels.org/">Tidymodels</a> integra muchos paquetes modulares que facilitan la creación y evaluación de diferentes modelos.</p>
 </div>
 </div>
-<div id="umap-in-tidymodels" class="section level1">
-<h1>UMAP in Tidymodels</h1>
-<p>In addition to PCA, we could plot a <a href="https://umap-learn.readthedocs.io/en/latest/">UMAP representation</a>. To do that we would need a new recipe, one that includes a step specify UMAP dimension reduction technique; this step is naturally called <code>step_umap</code>. Once that we have this recipe, the process is the same. Recipe, prep, juice.</p>
+<div id="umap-con-tidymodels" class="section level1">
+<h1>UMAP con Tidymodels</h1>
+<p>Además de PCA, podríamos trazar una <a href="https://umap-learn.readthedocs.io/en/latest/">representación UMAP</a>. Para hacer eso, necesitaríamos una nueva receta, una que incluya un paso para especificar la técnica de reducción de dimensión UMAP; este paso se llama naturalmente <code>step_umap</code>. Una vez que tenemos esta receta, el proceso es el mismo. Receta, preparación, jugo.</p>
 <pre class="r"><code>umap_rec &lt;- recipe(~., data = oils) %&gt;%
   update_role(class, new_role = &quot;id&quot;) %&gt;%
   step_normalize(all_predictors()) %&gt;%
@@ -213,9 +212,9 @@ pca_juiced</code></pre>
   geom_point(aes(color = class), alpha = 0.7, size = 2) +
   labs(color = NULL)</code></pre>
 <p><img src="featured2.jpg" /></p>
-<p>This model separates the data in the space somewhat differently to PCA. PCA and UMAP are fundamentally different in that PCA is a linear dimensionality reduction algorithm whereas UMAP is non-linear. Moreover, there are few important parameters that can impact how the UMAP representation looks like. This is nicely explained in the README of umapr package from the <a href="https://github.com/ropenscilabs/umapr">ropenscilabs</a>. You can see additional arguments offered by <code>step_umap</code> with <code>?step_umap</code>. Also note that we have trained our models with a tiny set of data (we have not done resampling) and we have not evaluated their performance.</p>
+<p>Este modelo separa los datos en el espacio de forma algo diferente a la PCA. PCA y UMAP son fundamentalmente diferentes en que PCA es un algoritmo de reducción de dimensionalidad lineal, mientras que UMAP no es lineal. Además, hay algunos parámetros importantes que pueden afectar el aspecto de la representación UMAP. Esto se explica muy bien en el archivo README del paquete umapr de <a href="https://github.com/ropenscilabs/umapr">ropenscilabs</a>. Puedes ver argumentos adicionales ofrecidos por <code>step_umap</code> con<code>? Step_umap</code>. También hay que tener en cuenta que hemos entrenado nuestros modelos con un pequeño conjunto de datos (no hemos realizado un remuestreo) y no hemos evaluado su rendimiento.</p>
 </div>
-<div id="conclusionss" class="section level1">
-<h1>Conclusionss</h1>
-<p>The data processing for doing unsupervised machine learning with Tidymodels are very similar to base R. Linear and non-linear dimensionality reduction algorithms separate the data in the reduced space differently.</p>
+<div id="conclusiones" class="section level1">
+<h1>Conclusiones</h1>
+<p>El procesamiento de datos para realizar aprendizaje automático sin supervisión con Tidymodels es muy similar al de base R. Los algoritmos de reducción de dimensionalidad lineal y no lineal separan los datos en el espacio reducido de manera diferente.</p>
 </div>

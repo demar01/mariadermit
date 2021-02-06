@@ -1,5 +1,5 @@
 ---
-title: PCA and UMAP clasificación de aceites vegetales con tidymodels & base R 
+title: Clasificación PCA y UMAP de aceites vegetales con tidymodels & base R 
 author: maria
 date: '2021-02-04'
 categories:
