@@ -18,7 +18,7 @@ featured: yes
 draft: no
 image:
   placement: 1
-  caption: 'UMAP representation of market vegatable oils'
+  caption: 'Fatty acids content in vegetable oils'
   focal_point: Center
   preview_only: no
 output:
@@ -29,7 +29,7 @@ output:
 links:
   - icon: 
     icon_pack: fab
-    name: Data from the model data pacakge 
+    name: Data from the modeldata pacakge 
     url: https://github.com/tidymodels/modeldata
 ---
 
@@ -166,7 +166,7 @@ umap_juiced %>%
   geom_point(aes(color = class), alpha = 0.7, size = 2) +
   labs(color = NULL)
 ```
-![UMAP representation of market vegatable oils](/Users/dermit01/Documents/mariadermit/content/post/2021-02-04-PCA_UMAP_tidymodels/featured.jpg)
+![UMAP representation of market vegatable oils](/Users/dermit01/Documents/mariadermit/content/post/2021-02-04-PCA_UMAP_tidymodels/featured2.jpg)
 
 This model separates the data in the space somewhat differently to PCA. PCA and UMAP are fundamentally different in that  PCA is a linear dimensionality reduction algorithm whereas UMAP is non-linear. Moreover, there are few important parameters that can impact how the UMAP representation looks like. This is  nicely explained in the README of umapr package from the [ropenscilabs]( https://github.com/ropenscilabs/umapr). You can see additional arguments offered by `step_umap` with `?step_umap`. Also note that we have trained our models with a tiny set of data (we have not done resampling) and we have not evaluated their performance.
 
