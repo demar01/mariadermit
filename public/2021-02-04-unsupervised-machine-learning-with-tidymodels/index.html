@@ -699,7 +699,7 @@
   
   <a class="btn btn-outline-primary my-1 mr-1" href="https://github.com/tidymodels/modeldata" target="_blank" rel="noopener">
     
-    Data from the modeldata pacakge
+    Data from the modeldata package
   </a>
 
 
@@ -730,7 +730,7 @@
 <li><a href="#pca-in-base-r">PCA in base R</a></li>
 <li><a href="#pca-in-tidymodels">PCA in Tidymodels</a></li>
 <li><a href="#umap-in-tidymodels">UMAP in Tidymodels</a></li>
-<li><a href="#conclusionss">Conclusionss</a></li>
+<li><a href="#conclusions">Conclusions</a></li>
 </ul>
 </div>
 
@@ -812,7 +812,7 @@ We can see that this PCA separates olive oil far away from the other 7 types of 
 <ul>
 <li>Writing down a recipe 👨‍🍳</li>
 <li>Preparing that recipe 🍝</li>
-<li>Juicing the recipe 🥛</li>
+<li>Juicing the recipe 🍺</li>
 </ul>
 <div id="writing-down-a-recipe" class="section level2">
 <h2>Writing down a recipe</h2>
@@ -902,10 +902,10 @@ pca_juiced</code></pre>
   geom_point(aes(color = class), alpha = 0.7, size = 2) +
   labs(color = NULL)</code></pre>
 <p><img src="featured2.jpg" /></p>
-<p>This model separates the data in the space somewhat differently to PCA. PCA and UMAP are fundamentally different in that PCA is a linear dimensionality reduction algorithm whereas UMAP is non-linear. Moreover, there are few important parameters that can impact how the UMAP representation looks like. This is nicely explained in the README of umapr package from the <a href="https://github.com/ropenscilabs/umapr">ropenscilabs</a>. You can see additional arguments offered by <code>step_umap</code> with <code>?step_umap</code>. Also note that we have trained our models with a tiny set of data (we have not done resampling) and we have not evaluated their performance.</p>
+<p>This model separates the data in the space somewhat differently to PCA. PCA and UMAP are fundamentally different in that PCA is a linear dimensionality reduction algorithm whereas UMAP is non-linear. Moreover, there are few important parameters that can impact how the UMAP representation looks like. This is nicely explained in the README of <code>umapr</code> package from the <a href="https://github.com/ropenscilabs/umapr">ropenscilabs</a>. You can see additional arguments offered by step_umap with <code>?step_umap</code>. Also note that we have trained our models with a tiny set of data (we have not done resampling) and we have not evaluated their performance.</p>
 </div>
-<div id="conclusionss" class="section level1">
-<h1>Conclusionss</h1>
+<div id="conclusions" class="section level1">
+<h1>Conclusions</h1>
 <p>The data processing for doing unsupervised machine learning with Tidymodels are very similar to base R. Linear and non-linear dimensionality reduction algorithms separate the data in the reduced space differently.</p>
 </div>
 

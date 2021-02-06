@@ -37,8 +37,8 @@ library(tidyverse)
 library(embed)&lt;/code&gt;&lt;/pre&gt;
 &lt;div id=&#34;motivación-y-datos&#34; class=&#34;section level1&#34;&gt;
 &lt;h1&gt;Motivación y datos&lt;/h1&gt;
-&lt;p&gt;Mientras explora el 📦
-&lt;a href=&#34;https://github.com/tidymodels/modeldata&#34;&gt;modeldata&lt;/a&gt; encontré el conjunto de datos “aceites”, que tiene información de cromatografía de gases utilizada para determinar la composición de ácidos grasos de 96 muestras correspondientes a 7 aceites vegetales diferentes del mercado. Estos datos fueron &lt;a href=&#34;https://www.sciencedirect.com/science/article/abs/pii/S0169743904001200&#34;&gt;publicados&lt;/a&gt; por un laboratorio de química. Estos datos son muy parecidos a lo que obtenemos en un laboratorio de proteómica, y lo primero que tendemos a hacer para explorar estos datos complejos es hacer un PCA para tener una idea simplificada de su distribución general en el espacio reducido.&lt;/p&gt;
+&lt;p&gt;Mientras exploraba el 📦
+&lt;a href=&#34;https://github.com/tidymodels/modeldata&#34;&gt;modeldata&lt;/a&gt; encontré el conjunto de datos &lt;code&gt;aceites&lt;/code&gt; (&lt;code&gt;oils&lt;/code&gt;), que tiene información de cromatografía de gases utilizada para determinar la composición de ácidos grasos de 96 muestras correspondientes a 7 aceites vegetales diferentes del mercado. Estos datos fueron &lt;a href=&#34;https://www.sciencedirect.com/science/article/abs/pii/S0169743904001200&#34;&gt;publicados&lt;/a&gt; por un laboratorio de química. Estos datos son muy parecidos a lo que obtenemos en un laboratorio de proteómica, y lo primero que tendemos a hacer para explorar estos datos complejos es hacer un PCA para tener una idea simplificada de su distribución en el espacio.&lt;/p&gt;
 &lt;div id=&#34;exploracion-de-datos&#34; class=&#34;section level2&#34;&gt;
 &lt;h2&gt;Exploracion de datos&lt;/h2&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;data(oils)&lt;/code&gt;&lt;/pre&gt;
@@ -96,7 +96,7 @@ library(embed)&lt;/code&gt;&lt;/pre&gt;
 ## linolenic   0.2916300 0.12220735
 ## eicosanoic  0.2889776 0.03216008
 ## eicosenoic -0.4929535 0.01587562&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Podemos ver que los componentes de PC para cada clase de aceite se agregaron en un objeto &lt;code&gt;prcomp&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Podemos ver que los componentes principales (PC de principal components) para cada clase de aceite se agregaron en un objeto &lt;code&gt;prcomp&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;Y podríamos trazar esos componentes con “autoplot”&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;autoplot(pca_res, data = oils, colour = &amp;quot;class&amp;quot;) +
   labs(color = NULL) + theme_minimal()&lt;/code&gt;&lt;/pre&gt;
@@ -105,17 +105,19 @@ Podemos ver que este PCA separa mucho el aceite de oliva de los otros 7 tipos de
 &lt;/div&gt;
 &lt;div id=&#34;pca-con-tidymodels&#34; class=&#34;section level1&#34;&gt;
 &lt;h1&gt;PCA con Tidymodels&lt;/h1&gt;
-&lt;p&gt;Modelar es muy parecido a cocinar, y en el universo de Tidymodels el lenguaje refleja muy bien esto 👨‍🍳. Hay tres cosas que tendremos que hacer:
-- Escribir una receta 👨‍🍳
-- Preparar esa receta 🍝
-- Sacarle jugo a la receta 🍵&lt;/p&gt;
+&lt;p&gt;Modelar es muy parecido a cocinar, y en el universo de Tidymodels el lenguaje refleja muy bien esto 👩‍🍳. Hay tres cosas que tendremos que hacer:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Escribir una receta 👩‍🍳&lt;/li&gt;
+&lt;li&gt;Preparar esa receta 🍝&lt;/li&gt;
+&lt;li&gt;Sacarle jugo a la receta 🥛&lt;/li&gt;
+&lt;/ul&gt;
 &lt;div id=&#34;escribir-una-receta&#34; class=&#34;section level2&#34;&gt;
 &lt;h2&gt;Escribir una receta&lt;/h2&gt;
 &lt;p&gt;Escribimos la receta agregando una serie de pasos.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;pca_rec &amp;lt;- recipe(~., data = oils) %&amp;gt;% # start writing the recipe with all the data
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;pca_rec &amp;lt;- recipe(~., data = oils) %&amp;gt;% # empieza a escribir la receta con todos los datos
   update_role(class, new_role = &amp;quot;id&amp;quot;) %&amp;gt;% # to keep this column around but not include it in the model
-  step_normalize(all_predictors()) %&amp;gt;% # to normalise the data
-  step_pca(all_predictors()) # to convert numeric data to principal components&lt;/code&gt;&lt;/pre&gt;
+  step_normalize(all_predictors()) %&amp;gt;% # para mantener esta columna pero no incluirla en el modelo
+  step_pca(all_predictors()) # para convertir datos numéricos en componentes principales&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Como vemos los pasos que debemos seguir para escribir la receta son muy similares a los pasos seguidos en base R.&lt;/p&gt;
 &lt;p&gt;Sin embargo, esto no es todo. De hecho, si exploramos cómo se ve la receta:&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;pca_rec&lt;/code&gt;&lt;/pre&gt;
@@ -189,7 +191,7 @@ pca_juiced&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;umap_rec &amp;lt;- recipe(~., data = oils) %&amp;gt;%
   update_role(class, new_role = &amp;quot;id&amp;quot;) %&amp;gt;%
   step_normalize(all_predictors()) %&amp;gt;%
-  step_umap(all_predictors()) # this step makes a different recipe &lt;/code&gt;&lt;/pre&gt;
+  step_umap(all_predictors()) # este paso hace que la receta sea diferente&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;umap_prep &amp;lt;- prep(umap_rec)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;umap_juiced &amp;lt;- juice(umap_prep)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;umap_juiced %&amp;gt;%
@@ -197,7 +199,7 @@ pca_juiced&lt;/code&gt;&lt;/pre&gt;
   geom_point(aes(color = class), alpha = 0.7, size = 2) +
   labs(color = NULL)&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;featured2.jpg&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Este modelo separa los datos en el espacio de forma algo diferente a la PCA. PCA y UMAP son fundamentalmente diferentes en que PCA es un algoritmo de reducción de dimensionalidad lineal, mientras que UMAP no es lineal. Además, hay algunos parámetros importantes que pueden afectar el aspecto de la representación UMAP. Esto se explica muy bien en el archivo README del paquete umapr de &lt;a href=&#34;https://github.com/ropenscilabs/umapr&#34;&gt;ropenscilabs&lt;/a&gt;. Puedes ver argumentos adicionales ofrecidos por &lt;code&gt;step_umap&lt;/code&gt; con&lt;code&gt;? Step_umap&lt;/code&gt;. También hay que tener en cuenta que hemos entrenado nuestros modelos con un pequeño conjunto de datos (no hemos realizado un remuestreo) y no hemos evaluado su rendimiento.&lt;/p&gt;
+&lt;p&gt;Este modelo separa los datos en el espacio de forma algo diferente a la PCA. PCA y UMAP son fundamentalmente diferentes en que PCA es un algoritmo de reducción de dimensionalidad lineal, mientras que UMAP no es lineal. Además, hay algunos parámetros importantes que pueden afectar el aspecto de la representación UMAP. Esto se explica muy bien en el archivo README del paquete umapr de &lt;a href=&#34;https://github.com/ropenscilabs/umapr&#34;&gt;ropenscilabs&lt;/a&gt;. Puedes ver argumentos adicionales ofrecidos por &lt;code&gt;step_umap&lt;/code&gt; con &lt;code&gt;?step_umap&lt;/code&gt;. También hay que tener en cuenta que hemos entrenado nuestros modelos con un pequeño conjunto de datos (no hemos realizado un remuestreo) y no hemos evaluado su rendimiento.&lt;/p&gt;
 &lt;/div&gt;
 &lt;div id=&#34;conclusiones&#34; class=&#34;section level1&#34;&gt;
 &lt;h1&gt;Conclusiones&lt;/h1&gt;

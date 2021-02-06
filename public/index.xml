@@ -68,7 +68,7 @@
 &lt;li&gt;&lt;a href=&#34;#pca-in-base-r&#34;&gt;PCA in base R&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;#pca-in-tidymodels&#34;&gt;PCA in Tidymodels&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;#umap-in-tidymodels&#34;&gt;UMAP in Tidymodels&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;#conclusionss&#34;&gt;Conclusionss&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#conclusions&#34;&gt;Conclusions&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
 
@@ -150,7 +150,7 @@ We can see that this PCA separates olive oil far away from the other 7 types of 
 &lt;ul&gt;
 &lt;li&gt;Writing down a recipe 👨‍🍳&lt;/li&gt;
 &lt;li&gt;Preparing that recipe 🍝&lt;/li&gt;
-&lt;li&gt;Juicing the recipe 🥛&lt;/li&gt;
+&lt;li&gt;Juicing the recipe 🍺&lt;/li&gt;
 &lt;/ul&gt;
 &lt;div id=&#34;writing-down-a-recipe&#34; class=&#34;section level2&#34;&gt;
 &lt;h2&gt;Writing down a recipe&lt;/h2&gt;
@@ -240,10 +240,10 @@ pca_juiced&lt;/code&gt;&lt;/pre&gt;
   geom_point(aes(color = class), alpha = 0.7, size = 2) +
   labs(color = NULL)&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;featured2.jpg&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;This model separates the data in the space somewhat differently to PCA. PCA and UMAP are fundamentally different in that PCA is a linear dimensionality reduction algorithm whereas UMAP is non-linear. Moreover, there are few important parameters that can impact how the UMAP representation looks like. This is nicely explained in the README of umapr package from the &lt;a href=&#34;https://github.com/ropenscilabs/umapr&#34;&gt;ropenscilabs&lt;/a&gt;. You can see additional arguments offered by &lt;code&gt;step_umap&lt;/code&gt; with &lt;code&gt;?step_umap&lt;/code&gt;. Also note that we have trained our models with a tiny set of data (we have not done resampling) and we have not evaluated their performance.&lt;/p&gt;
+&lt;p&gt;This model separates the data in the space somewhat differently to PCA. PCA and UMAP are fundamentally different in that PCA is a linear dimensionality reduction algorithm whereas UMAP is non-linear. Moreover, there are few important parameters that can impact how the UMAP representation looks like. This is nicely explained in the README of &lt;code&gt;umapr&lt;/code&gt; package from the &lt;a href=&#34;https://github.com/ropenscilabs/umapr&#34;&gt;ropenscilabs&lt;/a&gt;. You can see additional arguments offered by step_umap with &lt;code&gt;?step_umap&lt;/code&gt;. Also note that we have trained our models with a tiny set of data (we have not done resampling) and we have not evaluated their performance.&lt;/p&gt;
 &lt;/div&gt;
-&lt;div id=&#34;conclusionss&#34; class=&#34;section level1&#34;&gt;
-&lt;h1&gt;Conclusionss&lt;/h1&gt;
+&lt;div id=&#34;conclusions&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Conclusions&lt;/h1&gt;
 &lt;p&gt;The data processing for doing unsupervised machine learning with Tidymodels are very similar to base R. Linear and non-linear dimensionality reduction algorithms separate the data in the reduced space differently.&lt;/p&gt;
 &lt;/div&gt;
 </description>

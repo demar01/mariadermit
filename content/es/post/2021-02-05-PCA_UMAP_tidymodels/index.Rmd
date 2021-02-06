@@ -92,6 +92,7 @@ Podemos ver que este PCA separa mucho el aceite de oliva de los otros 7 tipos de
 # PCA con Tidymodels
 
 Modelar es muy parecido a cocinar, y en el universo de Tidymodels el lenguaje refleja muy bien esto `r emo :: ji ("cook")`. Hay tres cosas que tendremos que hacer:
+
 - Escribir una receta `r emo::ji("cook")`
 - Preparar esa receta `r emo::ji("pasta")`
 - Sacarle jugo a la receta `r emo::ji("drink")`
@@ -100,10 +101,10 @@ Modelar es muy parecido a cocinar, y en el universo de Tidymodels el lenguaje re
 
 Escribimos la receta agregando una serie de pasos.
 ```{r}
-pca_rec <- recipe(~., data = oils) %>% # start writing the recipe with all the data
+pca_rec <- recipe(~., data = oils) %>% # empieza a escribir la receta con todos los datos
   update_role(class, new_role = "id") %>% # to keep this column around but not include it in the model
-  step_normalize(all_predictors()) %>% # to normalise the data
-  step_pca(all_predictors()) # to convert numeric data to principal components
+  step_normalize(all_predictors()) %>% # para mantener esta columna pero no incluirla en el modelo
+  step_pca(all_predictors()) # para convertir datos numéricos en componentes principales
 ```
 Como vemos los pasos que debemos seguir para escribir la receta son muy similares a los pasos seguidos en base R.
 
@@ -150,7 +151,7 @@ Además de PCA, podríamos trazar una [representación UMAP](https://umap-learn.
 umap_rec <- recipe(~., data = oils) %>%
   update_role(class, new_role = "id") %>%
   step_normalize(all_predictors()) %>%
-  step_umap(all_predictors()) # this step makes a different recipe 
+  step_umap(all_predictors()) # este paso hace que la receta sea diferente
 ```
 
 ```{r, eval=FALSE}
