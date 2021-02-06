@@ -84,7 +84,7 @@ We can see that PC componennt for each class of oil were added in a `prcomp` obj
 And we could plot those component with `autoplot`
 ```{r}
 autoplot(pca_res, data = oils, colour = "class") +
-  labs(color = NULL)
+  labs(color = NULL) +theme_minimal()
 ```
 We can see that this PCA separates olive oil far away from the other 7 types of oils. It also looks like one of the olive oils is closer to peanunt type of oil in the PCA space . 
 
@@ -136,7 +136,7 @@ Great! The processed data is ready to "consumed" by a plot!
 pca_juiced %>%
   ggplot(aes(PC1, PC2, label = class)) +
   geom_point(aes(color = class), alpha = 0.7, size = 2) +
-  labs(color = NULL)
+  labs(color = NULL) +theme_minimal()
 ```
 
 The initial PCA and this one generated with Tidymodels look very similar. Note that autoplot adds some information to the plot such as providing PCs percentage. So what's the point of using Tidymodels if is a such a long series of steps compared to base R? Well, [Tidymodels](https://www.tidymodels.org/) integrates a lot of modular packages which facilitates creating and evaluating different models.
@@ -166,9 +166,9 @@ umap_juiced %>%
   geom_point(aes(color = class), alpha = 0.7, size = 2) +
   labs(color = NULL)
 ```
-![UMAP representation of market vegatable oils](/Users/dermit01/Documents/mariadermit/content/post/2021-02-04-PCA_UMAP_tidymodels/featured2.jpg)
+![](/Users/dermit01/Documents/mariadermit/content/post/2021-02-04-PCA_UMAP_tidymodels/featured2.jpg)
 
 This model separates the data in the space somewhat differently to PCA. PCA and UMAP are fundamentally different in that  PCA is a linear dimensionality reduction algorithm whereas UMAP is non-linear. Moreover, there are few important parameters that can impact how the UMAP representation looks like. This is  nicely explained in the README of umapr package from the [ropenscilabs]( https://github.com/ropenscilabs/umapr). You can see additional arguments offered by `step_umap` with `?step_umap`. Also note that we have trained our models with a tiny set of data (we have not done resampling) and we have not evaluated their performance.
 
 # Conclusionss
-The data processing for doing unsupervised machine learning with Tidymodels are very similar to base R. Linear and non-linear dimensionality reduction algorithms separate the data in the reduced space differently. Resampling and model evaluation could help to better understand how these models perform. 
+The data processing for doing unsupervised machine learning with Tidymodels are very similar to base R. Linear and non-linear dimensionality reduction algorithms separate the data in the reduced space differently. 
