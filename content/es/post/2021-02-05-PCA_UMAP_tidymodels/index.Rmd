@@ -102,7 +102,7 @@ Modelar es muy parecido a cocinar, y en el universo de Tidymodels el lenguaje re
 Escribimos la receta agregando una serie de pasos.
 ```{r}
 pca_rec <- recipe(~., data = oils) %>% # empieza a escribir la receta con todos los datos
-  update_role(class, new_role = "id") %>% # to keep this column around but not include it in the model
+  update_role(class, new_role = "id") %>% # para mantener esta columna pero no incluirla en el modelo
   step_normalize(all_predictors()) %>% # para mantener esta columna pero no incluirla en el modelo
   step_pca(all_predictors()) # para convertir datos numéricos en componentes principales
 ```

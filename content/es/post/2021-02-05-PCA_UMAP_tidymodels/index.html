@@ -122,15 +122,15 @@ Podemos ver que este PCA separa mucho el aceite de oliva de los otros 7 tipos de
 <h1>PCA con Tidymodels</h1>
 <p>Modelar es muy parecido a cocinar, y en el universo de Tidymodels el lenguaje refleja muy bien esto 👩‍🍳. Hay tres cosas que tendremos que hacer:</p>
 <ul>
-<li>Escribir una receta 👩‍🍳</li>
+<li>Escribir una receta 👨‍🍳</li>
 <li>Preparar esa receta 🍝</li>
-<li>Sacarle jugo a la receta 🥛</li>
+<li>Sacarle jugo a la receta 🍺</li>
 </ul>
 <div id="escribir-una-receta" class="section level2">
 <h2>Escribir una receta</h2>
 <p>Escribimos la receta agregando una serie de pasos.</p>
 <pre class="r"><code>pca_rec &lt;- recipe(~., data = oils) %&gt;% # empieza a escribir la receta con todos los datos
-  update_role(class, new_role = &quot;id&quot;) %&gt;% # to keep this column around but not include it in the model
+  update_role(class, new_role = &quot;id&quot;) %&gt;% # para mantener esta columna pero no incluirla en el modelo
   step_normalize(all_predictors()) %&gt;% # para mantener esta columna pero no incluirla en el modelo
   step_pca(all_predictors()) # para convertir datos numéricos en componentes principales</code></pre>
 <p>Como vemos los pasos que debemos seguir para escribir la receta son muy similares a los pasos seguidos en base R.</p>
