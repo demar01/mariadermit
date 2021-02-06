@@ -29,7 +29,7 @@ output:
 links:
   - icon: 
     icon_pack: fab
-    name: Datos del pauqete modeldata  
+    name: Datos del paquete modeldata  
     url: https://github.com/tidymodels/modeldata
 ---
 
@@ -47,8 +47,8 @@ library(embed)
 
 # Motivación y datos
 
-Mientras explora el `r emo::ji("package")`
- [modeldata](https://github.com/tidymodels/modeldata) encontré el conjunto de datos "aceites", que tiene información de cromatografía de gases utilizada para determinar la composición de ácidos grasos de 96 muestras correspondientes a 7 aceites vegetales diferentes del mercado. Estos datos fueron [publicados ](https://www.sciencedirect.com/science/article/abs/pii/S0169743904001200) por un laboratorio de química. Estos datos son muy parecidos a lo que obtenemos en un laboratorio de proteómica, y lo primero que tendemos a hacer para explorar estos datos complejos es hacer un PCA para tener una idea simplificada de su distribución general en el espacio reducido.
+Mientras exploraba el `r emo::ji("package")`
+ [modeldata](https://github.com/tidymodels/modeldata) encontré el conjunto de datos `aceites` (`oils`), que tiene información de cromatografía de gases utilizada para determinar la composición de ácidos grasos de 96 muestras correspondientes a 7 aceites vegetales diferentes del mercado. Estos datos fueron [publicados ](https://www.sciencedirect.com/science/article/abs/pii/S0169743904001200) por un laboratorio de química. Estos datos son muy parecidos a lo que obtenemos en un laboratorio de proteómica, y lo primero que tendemos a hacer para explorar estos datos complejos es hacer un PCA para tener una idea simplificada de su distribución en el espacio.
 
 ## Exploracion de datos
 
@@ -80,7 +80,7 @@ pca_res <- oils %>%
 ```{r}
 pca_res
 ```
-Podemos ver que los componentes de PC para cada clase de aceite se agregaron en un objeto `prcomp`.
+Podemos ver que los componentes principales (PC de principal components) para cada clase de aceite se agregaron en un objeto `prcomp`.
 
 Y podríamos trazar esos componentes con "autoplot"
 ```{r}
@@ -169,7 +169,7 @@ umap_juiced %>%
 ```
 ![](/Users/dermit01/Documents/mariadermit/content/es/post/2021-02-05-PCA_UMAP_tidymodels/featured2.jpg)
 
-Este modelo separa los datos en el espacio de forma algo diferente a la PCA. PCA y UMAP son fundamentalmente diferentes en que PCA es un algoritmo de reducción de dimensionalidad lineal, mientras que UMAP no es lineal. Además, hay algunos parámetros importantes que pueden afectar el aspecto de la representación UMAP. Esto se explica muy bien en el archivo README del paquete umapr de [ropenscilabs](https://github.com/ropenscilabs/umapr). Puedes ver argumentos adicionales ofrecidos por `step_umap` con`? Step_umap`. También hay que tener en cuenta que hemos entrenado nuestros modelos con un pequeño conjunto de datos (no hemos realizado un remuestreo) y no hemos evaluado su rendimiento.
+Este modelo separa los datos en el espacio de forma algo diferente a la PCA. PCA y UMAP son fundamentalmente diferentes en que PCA es un algoritmo de reducción de dimensionalidad lineal, mientras que UMAP no es lineal. Además, hay algunos parámetros importantes que pueden afectar el aspecto de la representación UMAP. Esto se explica muy bien en el archivo README del paquete umapr de [ropenscilabs](https://github.com/ropenscilabs/umapr). Puedes ver argumentos adicionales ofrecidos por `step_umap` con `?step_umap`. También hay que tener en cuenta que hemos entrenado nuestros modelos con un pequeño conjunto de datos (no hemos realizado un remuestreo) y no hemos evaluado su rendimiento.
 
 # Conclusiones
 El procesamiento de datos para realizar aprendizaje automático sin supervisión con Tidymodels es muy similar al de base R. Los algoritmos de reducción de dimensionalidad lineal y no lineal separan los datos en el espacio reducido de manera diferente.

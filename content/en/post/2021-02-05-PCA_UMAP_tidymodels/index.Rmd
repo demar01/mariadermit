@@ -168,7 +168,7 @@ umap_juiced %>%
 ```
 ![](/Users/dermit01/Documents/mariadermit/content/en/post/2021-02-05-PCA_UMAP_tidymodels/featured2.jpg)
 
-This model separates the data in the space somewhat differently to PCA. PCA and UMAP are fundamentally different in that  PCA is a linear dimensionality reduction algorithm whereas UMAP is non-linear. Moreover, there are few important parameters that can impact how the UMAP representation looks like. This is  nicely explained in the README of umapr package from the [ropenscilabs]( https://github.com/ropenscilabs/umapr). You can see additional arguments offered by `step_umap` with `?step_umap`. Also note that we have trained our models with a tiny set of data (we have not done resampling) and we have not evaluated their performance.
+This model separates the data in the space somewhat differently to PCA. PCA and UMAP are fundamentally different in that  PCA is a linear dimensionality reduction algorithm whereas UMAP is non-linear. Moreover, there are few important parameters that can impact how the UMAP representation looks like. This is  nicely explained in the README of `umapr` package from the [ropenscilabs](https://github.com/ropenscilabs/umapr). You can see additional arguments offered by step_umap with `?step_umap`. Also note that we have trained our models with a tiny set of data (we have not done resampling) and we have not evaluated their performance.
 
 # Conclusionss
 The data processing for doing unsupervised machine learning with Tidymodels are very similar to base R. Linear and non-linear dimensionality reduction algorithms separate the data in the reduced space differently. 

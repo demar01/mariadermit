@@ -63,6 +63,21 @@
   </url>
   
   <url>
+    <loc>/es/2021-02-04-prendizaje-no-supervisado-con-tidymodels/</loc>
+    <lastmod>2021-02-04T00:00:00+00:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="/2021-02-04-unsupervised-machine-learning-with-tidymodels/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="es"
+                href="/es/2021-02-04-prendizaje-no-supervisado-con-tidymodels/"
+                />
+  </url>
+  
+  <url>
     <loc>/es/tags/modeldata/</loc>
     <lastmod>2021-02-04T00:00:00+00:00</lastmod>
     <xhtml:link
@@ -89,21 +104,6 @@
                 rel="alternate"
                 hreflang="es"
                 href="/es/tags/pca/"
-                />
-  </url>
-  
-  <url>
-    <loc>/es/2021-02-04-unsupervised-machine-learning-with-tidymodels/</loc>
-    <lastmod>2021-02-04T00:00:00+00:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/2021-02-04-unsupervised-machine-learning-with-tidymodels/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="es"
-                href="/es/2021-02-04-unsupervised-machine-learning-with-tidymodels/"
                 />
   </url>
   
