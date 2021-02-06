@@ -1,0 +1,181 @@
+---
+title:  Word network of Bioconductor packages 
+author: maria
+date: '2021-01-30'
+categories:
+  - R
+tags:
+  - r
+  - BiocPkgTools
+  - Bioconductor
+  - Tidytext
+  - widyr
+  - ggraph
+slug:  network visualization of Bioconductor packages 
+subtitle: Exploration of the connections between Bioconductor packages
+summary: Understanding how Bioconductor packages are connected between each other using metadata.
+lastmod: '2021-01-30'
+featured: yes
+draft: no
+image:
+  placement: 1
+  caption: 'Word network in Bioconductor packages titles'
+  focal_point: Center
+  preview_only: no
+output:
+  blogdown::html_page:
+    toc: yes
+    number_sections: no
+    toc_depth: 1
+links:
+  - icon: 
+    icon_pack: fab
+    name: Bioconductor metadata available at BiocPkgTools 
+    url: https://seandavi.github.io/BiocPkgTools/
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+```{r import, results=FALSE,message=FALSE}
+library(BiocPkgTools)
+library(tidyverse)
+library(tidytext)
+library(widyr)
+library(igraph)
+library(ggraph)
+library(lubridate)
+library(emo)
+```
+
+# Motivation 
+
+```{r, echo= FALSE}
+# Getting a tidy tibble summarizing monthly download statistics 
+bio_download_stats <- biocDownloadStats()
+```
+Bioconductor has a total of `r bio_download_stats %>% distinct(Package, repo) %>% count(repo) %>% tally( wt = n)` at the present day `r today()`.  Therefore, navigating across Bioconductor packages can be a daunting experience. Luckily, [BiocPkgTools](https://seandavi.github.io/BiocPkgTools/) offers a rich ecosystem of metadata around Bioconductor packages `r emo::ji("document")`. 
+
+# Statistics of Bioconductor downloads
+
+We can get a tidy data.frame with download stats for all packages using the function `biocDownloadStats`. 
+```{r}
+#  Getting a tidy tibble summarizing monthly download statistics 
+bio_download_stats <- biocDownloadStats()
+```
+
+```{r}
+bio_download_stats %>% 
+  head(13)
+```
+As we see observations for all the months of the year are generated once that the year starts (download values for events in the future are filled up with _0_). Also note that there is a summary statistic for month called `all` embedded inside the tibble, and the `Date` value for that observation is NA (this would makes group by date very convenient).
+
+This tibble contains information about packages that expands from `r bio_download_stats %>% count(Year) %>% slice_head(n=1) %>% pull(Year)` to  `r bio_download_stats %>% count(Year) %>% slice_tail(n=1) %>% pull(Year)`. There are 3 categories of packages, with the total number of package per category as follows:
+
+```{r}
+bio_download_stats %>% 
+  distinct(Package, repo) %>%
+  count(repo) %>%
+  knitr::kable()
+```
+
+# Full details of Bioconductor packages 
+
+The complete information for the packages as described in the `DESCRIPTION` file can be obtained with `biocPkgList`.
+```{r}
+bpi = biocPkgList()
+colnames(bpi)
+```
+There is lots of information in here. We could use this metadata information to understand the connections between packages.
+
+# Word network of Bioconductor packages
+
+The most informative variables about the packages are `Title` and `Description` so we can explore the connections between packages doing some **text mining** using a [Tidytext](https://www.tidytextmining.com/index.html) approach. 
+
+To prepare our dataset we need to initially tokenize the text. The Wikipedia definition for [tokenization](https://en.wikipedia.org/wiki/Lexical_analysis#Tokenization) on lexical analysis is as follows: 
+ 
+> __Tokenization is the process of demarcating and possibly classifying sections of a string of input characters__
+
+The _sections_ can be words, sentence, ngram or chapter (for example if analysis a book). In this case we are gonna break down package Titles or Description into words using the function `unnest_tokens`. 
+In addition, we can remove [stop words](https://en.wikipedia.org/wiki/Stop_word) (included in the Tidytext dataset).
+
+```{r}
+bpi_title <- bpi %>% 
+  dplyr::select(Package, Title) %>%
+  unnest_tokens(word, Title) %>% 
+  anti_join(stop_words)
+
+bpi_description <- bpi %>%
+  dplyr::select(Package, Description) %>%
+  unnest_tokens(word, Description) %>%
+  anti_join(stop_words)
+```
+
+Note that the number of words from Title is `r dim(bpi_title)[1]` and the number
+of words from Description is `r dim(bpi_description)[1]`, so package Descriptions
+contain on average 5 times the words of package Titles.
+
+We can have a look at how the tokenised titles for each package look like:
+```{r}
+bpi_title
+```
+
+Them, we can use `pairwise_count` from the [widyr](https://cran.r-project.org/web/packages/widyr/vignettes/intro.html) package to count how many times each pair of words occurs together in the package Title. This function works as a mutate in that it takes the variables to compare and returns a tibble with the pairwise columns and an extra column called `n` containing the number of words co-occurrences. I think this function is very sweet `r emo::ji("honey")`!
+
+
+```{r}
+bpi_titlepairs <- bpi_title %>%
+pairwise_count(Package, word, sort = TRUE, upper = FALSE)
+
+bpi_desciptionpairs <- bpi_description %>%
+pairwise_count(Package, word, sort = TRUE, upper = FALSE)
+```
+
+This data is ready for visualization of network of co-occurring words in package Titles. We can use the `ggraph` package for visualizing this network. We are going to represent just the top co-occurring words, or otherwise we get a very populated network which is impossible to read. 
+
+
+```{r, fig.cap="Word network in Bioconductor packages Titles"}
+set.seed(1234)
+bpi_titlepairs %>%
+  filter(n >= 6) %>%
+  graph_from_data_frame() %>%
+  ggraph(layout = "fr") +
+  geom_edge_link(aes(edge_alpha = n, edge_width = n), edge_colour = "purple") +
+  geom_node_point(size = 5) +
+  geom_node_text(aes(label = name), repel = TRUE, 
+                 point.padding = unit(0.2, "lines")) +
+  theme_void()+
+  theme(legend.position="none")+
+  labs(title = "  Number of word co-ocurrences in packages titles")
+
+```
+
+We see some clear and logical clustering of packages in this network.For example, DESEq and DESeq2 packages cluster together, as one would expect since they DESeq2 is the successor of DESeq. There are other obvious connections such as MSstatsTMTPTM and MSstatsTMTP since the former has added functionality to analyse PTMs on TMT shotgun mass spectrometry-based proteomic experiments.
+There is a big cluster on the bottom left corner with packages to analyse RNASeq and single cell RNASeq.
+
+What about the network build from words of the Description?
+
+```{r, fig.cap="Word network in Bioconductor packages Description"}
+set.seed(1234)
+bpi_desciptionpairs %>%
+  filter(n >= 15) %>%
+  graph_from_data_frame() %>%
+  ggraph(layout = "fr") +
+  geom_edge_link(aes(edge_alpha = n, edge_width = n), edge_colour = "orange") +
+  geom_node_point(size = 5) +
+  geom_node_text(aes(label = name), repel = TRUE, 
+                 point.padding = unit(0.2, "lines")) +
+  theme_void()+
+  theme(legend.position="none")+
+  labs(title = "Number of word co-ocurrences in packages Description")
+```
+We see more connections here, and some of the relationships are still obvious (e.g HiCcompare and multiHiCcompare, anota and anota2seq, AnnotationHub and ExperimentHub). This network is richer, and one would have to dive a bit deeper to get a better sense of this network.
+
+
+# Conclusions
+Text mining of Bioconductor packages metadata is a straight forward visual way to understand the relationships between packages. One could go beyond this and for example finding words that are
+especially important across package Descriptions by calculating [tf-idf statistic](https://www.tidytextmining.com/tfidf.html#tfidf). One could also set up a GitHub Action executed as a CRON job to get updates periodically. This could turn into a challenge for [BiocChallenges](https://kevinrue.github.io/BiocChallenges/index.html). This post was inspired by [Chapter 8](https://www.tidytextmining.com/nasa.html) of the Tidytext book and [BiocRoulette](https://kevinrue.github.io/post/biocpkgtools/). 
+
+
+

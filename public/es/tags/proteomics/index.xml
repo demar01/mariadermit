@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Proteomics | Sitio en español</title>
+    <link>/es/tags/proteomics/</link>
+      <atom:link href="/es/tags/proteomics/index.xml" rel="self" type="application/rss+xml" />
+    <description>Proteomics</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>es</language><copyright>© Maria Dermit, {2020}</copyright><lastBuildDate>Mon, 14 Dec 2020 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>/images/icon_hu89765a528fbe3e89fbea23b995128687_292554_512x512_fill_lanczos_center_2.png</url>
+      <title>Proteomics</title>
+      <link>/es/tags/proteomics/</link>
+    </image>
+    
+    <item>
+      <title>EuroBioc</title>
+      <link>/es/talk/2020-11-26-eurobioc/</link>
+      <pubDate>Mon, 14 Dec 2020 00:00:00 +0000</pubDate>
+      <guid>/es/talk/2020-11-26-eurobioc/</guid>
+      <description>
+&lt;link href=&#34;../../../rmarkdown-libs/anchor-sections/anchor-sections.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;script src=&#34;../../../rmarkdown-libs/anchor-sections/anchor-sections.js&#34;&gt;&lt;/script&gt;
+
+
+
+</description>
+    </item>
+    
+    <item>
+      <title>ISCB</title>
+      <link>/es/talk/2020-11-21-iscb/</link>
+      <pubDate>Fri, 04 Dec 2020 00:00:00 +0000</pubDate>
+      <guid>/es/talk/2020-11-21-iscb/</guid>
+      <description>
+&lt;link href=&#34;../../../rmarkdown-libs/anchor-sections/anchor-sections.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;script src=&#34;../../../rmarkdown-libs/anchor-sections/anchor-sections.js&#34;&gt;&lt;/script&gt;
+
+
+&lt;div id=&#34;presentation-slides&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Presentation slides&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Selected talk
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://docs.google.com/presentation/d/16WN2ldl0r4f5Iv1pR5DAdSIC29H5JcM1Dr0RrYH9qx4/edit?usp=sharing&#34;&gt;Talk slides: Peptide Correlation Analysis (PeCorA) Reveals Differential Proteoform Regulation&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Subcellular mRNA Localization Regulates Ribosome Biogenesis in Migrating Cells</title>
+      <link>/es/publication/maddie-ehr-delivery-episode-algorithm/</link>
+      <pubDate>Mon, 09 Nov 2020 00:00:00 +0000</pubDate>
+      <guid>/es/publication/maddie-ehr-delivery-episode-algorithm/</guid>
+      <description>
+&lt;script src=&#34;index_files/header-attrs/header-attrs.js&#34;&gt;&lt;/script&gt;
+
+
+&lt;p&gt;&lt;strong&gt;Abstract&lt;/strong&gt; Translation of ribosomal protein-coding mRNAs (RP-mRNAs) constitutes a key step in ribosome biogenesis, but the mechanisms that modulate RP-mRNA translation in coordination with other cellular processes are poorly defined. Here, we show that subcellular localization of RP-mRNAs acts as a key regulator of their translation during cell migration. As cells migrate into their surroundings, RP-mRNAs localize to the actin-rich cell protrusions. This localization is mediated by La-related protein 6 (LARP6), an RNA-binding protein that is enriched in protrusions. Protrusions act as hotspots of translation for RP-mRNAs, enhancing RP synthesis, ribosome biogenesis, and the overall protein synthesis in migratory cells. In human breast carcinomas, epithelial-to-mesenchymal transition (EMT) upregulates LARP6 expression to enhance protein synthesis and support invasive growth. Our findings reveal LARP6-mediated mRNA localization as a key regulator of ribosome biogenesis during cell migration and demonstrate a role for this process in cancer progression downstream of EMT.&lt;/p&gt;
+&lt;div class=&#34;figure&#34;&gt;
+&lt;img src=&#34;RPmRNA_poster.png&#34; alt=&#34;&#34; /&gt;
+&lt;p class=&#34;caption&#34;&gt;&lt;a href=&#34;RPmRNA_poster.pdf&#34;&gt;2020 RPmRNA Poster (letter)&lt;/a&gt;&lt;/p&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

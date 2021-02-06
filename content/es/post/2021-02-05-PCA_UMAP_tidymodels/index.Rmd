@@ -1,0 +1,174 @@
+---
+title: PCA and UMAP classification of vegetable oils with tidymodels & base R 
+author: maria
+date: '2021-02-04'
+categories:
+  - R
+tags:
+  - r
+  - modeldata
+  - PCA
+  - UMAP
+  - tidymodels
+slug:  unsupervised machine learning with Tidymodels
+subtitle: Comparing the steps followed in Tidymodels and base R to do dimensionality reduction.
+summary: Create a recipe, prep it and juice it to do PCA and UMAP with Tidymodels.
+lastmod: '2021-02-04'
+featured: yes
+draft: no
+image:
+  placement: 1
+  caption: 'Fatty acids content in vegetable oils'
+  focal_point: Center
+  preview_only: no
+output:
+  blogdown::html_page:
+    toc: yes
+    number_sections: no
+    toc_depth: 1
+links:
+  - icon: 
+    icon_pack: fab
+    name: Data from the modeldata pacakge 
+    url: https://github.com/tidymodels/modeldata
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+```{r import, results=FALSE,message=FALSE}
+library(tidymodels)
+library(modeldata)
+library(ggfortify)
+library(tidyverse)
+library(embed)
+```
+
+# Motivation and data
+
+While exploring the [modeldata](https://github.com/tidymodels/modeldata) `r emo::ji("package")`, I found the dataset `oils`, which has gas chromatography information used to determine the fatty acid composition of 96 samples corresponding to 7 different vegatable oils of the market. These data is the [published work](https://www.sciencedirect.com/science/article/abs/pii/S0169743904001200) of a chemistry lab. These data is something very close to what we would get in a proteomics lab, and the first thing we tend to do to explore these complex data is to do a PCA to have a simplify idea of its overall distribution in the reduced space. 
+
+## EDA
+
+```{r}
+data(oils)
+```
+
+```{r}
+str(oils)
+```
+
+```{r}
+oils %>%
+  count(class)
+```
+This looks like fun dataset to project in a reduced dimension space like PCA or UMAP!
+
+# PCA in base R
+
+The steps to generate the components for PCA in base R would be:
+```{r}
+pca_res <- oils %>%
+  dplyr::select(where(is.numeric)) %>% # select only the numeric variables
+  tidyr::drop_na() %>% # to drop any NA
+  scale() %>% # to initially normalise the variances
+  prcomp() # to convert numeric data to principal components
+```
+
+```{r}
+pca_res
+```
+We can see that PC componennt for each class of oil were added in a `prcomp` object.
+
+And we could plot those component with `autoplot`
+```{r}
+autoplot(pca_res, data = oils, colour = "class") +
+  labs(color = NULL) +theme_minimal()
+```
+We can see that this PCA separates olive oil far away from the other 7 types of oils. It also looks like one of the olive oils is closer to peanunt type of oil in the PCA space . 
+
+# PCA in Tidymodels
+
+Modeling is very much like cooking, and in the Tidymodels universe the language is reflects this very well `r emo::ji("cook")`. There are three things that we will need to do:
+
+- Writing down a recipe `r emo::ji("cook")`
+- Preparing that recipe `r emo::ji("pasta")`
+- Juicing the recipe `r emo::ji("drink")`
+
+## Writing down a recipe
+
+We write down the recipe by adding series of steps. 
+```{r}
+pca_rec <- recipe(~., data = oils) %>% # start writing the recipe with all the data
+  update_role(class, new_role = "id") %>% # to keep this column around but not include it in the model
+  step_normalize(all_predictors()) %>% # to normalise the data
+  step_pca(all_predictors()) # to convert numeric data to principal components
+```
+As we see the steps that we need to follow to write the recipe are very similar to the steps followed in base R. 
+However, this is not all. In fact, if we explore how the recipe looks like:
+```{r}
+pca_rec
+```
+We can see that the design matrix with id and predictor variables was created. The recipe tells us that the   _No PCA components were extracted_. This is because a recipe specifies what we want to do, but it doesn't really do anything to the data yet. We need to extract those components by preparing the recipe.
+
+## Preparing that recipe
+We can use the function `prep` for preparing to train this data recipe. Prep returns an updated recipe with the estimates.
+```{r}
+pca_prep <- prep(pca_rec)
+pca_prep
+```
+In the operations we see that the data has been [trained].
+
+Great! But these are still not the components `r emo::ji("thinking")`. We need to finalise that prepared recipe by __juicing it__! 
+
+## Juicing the recipe
+
+We need to apply these operation to the data; `juice` returns a tibble where all steps have been applied to the data.
+
+```{r}
+pca_juiced <- juice(pca_prep)
+pca_juiced
+```
+Great! The processed data is ready to "consumed" by a plot! 
+
+```{r}
+pca_juiced %>%
+  ggplot(aes(PC1, PC2, label = class)) +
+  geom_point(aes(color = class), alpha = 0.7, size = 2) +
+  labs(color = NULL) +theme_minimal()
+```
+
+The initial PCA and this one generated with Tidymodels look very similar. Note that autoplot adds some information to the plot such as providing PCs percentage. So what's the point of using Tidymodels if is a such a long series of steps compared to base R? Well, [Tidymodels](https://www.tidymodels.org/) integrates a lot of modular packages which facilitates creating and evaluating different models.
+
+# UMAP in Tidymodels
+
+In addition to PCA, we could  plot a [UMAP representation](https://umap-learn.readthedocs.io/en/latest/). To do that we would need a new recipe, one that includes a step specify UMAP dimension reduction technique; this step is naturally called `step_umap`. Once that we have this recipe, the process is the same. Recipe, prep, juice. 
+
+```{r, eval=FALSE}
+umap_rec <- recipe(~., data = oils) %>%
+  update_role(class, new_role = "id") %>%
+  step_normalize(all_predictors()) %>%
+  step_umap(all_predictors()) # this step makes a different recipe 
+```
+
+```{r, eval=FALSE}
+umap_prep <- prep(umap_rec)
+```
+
+```{r, eval=FALSE}
+umap_juiced <- juice(umap_prep)
+```
+
+```{r, eval=FALSE}
+umap_juiced %>%
+  ggplot(aes(umap_1, umap_2, label = class)) +
+  geom_point(aes(color = class), alpha = 0.7, size = 2) +
+  labs(color = NULL)
+```
+![](/Users/dermit01/Documents/mariadermit/content/post/2021-02-04-PCA_UMAP_tidymodels/featured2.jpg)
+
+This model separates the data in the space somewhat differently to PCA. PCA and UMAP are fundamentally different in that  PCA is a linear dimensionality reduction algorithm whereas UMAP is non-linear. Moreover, there are few important parameters that can impact how the UMAP representation looks like. This is  nicely explained in the README of umapr package from the [ropenscilabs]( https://github.com/ropenscilabs/umapr). You can see additional arguments offered by `step_umap` with `?step_umap`. Also note that we have trained our models with a tiny set of data (we have not done resampling) and we have not evaluated their performance.
+
+# Conclusionss
+The data processing for doing unsupervised machine learning with Tidymodels are very similar to base R. Linear and non-linear dimensionality reduction algorithms separate the data in the reduced space differently. 

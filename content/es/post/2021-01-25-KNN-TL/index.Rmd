@@ -1,0 +1,222 @@
+---
+title:  Transfer learning for spatial proteomics
+author: maria
+date: '2021-01-20'
+categories:
+  - R
+tags:
+  - r
+  - computational proteomics
+  - bioconductor
+slug:  transfer-learning-for-spatial-proteomics
+subtitle: Exploration of how a transfer learning algorithm can predict proteins sub-cellular localisations.
+summary: Exploration of how a transfer learning algorithm can predict proteins sub-cellular localisation.
+lastmod: '2021-01-24'
+featured: yes
+draft: no
+image:
+  placement: 1
+  caption: 'PCA plot of a proteomics dataset after transfer learning classification'
+  focal_point: Center
+  preview_only: no
+output:
+  blogdown::html_page:
+    toc: yes
+    number_sections: no
+    toc_depth: 1
+links:
+  - icon: 
+    icon_pack: fab
+    name: Applying transfer learning on proteomics datasets
+    url: https://lgatto.github.io/pRoloc/index.html
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+```{r import, results=FALSE}
+# loading libraries
+# clearing environment bc https://support.bioconductor.org/p/p132709/
+rm(list = ls())
+library(pRoloc)
+library(pRolocdata)
+library(BiocStyle)
+```
+
+# Introduction
+
+Within the cell, the localization of a given protein is determined by its biological 
+function. Subcellular proteomics is the method to study  protein sub-cellular 
+localization in a systematic manner. There are two complementary ways to analysis localized proteins: 
+
+- On one hand biochemical sub-cellular fractionation experiments allow  empirical quantification of protein across sub-cellular and sub-organellar compartments. Proteins are allocated to a given subcellular niche
+if the detected intensity is higher than a threshold. We can say that this type of data has high signal-to-noise ratio, but is available in limited amounts (*primary* data).
+
+- On the other hand, databases such as [GO](http://geneontology.org/) contain large amount of information about sub-cellular proteins localisation, but this is information is blended for a many biological systems. We can say that this type of data has high low signal-to-noise, but is available in large amounts (*auxiliary* data).
+
+So we want to know _how to optimally combine_ primary and auxiliary data.`r emo::ji("chart")`
+
+To do so, we need to weight both types of data. If we imagine a multivariate
+distribution (like a [Dirichlet distribution](https://github.com/TommyJones/tidylda)) were all the components take values between (0,1) and all values sum up to one, we can imagine that a weight of 1 indicates that the final annotation rely exclusively on the experimental data and ignore completely the auxiliary data and a weight of 0 represents the opposite situation, where the primary data is ignored and only the auxiliary data is considered.
+
+We could use a *transfer learning* algorithm to efficiently complement the primary data with auxiliary data  without compromising the integrity of the former. This is implemented in the `pRoloc` package and it was published by [Breckels et al](https://lgatto.github.io/pRoloc/reference/knntlClassification.html) and expanded by
+[Crook et al](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1006516) using a Bayesian approach. In this post I will step-by-step walk through KNN transfer learning. 
+
+# Getting the data
+We start with  `HEK293T2011` proteomics data available in the `r Biocexptpkg("pRolocdata")` package.
+
+```{r}
+data(HEK293T2011)
+```
+
+The class of (HEK293T2011) is`r class(HEK293T2011)`  instance, an efficient and established to [store and handle MS data and metainformation efficiently](http://www.bioconductor.org/packages/release/bioc/html/MSnbase.html). I am not going to discuss much about this class of objects since the field is moving towards other types of data storage such as  [SummarizedExperiment objects](https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html)
+
+We can also get an overview experimental data and query how many proteins across how many conditions were quantified. 
+```{r}
+head(exprs(HEK293T2011),2)
+dim(exprs(HEK293T2011))
+```
+What is important to know is that 1371 proteins were quantified across eight iTRAQ 8-plex labelled fractions (
+one could know a bit more about the experiment with `?HEK293T2011`)
+
+
+Next thing we can do is see how well these organelles have been resolved in the experiment using a PCA plot
+```{r, fig.cap = "PCA plot of `HEK293T2011 subcellular proteomics dataset`"}
+plot2D(HEK293T2011)
+addLegend(HEK293T2011, where = "topright", cex = 0.6)
+```
+
+We see that some organelles such as cytosol and cytosol/nucleus are well resolved - and so they will get a high weigh- while others such as the Golgi or the ER are less so - so they will get a low weight. 
+There are some proteins that do not get annotation because the resolution of the experiment did not allow so. 
+
+# Quetting auxiliary annotation (Biomart Query) 
+
+Next thing we can do is get auxiliary data. We can do so by querying `r Biocpkg("biomaRt")` and storing the annotation as an `AnnotationParams` object. Again, this is part of the `r Biocpkg("pRoloc")` package, and it has been created for efficient data handling. 
+
+```{r}
+ap <- setAnnotationParams(inputs =
+                              c("Human genes",
+                                "UniProtKB/Swiss-Prot ID"))
+```
+We can access this instance with  
+```{r}
+getAnnotationParams()
+```
+
+We can annotate our innitial `HEK293T2011` data by creating a new `MSnSet` instance populated with a GO term as a binary matrix (so the auxiliary data with information about 889 cellular compartment GO terms has been added).
+```{r, eval=FALSE}
+HEK293T2011goset  <- makeGoSet(HEK293T2011)
+
+```
+
+
+# Nearest neighbour transfer learning
+
+## Deciding the weight 
+We could define more or less weight values between 0 and 1 depending on how granular we want to be with 
+our search (more weight will give finer-grained integration).For example for 3 classes, 3 weights will generate:
+```{r}
+gtools::permutations(length(seq(0, 1, 0.5)), 3, seq(0, 1, 0.5), repeats.allowed = TRUE) 
+```
+
+As we sayed before, HEK293T2011goset experiment has 10 subcellular compartments, and so the total combinations for 10 classes, 4 weights will be:
+```{r}
+th <- gtools::permutations(length(seq(0, 1, length.out = 4)), 10, seq(0, 1, length.out = 4), repeats.allowed = TRUE)
+```
+Total combination of weights for HEK293T2011goset experiment will be `r dim(th)[1]`.
+
+`r Biocpkg("pRoloc")` package comes with a convenient function `thetas` to produce such a weight matrix (because we need a  theta for each of the training feature).
+```{r}
+## marker classes for HEK293T2011
+m <- unique(fData(HEK293T2011)$markers.tl)
+m <- m[m != "unknown"]
+th <- thetas(length(m), length.out=4)
+```
+
+
+## Optimizing weigth 
+We can do a grid search to determine which is the best `th`, with the `knntlOptimisation` function of the `r Biocpkg("pRoloc")` package. 
+```{r, eval=FALSE}
+topt <- knntlOptimisation(HEK293T2011, HEK293T2011goset,
+                          th = th,
+                          k = c(3, 3),
+                          fcol = "markers.tl",
+                          times = 50, 
+                          method = "Breckels" )
+```
+
+For the sake of time, we can reduce our initial data, as it will take a long time to do this grid search (even if `knntlOptimisation` uses parallelisation by default).
+
+```{r, eval=FALSE}
+set.seed(2021)
+i <- sample(nrow(th), 50)
+topt <- knntlOptimisation(HEK293T2011, HEK293T2011goset,
+                          th = th[i, ],
+                          k = c(3, 3),
+                          fcol = "markers.tl",
+                          times = 5)
+```
+The optimisation is performed on the labelled marker examples only. `topt` result stores all the result from the optimisation step, and in particular the observed theta weights, which can be directly plotted as shown on the bubble plot.
+
+```{r fig.cap = "Result stores for the reduced optimisation step", eval=FALSE} 
+plot(topt)
+```
+![Result stocores for the optimisation step. Note that this figure is the result using extensive optimisation on the whole HEK293T2011 dataset and auxiliary HEK293T2011goset dataset, not only with only a random subset of 50 candidate weights.](https://raw.githubusercontent.com/lgatto/pRoloc/master/vignettes/Figures/bubble-andy.png)
+
+We see that the cytosol and cytosol/nucleus and ER  are predominantly scored with high heights, consistent with high reliability of the primary data. Golgi, PM and the 40S ribosomal clusters are scored with smaller scores, indicating a substantial benefit of the auxiliary data.
+
+The best grid search parameters can be accessed with:
+```{r, eval=FALSE}
+getParams(topt)
+```
+
+Note that the data `HEK293T2011` _gets annotated_ with the best parameters at the knntlOptimisation
+step. We can get the best weights with:
+```{r, eval=FALSE}
+bw <- experimentData(HEK293T2011)@other$knntl$thetas
+```
+
+## Performing transfer learning
+
+To apply the best weights and learn from the auxiliary data to classify the unlabelled proteins into sub-cellular niches (present in `markers.tl` column), we can pass the primary and auxiliary data sets, best weights, best k’s and the metadata feature data taht contains the markers definitions to the `knntlClassification` function. 
+
+```{r, eval=FALSE}
+HEK293T2011 <- knntlClassification(HEK293T2011, HEK293T2011goset,
+                                bestTheta = bw,
+                                k = c(3, 3),
+                                fcol = "markers.tl")
+```
+In this step, annotation predictors scores and parameters get added into the MSnSet data. We can access the predicted localization conveniently using the `getPredictions` assessor.
+```{r, echo=FALSE, eval=FALSE}
+head(fData(HEK293T2011)$knntl)
+head(fData(HEK293T2011)$knntl.scores)
+```
+
+```{r, eval=FALSE}
+HEK293T2011 <- getPredictions(HEK293T2011, fcol = "knntl")
+```
+
+## Plotting the results
+
+```{r HEK293T2011-TL , fig.width=6, fig.height=6, fig.cap = "PCA plot of `HEK293T2011` after transfer learning classification. The size of the points is proportional to the classification scores.", eval=FALSE}
+
+# These functions allow to get/set the colours/points to plot organelle features 
+setStockcol(paste0(getStockcol(), "80"))
+#this defines the point size
+ptsze <- exp(fData(HEK293T2011)$knntl.scores) - 1
+plot2D(HEK293T2011, fcol = "knntl", cex = ptsze)
+setStockcol(NULL)
+addLegend(HEK293T2011, where = "topright",
+          fcol = "markers.tl",
+          bty = "n", cex = .7)
+```
+
+![PCA plot of `HEK293T2011` after transfer learning classification. The size of the points is proportional to the classification scores.](TL_PCA.png)
+
+# Conclusions
+
+A *weighted k-nearest neighbor transfer learning* algorithm can be very useful to predict of protein
+sub-cellular localisation using quantitative proteomics data as primary data source and Gene Ontology-derived binary data as auxiliary data source.
+
+

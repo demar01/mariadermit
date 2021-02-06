@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Recent &amp; Upcoming Talks | Sitio en español</title>
+    <link>/es/talk/</link>
+      <atom:link href="/es/talk/index.xml" rel="self" type="application/rss+xml" />
+    <description>Recent &amp; Upcoming Talks</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>es</language><copyright>© Maria Dermit, {2020}</copyright><lastBuildDate>Mon, 14 Dec 2020 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>/images/icon_hu89765a528fbe3e89fbea23b995128687_292554_512x512_fill_lanczos_center_2.png</url>
+      <title>Recent &amp; Upcoming Talks</title>
+      <link>/es/talk/</link>
+    </image>
+    
+    <item>
+      <title>EuroBioc</title>
+      <link>/es/talk/2020-11-26-eurobioc/</link>
+      <pubDate>Mon, 14 Dec 2020 00:00:00 +0000</pubDate>
+      <guid>/es/talk/2020-11-26-eurobioc/</guid>
+      <description>
+&lt;link href=&#34;../../rmarkdown-libs/anchor-sections/anchor-sections.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;script src=&#34;../../rmarkdown-libs/anchor-sections/anchor-sections.js&#34;&gt;&lt;/script&gt;
+
+
+
+</description>
+    </item>
+    
+    <item>
+      <title>ISCB</title>
+      <link>/es/talk/2020-11-21-iscb/</link>
+      <pubDate>Fri, 04 Dec 2020 00:00:00 +0000</pubDate>
+      <guid>/es/talk/2020-11-21-iscb/</guid>
+      <description>
+&lt;link href=&#34;../../rmarkdown-libs/anchor-sections/anchor-sections.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;script src=&#34;../../rmarkdown-libs/anchor-sections/anchor-sections.js&#34;&gt;&lt;/script&gt;
+
+
+&lt;div id=&#34;presentation-slides&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Presentation slides&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Selected talk
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://docs.google.com/presentation/d/16WN2ldl0r4f5Iv1pR5DAdSIC29H5JcM1Dr0RrYH9qx4/edit?usp=sharing&#34;&gt;Talk slides: Peptide Correlation Analysis (PeCorA) Reveals Differential Proteoform Regulation&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

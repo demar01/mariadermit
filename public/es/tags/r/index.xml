@@ -1,0 +1,936 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>r | Sitio en español</title>
+    <link>/es/tags/r/</link>
+      <atom:link href="/es/tags/r/index.xml" rel="self" type="application/rss+xml" />
+    <description>r</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>es</language><copyright>© Maria Dermit, {2020}</copyright><lastBuildDate>Thu, 04 Feb 2021 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>/images/icon_hu89765a528fbe3e89fbea23b995128687_292554_512x512_fill_lanczos_center_2.png</url>
+      <title>r</title>
+      <link>/es/tags/r/</link>
+    </image>
+    
+    <item>
+      <title>PCA and UMAP classification of vegetable oils with tidymodels &amp; base R</title>
+      <link>/es/2021-02-04-unsupervised-machine-learning-with-tidymodels/</link>
+      <pubDate>Thu, 04 Feb 2021 00:00:00 +0000</pubDate>
+      <guid>/es/2021-02-04-unsupervised-machine-learning-with-tidymodels/</guid>
+      <description>
+&lt;script src=&#34;../../../es/2021-02-04-unsupervised-machine-learning-with-tidymodels/index_files/header-attrs/header-attrs.js&#34;&gt;&lt;/script&gt;
+
+&lt;div id=&#34;TOC&#34;&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;#motivation-and-data&#34;&gt;Motivation and data&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#pca-in-base-r&#34;&gt;PCA in base R&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#pca-in-tidymodels&#34;&gt;PCA in Tidymodels&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#umap-in-tidymodels&#34;&gt;UMAP in Tidymodels&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#conclusionss&#34;&gt;Conclusionss&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(tidymodels)
+library(modeldata)
+library(ggfortify)
+library(tidyverse)
+library(embed)&lt;/code&gt;&lt;/pre&gt;
+&lt;div id=&#34;motivation-and-data&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Motivation and data&lt;/h1&gt;
+&lt;p&gt;While exploring the &lt;a href=&#34;https://github.com/tidymodels/modeldata&#34;&gt;modeldata&lt;/a&gt; 📦, I found the dataset &lt;code&gt;oils&lt;/code&gt;, which has gas chromatography information used to determine the fatty acid composition of 96 samples corresponding to 7 different vegatable oils of the market. These data is the &lt;a href=&#34;https://www.sciencedirect.com/science/article/abs/pii/S0169743904001200&#34;&gt;published work&lt;/a&gt; of a chemistry lab. These data is something very close to what we would get in a proteomics lab, and the first thing we tend to do to explore these complex data is to do a PCA to have a simplify idea of its overall distribution in the reduced space.&lt;/p&gt;
+&lt;div id=&#34;eda&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;EDA&lt;/h2&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;data(oils)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;str(oils)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## tibble [96 × 8] (S3: tbl_df/tbl/data.frame)
+##  $ palmitic  : num [1:96] 9.7 11.1 11.5 10 12.2 9.8 10.5 10.5 11.5 10 ...
+##  $ stearic   : num [1:96] 5.2 5 5.2 4.8 5 4.2 5 5 5.2 4.8 ...
+##  $ oleic     : num [1:96] 31 32.9 35 30.4 31.1 43 31.8 31.8 35 30.4 ...
+##  $ linoleic  : num [1:96] 52.7 49.8 47.2 53.5 50.5 39.2 51.3 51.3 47.2 53.5 ...
+##  $ linolenic : num [1:96] 0.4 0.3 0.2 0.3 0.3 2.4 0.4 0.4 0.2 0.3 ...
+##  $ eicosanoic: num [1:96] 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 ...
+##  $ eicosenoic: num [1:96] 0.1 0.1 0.1 0.1 0.1 0.5 0.1 0.1 0.1 0.1 ...
+##  $ class     : Factor w/ 7 levels &amp;quot;corn&amp;quot;,&amp;quot;olive&amp;quot;,..: 4 4 4 4 4 4 4 4 4 4 ...&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;oils %&amp;gt;%
+  count(class)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 7 x 2
+##   class         n
+## * &amp;lt;fct&amp;gt;     &amp;lt;int&amp;gt;
+## 1 corn          2
+## 2 olive         7
+## 3 peanut        3
+## 4 pumpkin      37
+## 5 rapeseed     10
+## 6 soybean      11
+## 7 sunflower    26&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This looks like fun dataset to project in a reduced dimension space like PCA or UMAP!&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&#34;pca-in-base-r&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;PCA in base R&lt;/h1&gt;
+&lt;p&gt;The steps to generate the components for PCA in base R would be:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;pca_res &amp;lt;- oils %&amp;gt;%
+  dplyr::select(where(is.numeric)) %&amp;gt;% # select only the numeric variables
+  tidyr::drop_na() %&amp;gt;% # to drop any NA
+  scale() %&amp;gt;% # to initially normalise the variances
+  prcomp() # to convert numeric data to principal components&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;pca_res&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Standard deviations (1, .., p=7):
+## [1] 1.78631393 1.21432295 1.11849881 0.80775705 0.49010697 0.43543634 0.03437479
+## 
+## Rotation (n x k) = (7 x 7):
+##                   PC1         PC2         PC3         PC4         PC5
+## palmitic   -0.1724393 -0.69299469 -0.04593832  0.46972220 -0.19508286
+## stearic    -0.4589668 -0.25101419 -0.24289349  0.18544207  0.61204669
+## oleic       0.4578722 -0.39918199  0.14986398 -0.28962122  0.08386290
+## linoleic   -0.4590266  0.44858975 -0.11564307  0.05114339 -0.07111895
+## linolenic   0.3446082  0.27607934  0.23426894  0.80580939 -0.02884460
+## eicosanoic  0.1682596 -0.01595516 -0.81991595  0.04591653 -0.46100031
+## eicosenoic  0.4384013  0.14034544 -0.41942317  0.08389933  0.60157904
+##                   PC6        PC7
+## palmitic   -0.4661816 0.10904667
+## stearic     0.5067647 0.03928963
+## oleic       0.2409267 0.67792957
+## linoleic   -0.2371904 0.71467174
+## linolenic   0.2916300 0.12220735
+## eicosanoic  0.2889776 0.03216008
+## eicosenoic -0.4929535 0.01587562&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can see that PC componennt for each class of oil were added in a &lt;code&gt;prcomp&lt;/code&gt; object.&lt;/p&gt;
+&lt;p&gt;And we could plot those component with &lt;code&gt;autoplot&lt;/code&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;autoplot(pca_res, data = oils, colour = &amp;quot;class&amp;quot;) +
+  labs(color = NULL) +theme_minimal()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;../../../es/2021-02-04-unsupervised-machine-learning-with-tidymodels/index_files/figure-html/unnamed-chunk-7-1.png&#34; width=&#34;672&#34; /&gt;
+We can see that this PCA separates olive oil far away from the other 7 types of oils. It also looks like one of the olive oils is closer to peanunt type of oil in the PCA space .&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;pca-in-tidymodels&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;PCA in Tidymodels&lt;/h1&gt;
+&lt;p&gt;Modeling is very much like cooking, and in the Tidymodels universe the language is reflects this very well 👨‍🍳. There are three things that we will need to do:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Writing down a recipe 👨‍🍳&lt;/li&gt;
+&lt;li&gt;Preparing that recipe 🍝&lt;/li&gt;
+&lt;li&gt;Juicing the recipe 🥛&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div id=&#34;writing-down-a-recipe&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Writing down a recipe&lt;/h2&gt;
+&lt;p&gt;We write down the recipe by adding series of steps.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;pca_rec &amp;lt;- recipe(~., data = oils) %&amp;gt;% # start writing the recipe with all the data
+  update_role(class, new_role = &amp;quot;id&amp;quot;) %&amp;gt;% # to keep this column around but not include it in the model
+  step_normalize(all_predictors()) %&amp;gt;% # to normalise the data
+  step_pca(all_predictors()) # to convert numeric data to principal components&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As we see the steps that we need to follow to write the recipe are very similar to the steps followed in base R.
+However, this is not all. In fact, if we explore how the recipe looks like:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;pca_rec&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Data Recipe
+## 
+## Inputs:
+## 
+##       role #variables
+##         id          1
+##  predictor          7
+## 
+## Operations:
+## 
+## Centering and scaling for all_predictors()
+## No PCA components were extracted.&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can see that the design matrix with id and predictor variables was created. The recipe tells us that the &lt;em&gt;No PCA components were extracted&lt;/em&gt;. This is because a recipe specifies what we want to do, but it doesn’t really do anything to the data yet. We need to extract those components by preparing the recipe.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;preparing-that-recipe&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Preparing that recipe&lt;/h2&gt;
+&lt;p&gt;We can use the function &lt;code&gt;prep&lt;/code&gt; for preparing to train this data recipe. Prep returns an updated recipe with the estimates.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;pca_prep &amp;lt;- prep(pca_rec)
+pca_prep&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Data Recipe
+## 
+## Inputs:
+## 
+##       role #variables
+##         id          1
+##  predictor          7
+## 
+## Training data contained 96 data points and no missing data.
+## 
+## Operations:
+## 
+## Centering and scaling for palmitic, stearic, oleic, linoleic, ... [trained]
+## PCA extraction with palmitic, stearic, oleic, linoleic, ... [trained]&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In the operations we see that the data has been [trained].&lt;/p&gt;
+&lt;p&gt;Great! But these are still not the components 🤔. We need to finalise that prepared recipe by &lt;strong&gt;juicing it&lt;/strong&gt;!&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;juicing-the-recipe&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Juicing the recipe&lt;/h2&gt;
+&lt;p&gt;We need to apply these operation to the data; &lt;code&gt;juice&lt;/code&gt; returns a tibble where all steps have been applied to the data.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;pca_juiced &amp;lt;- juice(pca_prep)
+pca_juiced&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 96 x 6
+##    class      PC1    PC2     PC3      PC4      PC5
+##    &amp;lt;fct&amp;gt;    &amp;lt;dbl&amp;gt;  &amp;lt;dbl&amp;gt;   &amp;lt;dbl&amp;gt;    &amp;lt;dbl&amp;gt;    &amp;lt;dbl&amp;gt;
+##  1 pumpkin -1.22  -0.296 -0.245  -0.158    0.0882 
+##  2 pumpkin -1.10  -0.771 -0.198  -0.00964 -0.0901 
+##  3 pumpkin -1.08  -1.06  -0.212   0.0154   0.00279
+##  4 pumpkin -1.14  -0.266 -0.192  -0.177   -0.137  
+##  5 pumpkin -1.25  -0.995 -0.241   0.226   -0.186  
+##  6 pumpkin  0.572 -0.500 -0.0821  0.0652   0.286  
+##  7 pumpkin -1.13  -0.530 -0.202  -0.0640  -0.0592 
+##  8 pumpkin -1.13  -0.530 -0.202  -0.0640  -0.0592 
+##  9 pumpkin -1.08  -1.06  -0.212   0.0154   0.00279
+## 10 pumpkin -1.14  -0.266 -0.192  -0.177   -0.137  
+## # … with 86 more rows&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Great! The processed data is ready to “consumed” by a plot!&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;pca_juiced %&amp;gt;%
+  ggplot(aes(PC1, PC2, label = class)) +
+  geom_point(aes(color = class), alpha = 0.7, size = 2) +
+  labs(color = NULL) +theme_minimal()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;../../../es/2021-02-04-unsupervised-machine-learning-with-tidymodels/index_files/figure-html/unnamed-chunk-12-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;The initial PCA and this one generated with Tidymodels look very similar. Note that autoplot adds some information to the plot such as providing PCs percentage. So what’s the point of using Tidymodels if is a such a long series of steps compared to base R? Well, &lt;a href=&#34;https://www.tidymodels.org/&#34;&gt;Tidymodels&lt;/a&gt; integrates a lot of modular packages which facilitates creating and evaluating different models.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&#34;umap-in-tidymodels&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;UMAP in Tidymodels&lt;/h1&gt;
+&lt;p&gt;In addition to PCA, we could plot a &lt;a href=&#34;https://umap-learn.readthedocs.io/en/latest/&#34;&gt;UMAP representation&lt;/a&gt;. To do that we would need a new recipe, one that includes a step specify UMAP dimension reduction technique; this step is naturally called &lt;code&gt;step_umap&lt;/code&gt;. Once that we have this recipe, the process is the same. Recipe, prep, juice.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;umap_rec &amp;lt;- recipe(~., data = oils) %&amp;gt;%
+  update_role(class, new_role = &amp;quot;id&amp;quot;) %&amp;gt;%
+  step_normalize(all_predictors()) %&amp;gt;%
+  step_umap(all_predictors()) # this step makes a different recipe &lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;umap_prep &amp;lt;- prep(umap_rec)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;umap_juiced &amp;lt;- juice(umap_prep)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;umap_juiced %&amp;gt;%
+  ggplot(aes(umap_1, umap_2, label = class)) +
+  geom_point(aes(color = class), alpha = 0.7, size = 2) +
+  labs(color = NULL)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;featured2.jpg&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;This model separates the data in the space somewhat differently to PCA. PCA and UMAP are fundamentally different in that PCA is a linear dimensionality reduction algorithm whereas UMAP is non-linear. Moreover, there are few important parameters that can impact how the UMAP representation looks like. This is nicely explained in the README of umapr package from the &lt;a href=&#34;https://github.com/ropenscilabs/umapr&#34;&gt;ropenscilabs&lt;/a&gt;. You can see additional arguments offered by &lt;code&gt;step_umap&lt;/code&gt; with &lt;code&gt;?step_umap&lt;/code&gt;. Also note that we have trained our models with a tiny set of data (we have not done resampling) and we have not evaluated their performance.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;conclusionss&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Conclusionss&lt;/h1&gt;
+&lt;p&gt;The data processing for doing unsupervised machine learning with Tidymodels are very similar to base R. Linear and non-linear dimensionality reduction algorithms separate the data in the reduced space differently.&lt;/p&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>PCA and UMAP classification of vegetable oils with tidymodels &amp; base R</title>
+      <link>/es/2021-02-04-unsupervised-machine-learning-with-tidymodels/</link>
+      <pubDate>Thu, 04 Feb 2021 00:00:00 +0000</pubDate>
+      <guid>/es/2021-02-04-unsupervised-machine-learning-with-tidymodels/</guid>
+      <description>
+&lt;script src=&#34;../../../es/2021-02-04-unsupervised-machine-learning-with-tidymodels/index_files/header-attrs/header-attrs.js&#34;&gt;&lt;/script&gt;
+
+&lt;div id=&#34;TOC&#34;&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;#motivation-and-data&#34;&gt;Motivation and data&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#pca-in-base-r&#34;&gt;PCA in base R&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#pca-in-tidymodels&#34;&gt;PCA in Tidymodels&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#umap-in-tidymodels&#34;&gt;UMAP in Tidymodels&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#conclusionss&#34;&gt;Conclusionss&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(tidymodels)
+library(modeldata)
+library(ggfortify)
+library(tidyverse)
+library(embed)&lt;/code&gt;&lt;/pre&gt;
+&lt;div id=&#34;motivation-and-data&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Motivation and data&lt;/h1&gt;
+&lt;p&gt;While exploring the &lt;a href=&#34;https://github.com/tidymodels/modeldata&#34;&gt;modeldata&lt;/a&gt; 📦, I found the dataset &lt;code&gt;oils&lt;/code&gt;, which has gas chromatography information used to determine the fatty acid composition of 96 samples corresponding to 7 different vegatable oils of the market. These data is the &lt;a href=&#34;https://www.sciencedirect.com/science/article/abs/pii/S0169743904001200&#34;&gt;published work&lt;/a&gt; of a chemistry lab. These data is something very close to what we would get in a proteomics lab, and the first thing we tend to do to explore these complex data is to do a PCA to have a simplify idea of its overall distribution in the reduced space.&lt;/p&gt;
+&lt;div id=&#34;eda&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;EDA&lt;/h2&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;data(oils)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;str(oils)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## tibble [96 × 8] (S3: tbl_df/tbl/data.frame)
+##  $ palmitic  : num [1:96] 9.7 11.1 11.5 10 12.2 9.8 10.5 10.5 11.5 10 ...
+##  $ stearic   : num [1:96] 5.2 5 5.2 4.8 5 4.2 5 5 5.2 4.8 ...
+##  $ oleic     : num [1:96] 31 32.9 35 30.4 31.1 43 31.8 31.8 35 30.4 ...
+##  $ linoleic  : num [1:96] 52.7 49.8 47.2 53.5 50.5 39.2 51.3 51.3 47.2 53.5 ...
+##  $ linolenic : num [1:96] 0.4 0.3 0.2 0.3 0.3 2.4 0.4 0.4 0.2 0.3 ...
+##  $ eicosanoic: num [1:96] 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 ...
+##  $ eicosenoic: num [1:96] 0.1 0.1 0.1 0.1 0.1 0.5 0.1 0.1 0.1 0.1 ...
+##  $ class     : Factor w/ 7 levels &amp;quot;corn&amp;quot;,&amp;quot;olive&amp;quot;,..: 4 4 4 4 4 4 4 4 4 4 ...&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;oils %&amp;gt;%
+  count(class)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 7 x 2
+##   class         n
+## * &amp;lt;fct&amp;gt;     &amp;lt;int&amp;gt;
+## 1 corn          2
+## 2 olive         7
+## 3 peanut        3
+## 4 pumpkin      37
+## 5 rapeseed     10
+## 6 soybean      11
+## 7 sunflower    26&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This looks like fun dataset to project in a reduced dimension space like PCA or UMAP!&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&#34;pca-in-base-r&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;PCA in base R&lt;/h1&gt;
+&lt;p&gt;The steps to generate the components for PCA in base R would be:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;pca_res &amp;lt;- oils %&amp;gt;%
+  dplyr::select(where(is.numeric)) %&amp;gt;% # select only the numeric variables
+  tidyr::drop_na() %&amp;gt;% # to drop any NA
+  scale() %&amp;gt;% # to initially normalise the variances
+  prcomp() # to convert numeric data to principal components&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;pca_res&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Standard deviations (1, .., p=7):
+## [1] 1.78631393 1.21432295 1.11849881 0.80775705 0.49010697 0.43543634 0.03437479
+## 
+## Rotation (n x k) = (7 x 7):
+##                   PC1         PC2         PC3         PC4         PC5
+## palmitic   -0.1724393 -0.69299469 -0.04593832  0.46972220 -0.19508286
+## stearic    -0.4589668 -0.25101419 -0.24289349  0.18544207  0.61204669
+## oleic       0.4578722 -0.39918199  0.14986398 -0.28962122  0.08386290
+## linoleic   -0.4590266  0.44858975 -0.11564307  0.05114339 -0.07111895
+## linolenic   0.3446082  0.27607934  0.23426894  0.80580939 -0.02884460
+## eicosanoic  0.1682596 -0.01595516 -0.81991595  0.04591653 -0.46100031
+## eicosenoic  0.4384013  0.14034544 -0.41942317  0.08389933  0.60157904
+##                   PC6        PC7
+## palmitic   -0.4661816 0.10904667
+## stearic     0.5067647 0.03928963
+## oleic       0.2409267 0.67792957
+## linoleic   -0.2371904 0.71467174
+## linolenic   0.2916300 0.12220735
+## eicosanoic  0.2889776 0.03216008
+## eicosenoic -0.4929535 0.01587562&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can see that PC componennt for each class of oil were added in a &lt;code&gt;prcomp&lt;/code&gt; object.&lt;/p&gt;
+&lt;p&gt;And we could plot those component with &lt;code&gt;autoplot&lt;/code&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;autoplot(pca_res, data = oils, colour = &amp;quot;class&amp;quot;) +
+  labs(color = NULL) +theme_minimal()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;../../../es/2021-02-04-unsupervised-machine-learning-with-tidymodels/index_files/figure-html/unnamed-chunk-7-1.png&#34; width=&#34;672&#34; /&gt;
+We can see that this PCA separates olive oil far away from the other 7 types of oils. It also looks like one of the olive oils is closer to peanunt type of oil in the PCA space .&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;pca-in-tidymodels&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;PCA in Tidymodels&lt;/h1&gt;
+&lt;p&gt;Modeling is very much like cooking, and in the Tidymodels universe the language is reflects this very well 👨‍🍳. There are three things that we will need to do:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Writing down a recipe 👨‍🍳&lt;/li&gt;
+&lt;li&gt;Preparing that recipe 🍝&lt;/li&gt;
+&lt;li&gt;Juicing the recipe 🥛&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div id=&#34;writing-down-a-recipe&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Writing down a recipe&lt;/h2&gt;
+&lt;p&gt;We write down the recipe by adding series of steps.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;pca_rec &amp;lt;- recipe(~., data = oils) %&amp;gt;% # start writing the recipe with all the data
+  update_role(class, new_role = &amp;quot;id&amp;quot;) %&amp;gt;% # to keep this column around but not include it in the model
+  step_normalize(all_predictors()) %&amp;gt;% # to normalise the data
+  step_pca(all_predictors()) # to convert numeric data to principal components&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As we see the steps that we need to follow to write the recipe are very similar to the steps followed in base R.
+However, this is not all. In fact, if we explore how the recipe looks like:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;pca_rec&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Data Recipe
+## 
+## Inputs:
+## 
+##       role #variables
+##         id          1
+##  predictor          7
+## 
+## Operations:
+## 
+## Centering and scaling for all_predictors()
+## No PCA components were extracted.&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can see that the design matrix with id and predictor variables was created. The recipe tells us that the &lt;em&gt;No PCA components were extracted&lt;/em&gt;. This is because a recipe specifies what we want to do, but it doesn’t really do anything to the data yet. We need to extract those components by preparing the recipe.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;preparing-that-recipe&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Preparing that recipe&lt;/h2&gt;
+&lt;p&gt;We can use the function &lt;code&gt;prep&lt;/code&gt; for preparing to train this data recipe. Prep returns an updated recipe with the estimates.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;pca_prep &amp;lt;- prep(pca_rec)
+pca_prep&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Data Recipe
+## 
+## Inputs:
+## 
+##       role #variables
+##         id          1
+##  predictor          7
+## 
+## Training data contained 96 data points and no missing data.
+## 
+## Operations:
+## 
+## Centering and scaling for palmitic, stearic, oleic, linoleic, ... [trained]
+## PCA extraction with palmitic, stearic, oleic, linoleic, ... [trained]&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In the operations we see that the data has been [trained].&lt;/p&gt;
+&lt;p&gt;Great! But these are still not the components 🤔. We need to finalise that prepared recipe by &lt;strong&gt;juicing it&lt;/strong&gt;!&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;juicing-the-recipe&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Juicing the recipe&lt;/h2&gt;
+&lt;p&gt;We need to apply these operation to the data; &lt;code&gt;juice&lt;/code&gt; returns a tibble where all steps have been applied to the data.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;pca_juiced &amp;lt;- juice(pca_prep)
+pca_juiced&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 96 x 6
+##    class      PC1    PC2     PC3      PC4      PC5
+##    &amp;lt;fct&amp;gt;    &amp;lt;dbl&amp;gt;  &amp;lt;dbl&amp;gt;   &amp;lt;dbl&amp;gt;    &amp;lt;dbl&amp;gt;    &amp;lt;dbl&amp;gt;
+##  1 pumpkin -1.22  -0.296 -0.245  -0.158    0.0882 
+##  2 pumpkin -1.10  -0.771 -0.198  -0.00964 -0.0901 
+##  3 pumpkin -1.08  -1.06  -0.212   0.0154   0.00279
+##  4 pumpkin -1.14  -0.266 -0.192  -0.177   -0.137  
+##  5 pumpkin -1.25  -0.995 -0.241   0.226   -0.186  
+##  6 pumpkin  0.572 -0.500 -0.0821  0.0652   0.286  
+##  7 pumpkin -1.13  -0.530 -0.202  -0.0640  -0.0592 
+##  8 pumpkin -1.13  -0.530 -0.202  -0.0640  -0.0592 
+##  9 pumpkin -1.08  -1.06  -0.212   0.0154   0.00279
+## 10 pumpkin -1.14  -0.266 -0.192  -0.177   -0.137  
+## # … with 86 more rows&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Great! The processed data is ready to “consumed” by a plot!&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;pca_juiced %&amp;gt;%
+  ggplot(aes(PC1, PC2, label = class)) +
+  geom_point(aes(color = class), alpha = 0.7, size = 2) +
+  labs(color = NULL) +theme_minimal()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;../../../es/2021-02-04-unsupervised-machine-learning-with-tidymodels/index_files/figure-html/unnamed-chunk-12-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;The initial PCA and this one generated with Tidymodels look very similar. Note that autoplot adds some information to the plot such as providing PCs percentage. So what’s the point of using Tidymodels if is a such a long series of steps compared to base R? Well, &lt;a href=&#34;https://www.tidymodels.org/&#34;&gt;Tidymodels&lt;/a&gt; integrates a lot of modular packages which facilitates creating and evaluating different models.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&#34;umap-in-tidymodels&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;UMAP in Tidymodels&lt;/h1&gt;
+&lt;p&gt;In addition to PCA, we could plot a &lt;a href=&#34;https://umap-learn.readthedocs.io/en/latest/&#34;&gt;UMAP representation&lt;/a&gt;. To do that we would need a new recipe, one that includes a step specify UMAP dimension reduction technique; this step is naturally called &lt;code&gt;step_umap&lt;/code&gt;. Once that we have this recipe, the process is the same. Recipe, prep, juice.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;umap_rec &amp;lt;- recipe(~., data = oils) %&amp;gt;%
+  update_role(class, new_role = &amp;quot;id&amp;quot;) %&amp;gt;%
+  step_normalize(all_predictors()) %&amp;gt;%
+  step_umap(all_predictors()) # this step makes a different recipe &lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;umap_prep &amp;lt;- prep(umap_rec)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;umap_juiced &amp;lt;- juice(umap_prep)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;umap_juiced %&amp;gt;%
+  ggplot(aes(umap_1, umap_2, label = class)) +
+  geom_point(aes(color = class), alpha = 0.7, size = 2) +
+  labs(color = NULL)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;featured2.jpg&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;This model separates the data in the space somewhat differently to PCA. PCA and UMAP are fundamentally different in that PCA is a linear dimensionality reduction algorithm whereas UMAP is non-linear. Moreover, there are few important parameters that can impact how the UMAP representation looks like. This is nicely explained in the README of umapr package from the &lt;a href=&#34;https://github.com/ropenscilabs/umapr&#34;&gt;ropenscilabs&lt;/a&gt;. You can see additional arguments offered by &lt;code&gt;step_umap&lt;/code&gt; with &lt;code&gt;?step_umap&lt;/code&gt;. Also note that we have trained our models with a tiny set of data (we have not done resampling) and we have not evaluated their performance.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;conclusionss&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Conclusionss&lt;/h1&gt;
+&lt;p&gt;The data processing for doing unsupervised machine learning with Tidymodels are very similar to base R. Linear and non-linear dimensionality reduction algorithms separate the data in the reduced space differently.&lt;/p&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Word network of Bioconductor packages</title>
+      <link>/es/2021-01-30-network-visualization-of-bioconductor-packages/</link>
+      <pubDate>Sat, 30 Jan 2021 00:00:00 +0000</pubDate>
+      <guid>/es/2021-01-30-network-visualization-of-bioconductor-packages/</guid>
+      <description>
+&lt;script src=&#34;../../../es/2021-01-30-network-visualization-of-bioconductor-packages/index_files/header-attrs/header-attrs.js&#34;&gt;&lt;/script&gt;
+
+&lt;div id=&#34;TOC&#34;&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;#motivation&#34;&gt;Motivation&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#statistics-of-bioconductor-downloads&#34;&gt;Statistics of Bioconductor downloads&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#full-details-of-bioconductor-packages&#34;&gt;Full details of Bioconductor packages&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#word-network-of-bioconductor-packages&#34;&gt;Word network of Bioconductor packages&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#conclusions&#34;&gt;Conclusions&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(BiocPkgTools)
+library(tidyverse)
+library(tidytext)
+library(widyr)
+library(igraph)
+library(ggraph)
+library(lubridate)
+library(emo)&lt;/code&gt;&lt;/pre&gt;
+&lt;div id=&#34;motivation&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Motivation&lt;/h1&gt;
+&lt;p&gt;Bioconductor has a total of 5796 at the present day 2021-01-31. Therefore, navigating across Bioconductor packages can be a daunting experience. Luckily, &lt;a href=&#34;https://seandavi.github.io/BiocPkgTools/&#34;&gt;BiocPkgTools&lt;/a&gt; offers a rich ecosystem of metadata around Bioconductor packages 📜.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;statistics-of-bioconductor-downloads&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Statistics of Bioconductor downloads&lt;/h1&gt;
+&lt;p&gt;We can get a tidy data.frame with download stats for all packages using the function &lt;code&gt;biocDownloadStats&lt;/code&gt;.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;#  Getting a tidy tibble summarizing monthly download statistics 
+bio_download_stats &amp;lt;- biocDownloadStats()&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;bio_download_stats %&amp;gt;% 
+  head(13)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 13 x 7
+##    Package  Year Month Nb_of_distinct_IPs Nb_of_downloads repo     Date      
+##    &amp;lt;chr&amp;gt;   &amp;lt;int&amp;gt; &amp;lt;chr&amp;gt;              &amp;lt;int&amp;gt;           &amp;lt;int&amp;gt; &amp;lt;chr&amp;gt;    &amp;lt;date&amp;gt;    
+##  1 ABarray  2021 Jan                   54             114 Software 2021-01-01
+##  2 ABarray  2021 Feb                    0               0 Software 2021-02-01
+##  3 ABarray  2021 Mar                    0               0 Software 2021-03-01
+##  4 ABarray  2021 Apr                    0               0 Software 2021-04-01
+##  5 ABarray  2021 May                    0               0 Software 2021-05-01
+##  6 ABarray  2021 Jun                    0               0 Software 2021-06-01
+##  7 ABarray  2021 Jul                    0               0 Software 2021-07-01
+##  8 ABarray  2021 Aug                    0               0 Software 2021-08-01
+##  9 ABarray  2021 Sep                    0               0 Software 2021-09-01
+## 10 ABarray  2021 Oct                    0               0 Software 2021-10-01
+## 11 ABarray  2021 Nov                    0               0 Software 2021-11-01
+## 12 ABarray  2021 Dec                    0               0 Software 2021-12-01
+## 13 ABarray  2021 all                   54             114 Software NA&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As we see observations for all the months of the year are generated once that the year starts (download values for events in the future are filled up with &lt;em&gt;0&lt;/em&gt;). Also note that there is a summary statistic for month called &lt;code&gt;all&lt;/code&gt; embedded inside the tibble, and the &lt;code&gt;Date&lt;/code&gt; value for that observation is NA (this would makes group by date very convenient).&lt;/p&gt;
+&lt;p&gt;This tibble contains information about packages that expands from 2009 to 2021. There are 3 categories of packages, with the total number of package per category as follows:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;bio_download_stats %&amp;gt;% 
+  distinct(Package, repo) %&amp;gt;%
+  count(repo) %&amp;gt;%
+  knitr::kable()&lt;/code&gt;&lt;/pre&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;left&#34;&gt;repo&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;n&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;AnnotationData&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2659&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;ExperimentData&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;821&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Software&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2316&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;div id=&#34;full-details-of-bioconductor-packages&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Full details of Bioconductor packages&lt;/h1&gt;
+&lt;p&gt;The complete information for the packages as described in the &lt;code&gt;DESCRIPTION&lt;/code&gt; file can be obtained with &lt;code&gt;biocPkgList&lt;/code&gt;.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;bpi = biocPkgList()
+colnames(bpi)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##  [1] &amp;quot;Package&amp;quot;               &amp;quot;Version&amp;quot;               &amp;quot;Depends&amp;quot;              
+##  [4] &amp;quot;Suggests&amp;quot;              &amp;quot;License&amp;quot;               &amp;quot;MD5sum&amp;quot;               
+##  [7] &amp;quot;NeedsCompilation&amp;quot;      &amp;quot;Title&amp;quot;                 &amp;quot;Description&amp;quot;          
+## [10] &amp;quot;biocViews&amp;quot;             &amp;quot;Author&amp;quot;                &amp;quot;Maintainer&amp;quot;           
+## [13] &amp;quot;git_url&amp;quot;               &amp;quot;git_branch&amp;quot;            &amp;quot;git_last_commit&amp;quot;      
+## [16] &amp;quot;git_last_commit_date&amp;quot;  &amp;quot;Date/Publication&amp;quot;      &amp;quot;source.ver&amp;quot;           
+## [19] &amp;quot;win.binary.ver&amp;quot;        &amp;quot;mac.binary.ver&amp;quot;        &amp;quot;vignettes&amp;quot;            
+## [22] &amp;quot;vignetteTitles&amp;quot;        &amp;quot;hasREADME&amp;quot;             &amp;quot;hasNEWS&amp;quot;              
+## [25] &amp;quot;hasINSTALL&amp;quot;            &amp;quot;hasLICENSE&amp;quot;            &amp;quot;Rfiles&amp;quot;               
+## [28] &amp;quot;dependencyCount&amp;quot;       &amp;quot;Imports&amp;quot;               &amp;quot;Enhances&amp;quot;             
+## [31] &amp;quot;dependsOnMe&amp;quot;           &amp;quot;VignetteBuilder&amp;quot;       &amp;quot;suggestsMe&amp;quot;           
+## [34] &amp;quot;LinkingTo&amp;quot;             &amp;quot;Archs&amp;quot;                 &amp;quot;URL&amp;quot;                  
+## [37] &amp;quot;SystemRequirements&amp;quot;    &amp;quot;BugReports&amp;quot;            &amp;quot;importsMe&amp;quot;            
+## [40] &amp;quot;Video&amp;quot;                 &amp;quot;linksToMe&amp;quot;             &amp;quot;OS_type&amp;quot;              
+## [43] &amp;quot;PackageStatus&amp;quot;         &amp;quot;License_restricts_use&amp;quot; &amp;quot;License_is_FOSS&amp;quot;      
+## [46] &amp;quot;organism&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;There is lots of information in here. We could use this metadata information to understand the connections between packages.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;word-network-of-bioconductor-packages&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Word network of Bioconductor packages&lt;/h1&gt;
+&lt;p&gt;The most informative variables about the packages are &lt;code&gt;Title&lt;/code&gt; and &lt;code&gt;Description&lt;/code&gt; so we can explore the connections between packages doing some &lt;strong&gt;text mining&lt;/strong&gt; using a &lt;a href=&#34;https://www.tidytextmining.com/index.html&#34;&gt;Tidytext&lt;/a&gt; approach.&lt;/p&gt;
+&lt;p&gt;To prepare our dataset we need to initially tokenize the text. The Wikipedia definition for &lt;a href=&#34;https://en.wikipedia.org/wiki/Lexical_analysis#Tokenization&#34;&gt;tokenization&lt;/a&gt; on lexical analysis is as follows:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Tokenization is the process of demarcating and possibly classifying sections of a string of input characters&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;The &lt;em&gt;sections&lt;/em&gt; can be words, sentence, ngram or chapter (for example if analysis a book). In this case we are gonna break down package Titles or Description into words using the function &lt;code&gt;unnest_tokens&lt;/code&gt;.
+In addition, we can remove &lt;a href=&#34;https://en.wikipedia.org/wiki/Stop_word&#34;&gt;stop words&lt;/a&gt; (included in the Tidytext dataset).&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;bpi_title &amp;lt;- bpi %&amp;gt;% 
+  dplyr::select(Package, Title) %&amp;gt;%
+  unnest_tokens(word, Title) %&amp;gt;% 
+  anti_join(stop_words)
+
+bpi_description &amp;lt;- bpi %&amp;gt;%
+  dplyr::select(Package, Description) %&amp;gt;%
+  unnest_tokens(word, Description) %&amp;gt;%
+  anti_join(stop_words)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Note that the number of words from Title is 11932 and the number
+of words from Description is 59370, so package Descriptions
+contain on average 5 times the words of package Titles.&lt;/p&gt;
+&lt;p&gt;We can have a look at how the tokenised titles for each package look like:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;bpi_title&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 11,932 x 2
+##    Package word      
+##    &amp;lt;chr&amp;gt;   &amp;lt;chr&amp;gt;     
+##  1 a4      automated 
+##  2 a4      affymetrix
+##  3 a4      array     
+##  4 a4      analysis  
+##  5 a4      umbrella  
+##  6 a4      package   
+##  7 a4Base  automated 
+##  8 a4Base  affymetrix
+##  9 a4Base  array     
+## 10 a4Base  analysis  
+## # … with 11,922 more rows&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Them, we can use &lt;code&gt;pairwise_count&lt;/code&gt; from the &lt;a href=&#34;https://cran.r-project.org/web/packages/widyr/vignettes/intro.html&#34;&gt;widyr&lt;/a&gt; package to count how many times each pair of words occurs together in the package Title. This function works as a mutate in that it takes the variables to compare and returns a tibble with the pairwise columns and an extra column called &lt;code&gt;n&lt;/code&gt; containing the number of words co-occurrences. I think this function is very sweet 🍯!&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;bpi_titlepairs &amp;lt;- bpi_title %&amp;gt;%
+pairwise_count(Package, word, sort = TRUE, upper = FALSE)
+
+bpi_desciptionpairs &amp;lt;- bpi_description %&amp;gt;%
+pairwise_count(Package, word, sort = TRUE, upper = FALSE)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This data is ready for visualization of network of co-occurring words in package Titles. We can use the &lt;code&gt;ggraph&lt;/code&gt; package for visualizing this network. We are going to represent just the top co-occurring words, or otherwise we get a very populated network which is impossible to read.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;set.seed(1234)
+bpi_titlepairs %&amp;gt;%
+  filter(n &amp;gt;= 6) %&amp;gt;%
+  graph_from_data_frame() %&amp;gt;%
+  ggraph(layout = &amp;quot;fr&amp;quot;) +
+  geom_edge_link(aes(edge_alpha = n, edge_width = n), edge_colour = &amp;quot;purple&amp;quot;) +
+  geom_node_point(size = 5) +
+  geom_node_text(aes(label = name), repel = TRUE, 
+                 point.padding = unit(0.2, &amp;quot;lines&amp;quot;)) +
+  theme_void()+
+  theme(legend.position=&amp;quot;none&amp;quot;)+
+  labs(title = &amp;quot;  Number of word co-ocurrences in packages titles&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;figure&#34;&gt;&lt;span id=&#34;fig:unnamed-chunk-10&#34;&gt;&lt;/span&gt;
+&lt;img src=&#34;../../../es/2021-01-30-network-visualization-of-bioconductor-packages/index_files/figure-html/unnamed-chunk-10-1.png&#34; alt=&#34;Word network in Bioconductor packages Titles&#34; width=&#34;672&#34; /&gt;
+&lt;p class=&#34;caption&#34;&gt;
+Figure 1: Word network in Bioconductor packages Titles
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;p&gt;We see some clear and logical clustering of packages in this network.For example, DESEq and DESeq2 packages cluster together, as one would expect since they DESeq2 is the successor of DESeq. There are other obvious connections such as MSstatsTMTPTM and MSstatsTMTP since the former has added functionality to analyse PTMs on TMT shotgun mass spectrometry-based proteomic experiments.
+There is a big cluster on the bottom left corner with packages to analyse RNASeq and single cell RNASeq.&lt;/p&gt;
+&lt;p&gt;What about the network build from words of the Description?&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;set.seed(1234)
+bpi_desciptionpairs %&amp;gt;%
+  filter(n &amp;gt;= 15) %&amp;gt;%
+  graph_from_data_frame() %&amp;gt;%
+  ggraph(layout = &amp;quot;fr&amp;quot;) +
+  geom_edge_link(aes(edge_alpha = n, edge_width = n), edge_colour = &amp;quot;orange&amp;quot;) +
+  geom_node_point(size = 5) +
+  geom_node_text(aes(label = name), repel = TRUE, 
+                 point.padding = unit(0.2, &amp;quot;lines&amp;quot;)) +
+  theme_void()+
+  theme(legend.position=&amp;quot;none&amp;quot;)+
+  labs(title = &amp;quot;Number of word co-ocurrences in packages Description&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;figure&#34;&gt;&lt;span id=&#34;fig:unnamed-chunk-11&#34;&gt;&lt;/span&gt;
+&lt;img src=&#34;../../../es/2021-01-30-network-visualization-of-bioconductor-packages/index_files/figure-html/unnamed-chunk-11-1.png&#34; alt=&#34;Word network in Bioconductor packages Description&#34; width=&#34;672&#34; /&gt;
+&lt;p class=&#34;caption&#34;&gt;
+Figure 2: Word network in Bioconductor packages Description
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;p&gt;We see more connections here, and some of the relationships are still obvious (e.g HiCcompare and multiHiCcompare, anota and anota2seq, AnnotationHub and ExperimentHub). This network is richer, and one would have to dive a bit deeper to get a better sense of this network.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;conclusions&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Conclusions&lt;/h1&gt;
+&lt;p&gt;Text mining of Bioconductor packages metadata is a straight forward visual way to understand the relationships between packages. One could go beyond this and for example finding words that are
+especially important across package Descriptions by calculating &lt;a href=&#34;https://www.tidytextmining.com/tfidf.html#tfidf&#34;&gt;tf-idf statistic&lt;/a&gt;. One could also set up a GitHub Action executed as a CRON job to get updates periodically. This could turn into a challenge for &lt;a href=&#34;https://kevinrue.github.io/BiocChallenges/index.html&#34;&gt;BiocChallenges&lt;/a&gt;. This post was inspired by &lt;a href=&#34;https://www.tidytextmining.com/nasa.html&#34;&gt;Chapter 8&lt;/a&gt; of the Tidytext book and &lt;a href=&#34;https://kevinrue.github.io/post/biocpkgtools/&#34;&gt;BiocRoulette&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Joining the RStudio Tidyverse Instructor community</title>
+      <link>/es/2021-01-20-rstudio-instructor-certification-tidyverse/</link>
+      <pubDate>Wed, 20 Jan 2021 00:00:00 +0000</pubDate>
+      <guid>/es/2021-01-20-rstudio-instructor-certification-tidyverse/</guid>
+      <description>
+&lt;script src=&#34;../../../es/2021-01-20-rstudio-instructor-certification-tidyverse/index_files/header-attrs/header-attrs.js&#34;&gt;&lt;/script&gt;
+
+&lt;div id=&#34;TOC&#34;&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;#fundations-of-my-motivation&#34;&gt;Fundations of my motivation&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#why-i-decided-to-become-an-rstudio-tidyverse&#34;&gt;Why I decided to become an RStudio Tidyverse&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#during-the-training&#34;&gt;During the training&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#between-training-and-exam&#34;&gt;Between training and exam&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#during-the-teaching-exam&#34;&gt;During the teaching exam&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#during-the-tidyverse-exam&#34;&gt;During the Tidyverse exam&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#voilà&#34;&gt;Voilà!&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+
+&lt;div id=&#34;fundations-of-my-motivation&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Fundations of my motivation&lt;/h1&gt;
+&lt;p&gt;Early 2020, in a pre-pandemic world, I attended my first &lt;a href=&#34;https://mine-cetinkaya-rundel.github.io/tidy-up-ds/2020-02-london/tidy-up.html#1&#34;&gt;Rladies meetup in London&lt;/a&gt; by
+&lt;a href=&#34;https://education.rstudio.com/author/mine/&#34;&gt;Mine Cetinkaya-Rundel&lt;/a&gt;. Part of the reasons I decided to attended was because my husband was going to be away for the foreseeable months, so I decided to give myself the chance to connect with other Rladies. It was only few months before that meetup that I started using the Tidyverse, although I used R for many years in the past. It was a fantastic talk where I met some very cool Rladies and I got super impressed by Mine’s teaching abilities.&lt;/p&gt;
+&lt;p&gt;During the past year, and because of continous lockdowns and WFH, I really dived into the Tidyverse: I joint LatinR talks, participated in Rladies Barcelona Florence Nightingale content, I watched Tidytuesday screencasts, opened a blog with Hugo, Rblogdown and Netlify (thanks to the amazing resources shared by &lt;a href=&#34;https://education.rstudio.com/trainers/people/hill+alison/&#34;&gt;Alison Hill&lt;/a&gt;). I could easily say that the Tidyverse mission 🛰 keep my mental health afloat during such difficult times.&lt;/p&gt;
+&lt;p&gt;Moreover, during the summer of 2020 I got some formal teaching training from university of London where I learn concepts like Blooms taxonomy and I started to give by-weekly workshops for biology researcher co-workers of mine where I introduce them to ggplot2 and statistical concepts such as correlation.&lt;/p&gt;
+&lt;p&gt;All these things had a direct impact on my research career; for instance I published my
+first R package and gave my first EuroBioconductor &lt;a href=&#34;https://docs.google.com/presentation/d/16WN2ldl0r4f5Iv1pR5DAdSIC29H5JcM1Dr0RrYH9qx4/edit#slide=id.p&#34;&gt;short talk&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;why-i-decided-to-become-an-rstudio-tidyverse&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Why I decided to become an RStudio Tidyverse&lt;/h1&gt;
+&lt;p&gt;I decided to get certificated for several reasons:&lt;/p&gt;
+&lt;ol style=&#34;list-style-type: decimal&#34;&gt;
+&lt;li&gt;Getting additional formal training on how to teach. I felt I and my audience could benefit more the better trained for training I would be.&lt;/li&gt;
+&lt;li&gt;Pushing myself to really know inside out the Tidyverse. Getting the training forced me to read the R4DS book and doing the exercises thoroughly. I used additional fantastic resources such as &lt;a href=&#34;https://datasciencebox.org/&#34;&gt;https://datasciencebox.org/&lt;/a&gt;. Later, I learn that there are book clubs for some of the most popular R books, something that I somewhat missed, but I am very excited to join in 2021 the tidymodels book club organised by &lt;a href=&#34;https://twitter.com/JonTheGeek&#34;&gt;Jon Harmon&lt;/a&gt;.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;The RStudio Instructor training journey has properly equipped me to do and teach data science! This process pushed me out of my comfort zone for which I will be forever grateful.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;during-the-training&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;During the training&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Instructor training covering modern teaching methods&lt;/strong&gt;. Materials for this training are &lt;a href=&#34;https://drive.google.com/drive/folders/13ohFt3D0EJ5PDbMaWTxnHH-hwA7G0IvY&#34;&gt;available here&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;This was a two half days course where &lt;a href=&#34;https://third-bit.com/&#34;&gt;Greg Wilson&lt;/a&gt; lead such inspiring modules. What I like the most was feeling part of the learning community, the interactivity of the modules and genuinely learning about evidence-based effective teaching methods.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Be nice, the rest is on the details &lt;strong&gt;–Greg&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;/div&gt;
+&lt;div id=&#34;between-training-and-exam&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Between training and exam&lt;/h1&gt;
+&lt;div id=&#34;materials&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Materials&lt;/h2&gt;
+&lt;ol style=&#34;list-style-type: decimal&#34;&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Books&lt;/strong&gt;.
+Reading the book &lt;a href=&#34;https://teachtogether.tech/&#34;&gt;Teaching Tech Together&lt;/a&gt; written by Greg. The book is currently undergoing translation into Spanish by a team of volunteers and I am honored to be among them thanks to &lt;a href=&#34;https://education.rstudio.com/trainers/people/bellini_saibene+yanina/&#34;&gt;Yanina Bellini Saibene&lt;/a&gt;.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Guides&lt;/strong&gt;.
+Going through &lt;a href=&#34;https://github.com/rstudio-education/r4ds-instructors&#34;&gt;R4DS instructor’s guide&lt;/a&gt; which has learning objectives and key points for each chapter of R4DS book.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Concept maps&lt;/strong&gt;.
+Building concept maps to design lessons taking into account cognitive load is a big part of the training. When preparing for the two exams I found &lt;a href=&#34;https://github.com/rstudio/concept-maps/tree/master/es&#34;&gt;this resource&lt;/a&gt; extremely useful to check I was building an accurate mental model of the topics covered in R4DS. I built myself quite a lot of mental models that you can find here&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Greg also asked us to send an email with what we remember and so I did this concept map (there is a lot of information buried beneath my bad hand writing)&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;RStudioInstructor_1month_MariaDermit.jpg&#34; /&gt;&lt;/p&gt;
+&lt;ol start=&#34;4&#34; style=&#34;list-style-type: decimal&#34;&gt;
+&lt;li&gt;&lt;strong&gt;Watching and reading other people’s experiences&lt;/strong&gt;.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=SJmfXYd0hOU&amp;amp;feature=emb_logo&#34;&gt;Process to become a certified Rstudio instructor&lt;/a&gt; a video where some Mi-useRs &lt;a href=&#34;https://medium.com/@doritolay/introducing-mir-a-community-for-underrepresented-users-of-r-7560def7d861&#34;&gt;(minority R users)&lt;/a&gt; talk about their experiences and motivations to become a certified Rstudio instructor.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://yabellini.netlify.app/post/rstudiocertification/&#34;&gt;Obtaining RStudio certification. A shared path&lt;/a&gt; a post by Yanina on her journey to obtain RStudio certification.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://bcullen.rbind.io/post/2020-09-03-reflections-on-rstudio-instructor-training/&#34;&gt;Reflections&lt;/a&gt; by &lt;a href=&#34;https://education.rstudio.com/trainers/people/cullen+brendan/&#34;&gt;Brendan Cullen’s&lt;/a&gt; on RStudio Instructor Training .&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://silvia.rbind.io/2020-10-07-rstudio-instructor-certification-tidyverse/&#34;&gt;Overview&lt;/a&gt; by &lt;a href=&#34;https://education.rstudio.com/trainers/people/canelon+silvia/&#34;&gt;Silvia Canelon&lt;/a&gt;
+of the RStudio Instructor certification process. Check her post since she has an amazing collection of resources to support anyone on their certification journey.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ol start=&#34;5&#34; style=&#34;list-style-type: decimal&#34;&gt;
+&lt;li&gt;&lt;strong&gt;Active learning &lt;/strong&gt;.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;With some of the materials I use during my learning, I created some exercises using the &lt;a href=&#34;https://rstudio.github.io/learnr/&#34;&gt;learnr&lt;/a&gt; package, which is such a powerful and versatile way to create interactive exercises.
+&lt;a href=&#34;https://clif.shinyapps.io/01-Replacement-es/&#34;&gt;This&lt;/a&gt; is my humble contribution to fading exercises with &lt;a href=&#34;https://github.com/allisonhorst/palmerpenguins&#34;&gt;Penguins&lt;/a&gt; and I hope to extend these materials in &lt;a href=&#34;https://user2021.r-project.org/&#34;&gt;user!2021&lt;/a&gt; later this year&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;I also gave a mocked presentation to &lt;a href=&#34;https://education.rstudio.com/trainers/people/quiroga+riva/&#34;&gt;Riva Quiroga&lt;/a&gt; and &lt;a href=&#34;https://education.rstudio.com/trainers/people/bellini_saibene+yanina/&#34;&gt;Yanina Bellini&lt;/a&gt; over Zoom and received extremely useful feedback. Gracias chicas!!&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&#34;during-the-teaching-exam&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;During the teaching exam&lt;/h1&gt;
+&lt;ol start=&#34;2&#34; style=&#34;list-style-type: decimal&#34;&gt;
+&lt;li&gt;A 90-minute &lt;strong&gt;teaching exam&lt;/strong&gt; based on content from the instructor training. This includes a 15-minute demonstration lesson and a written component. Mine was on &lt;a href=&#34;https://r4ds.had.co.nz/workflow-projects.html&#34;&gt;RStudio projects&lt;/a&gt; and my learner persona was &lt;a href=&#34;https://docs.google.com/presentation/d/11CN4Ox8k-zeFEoXJYkbWTNN0V94pyS-T8oHMmBG34xU/edit#slide=id.ga7003f49f1_0_78&#34;&gt;Lovorka&lt;/a&gt;. You can see my contribution &lt;a href=&#34;https://docs.google.com/presentation/d/124emaF1lpe4PwVC2zy2bxN1-ckGynlPBkFxVRh7a0r8/edit&#34;&gt;here&lt;/a&gt;.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/div&gt;
+&lt;div id=&#34;during-the-tidyverse-exam&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;During the Tidyverse exam&lt;/h1&gt;
+&lt;ol start=&#34;3&#34; style=&#34;list-style-type: decimal&#34;&gt;
+&lt;li&gt;A 90-minute &lt;strong&gt;Tidyverse exam&lt;/strong&gt; to test your knowledge of the subject matter in &lt;a href=&#34;https://r4ds.had.co.nz/&#34;&gt;R for Data Science&lt;/a&gt; (make sure to check the &lt;a href=&#34;https://education.rstudio.com/trainers/#faq&#34;&gt;program FAQs&lt;/a&gt; for information about the Shiny exam). I hope to share my exercise soon.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/div&gt;
+&lt;div id=&#34;voilà&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Voilà!&lt;/h1&gt;
+&lt;p&gt;Joining this community is a dream… that may become true for you too? 🍎&lt;/p&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Transfer learning for spatial proteomics</title>
+      <link>/es/2021-01-20-transfer-learning-for-spatial-proteomics/</link>
+      <pubDate>Wed, 20 Jan 2021 00:00:00 +0000</pubDate>
+      <guid>/es/2021-01-20-transfer-learning-for-spatial-proteomics/</guid>
+      <description>
+&lt;script src=&#34;../../../es/2021-01-20-transfer-learning-for-spatial-proteomics/index_files/header-attrs/header-attrs.js&#34;&gt;&lt;/script&gt;
+
+&lt;div id=&#34;TOC&#34;&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;#introduction&#34;&gt;Introduction&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#getting-the-data&#34;&gt;Getting the data&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#quetting-auxiliary-annotation-biomart-query&#34;&gt;Quetting auxiliary annotation (Biomart Query)&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#nearest-neighbour-transfer-learning&#34;&gt;Nearest neighbour transfer learning&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#conclusions&#34;&gt;Conclusions&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# loading libraries
+# clearing environment bc https://support.bioconductor.org/p/p132709/
+rm(list = ls())
+library(pRoloc)
+library(pRolocdata)
+library(BiocStyle)&lt;/code&gt;&lt;/pre&gt;
+&lt;div id=&#34;introduction&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Introduction&lt;/h1&gt;
+&lt;p&gt;Within the cell, the localization of a given protein is determined by its biological
+function. Subcellular proteomics is the method to study protein sub-cellular
+localization in a systematic manner. There are two complementary ways to analysis localized proteins:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;On one hand biochemical sub-cellular fractionation experiments allow empirical quantification of protein across sub-cellular and sub-organellar compartments. Proteins are allocated to a given subcellular niche
+if the detected intensity is higher than a threshold. We can say that this type of data has high signal-to-noise ratio, but is available in limited amounts (&lt;em&gt;primary&lt;/em&gt; data).&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;On the other hand, databases such as &lt;a href=&#34;http://geneontology.org/&#34;&gt;GO&lt;/a&gt; contain large amount of information about sub-cellular proteins localisation, but this is information is blended for a many biological systems. We can say that this type of data has high low signal-to-noise, but is available in large amounts (&lt;em&gt;auxiliary&lt;/em&gt; data).&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;So we want to know &lt;em&gt;how to optimally combine&lt;/em&gt; primary and auxiliary data.💹&lt;/p&gt;
+&lt;p&gt;To do so, we need to weight both types of data. If we imagine a multivariate
+distribution (like a &lt;a href=&#34;https://github.com/TommyJones/tidylda&#34;&gt;Dirichlet distribution&lt;/a&gt;) were all the components take values between (0,1) and all values sum up to one, we can imagine that a weight of 1 indicates that the final annotation rely exclusively on the experimental data and ignore completely the auxiliary data and a weight of 0 represents the opposite situation, where the primary data is ignored and only the auxiliary data is considered.&lt;/p&gt;
+&lt;p&gt;We could use a &lt;em&gt;transfer learning&lt;/em&gt; algorithm to efficiently complement the primary data with auxiliary data without compromising the integrity of the former. This is implemented in the &lt;code&gt;pRoloc&lt;/code&gt; package and it was published by &lt;a href=&#34;https://lgatto.github.io/pRoloc/reference/knntlClassification.html&#34;&gt;Breckels et al&lt;/a&gt; and expanded by
+&lt;a href=&#34;https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1006516&#34;&gt;Crook et al&lt;/a&gt; using a Bayesian approach. In this post I will step-by-step walk through KNN transfer learning.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;getting-the-data&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Getting the data&lt;/h1&gt;
+&lt;p&gt;We start with &lt;code&gt;HEK293T2011&lt;/code&gt; proteomics data available in the &lt;em&gt;&lt;a href=&#34;https://bioconductor.org/packages/3.10/pRolocdata&#34;&gt;pRolocdata&lt;/a&gt;&lt;/em&gt; package.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;data(HEK293T2011)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The class of (HEK293T2011) isMSnSet instance, an efficient and established to &lt;a href=&#34;http://www.bioconductor.org/packages/release/bioc/html/MSnbase.html&#34;&gt;store and handle MS data and metainformation efficiently&lt;/a&gt;. I am not going to discuss much about this class of objects since the field is moving towards other types of data storage such as &lt;a href=&#34;https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html&#34;&gt;SummarizedExperiment objects&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;We can also get an overview experimental data and query how many proteins across how many conditions were quantified.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;head(exprs(HEK293T2011),2)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##             X113      X114       X115      X116      X117       X118       X119
+## O00767 0.1360547 0.1495961 0.10623931 0.1465050 0.2773137 0.14294025 0.03796970
+## P51648 0.1914456 0.2052463 0.05661169 0.1651138 0.2366302 0.09964387 0.01803788
+##               X121
+## O00767 0.003381233
+## P51648 0.027270640&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;dim(exprs(HEK293T2011))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## [1] 1371    8&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;What is important to know is that 1371 proteins were quantified across eight iTRAQ 8-plex labelled fractions (
+one could know a bit more about the experiment with &lt;code&gt;?HEK293T2011&lt;/code&gt;)&lt;/p&gt;
+&lt;p&gt;Next thing we can do is see how well these organelles have been resolved in the experiment using a PCA plot&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;plot2D(HEK293T2011)
+addLegend(HEK293T2011, where = &amp;quot;topright&amp;quot;, cex = 0.6)&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;figure&#34;&gt;&lt;span id=&#34;fig:unnamed-chunk-4&#34;&gt;&lt;/span&gt;
+&lt;img src=&#34;../../../es/2021-01-20-transfer-learning-for-spatial-proteomics/index_files/figure-html/unnamed-chunk-4-1.png&#34; alt=&#34;PCA plot of `HEK293T2011 subcellular proteomics dataset`&#34; width=&#34;672&#34; /&gt;
+&lt;p class=&#34;caption&#34;&gt;
+Figure 1: PCA plot of &lt;code&gt;HEK293T2011 subcellular proteomics dataset&lt;/code&gt;
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;p&gt;We see that some organelles such as cytosol and cytosol/nucleus are well resolved - and so they will get a high weigh- while others such as the Golgi or the ER are less so - so they will get a low weight.
+There are some proteins that do not get annotation because the resolution of the experiment did not allow so.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;quetting-auxiliary-annotation-biomart-query&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Quetting auxiliary annotation (Biomart Query)&lt;/h1&gt;
+&lt;p&gt;Next thing we can do is get auxiliary data. We can do so by querying &lt;em&gt;&lt;a href=&#34;https://bioconductor.org/packages/3.10/biomaRt&#34;&gt;biomaRt&lt;/a&gt;&lt;/em&gt; and storing the annotation as an &lt;code&gt;AnnotationParams&lt;/code&gt; object. Again, this is part of the &lt;em&gt;&lt;a href=&#34;https://bioconductor.org/packages/3.10/pRoloc&#34;&gt;pRoloc&lt;/a&gt;&lt;/em&gt; package, and it has been created for efficient data handling.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ap &amp;lt;- setAnnotationParams(inputs =
+                              c(&amp;quot;Human genes&amp;quot;,
+                                &amp;quot;UniProtKB/Swiss-Prot ID&amp;quot;))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Connecting to Biomart...&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can access this instance with&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;getAnnotationParams()&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Object of class &amp;quot;AnnotationParams&amp;quot;
+##  Using the &amp;#39;ENSEMBL_MART_ENSEMBL&amp;#39; BioMart database
+##  Using the &amp;#39;hsapiens_gene_ensembl&amp;#39; dataset
+##  Using &amp;#39;uniprotswissprot&amp;#39; as filter
+##  Created on Tue Jan 26 15:47:22 2021&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can annotate our innitial &lt;code&gt;HEK293T2011&lt;/code&gt; data by creating a new &lt;code&gt;MSnSet&lt;/code&gt; instance populated with a GO term as a binary matrix (so the auxiliary data with information about 889 cellular compartment GO terms has been added).&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;HEK293T2011goset  &amp;lt;- makeGoSet(HEK293T2011)&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;nearest-neighbour-transfer-learning&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Nearest neighbour transfer learning&lt;/h1&gt;
+&lt;div id=&#34;deciding-the-weight&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Deciding the weight&lt;/h2&gt;
+&lt;p&gt;We could define more or less weight values between 0 and 1 depending on how granular we want to be with
+our search (more weight will give finer-grained integration).For example for 3 classes, 3 weights will generate:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;gtools::permutations(length(seq(0, 1, 0.5)), 3, seq(0, 1, 0.5), repeats.allowed = TRUE) &lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##       [,1] [,2] [,3]
+##  [1,]  0.0  0.0  0.0
+##  [2,]  0.0  0.0  0.5
+##  [3,]  0.0  0.0  1.0
+##  [4,]  0.0  0.5  0.0
+##  [5,]  0.0  0.5  0.5
+##  [6,]  0.0  0.5  1.0
+##  [7,]  0.0  1.0  0.0
+##  [8,]  0.0  1.0  0.5
+##  [9,]  0.0  1.0  1.0
+## [10,]  0.5  0.0  0.0
+## [11,]  0.5  0.0  0.5
+## [12,]  0.5  0.0  1.0
+## [13,]  0.5  0.5  0.0
+## [14,]  0.5  0.5  0.5
+## [15,]  0.5  0.5  1.0
+## [16,]  0.5  1.0  0.0
+## [17,]  0.5  1.0  0.5
+## [18,]  0.5  1.0  1.0
+## [19,]  1.0  0.0  0.0
+## [20,]  1.0  0.0  0.5
+## [21,]  1.0  0.0  1.0
+## [22,]  1.0  0.5  0.0
+## [23,]  1.0  0.5  0.5
+## [24,]  1.0  0.5  1.0
+## [25,]  1.0  1.0  0.0
+## [26,]  1.0  1.0  0.5
+## [27,]  1.0  1.0  1.0&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As we sayed before, HEK293T2011goset experiment has 10 subcellular compartments, and so the total combinations for 10 classes, 4 weights will be:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;th &amp;lt;- gtools::permutations(length(seq(0, 1, length.out = 4)), 10, seq(0, 1, length.out = 4), repeats.allowed = TRUE)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Total combination of weights for HEK293T2011goset experiment will be 1048576.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;&lt;a href=&#34;https://bioconductor.org/packages/3.10/pRoloc&#34;&gt;pRoloc&lt;/a&gt;&lt;/em&gt; package comes with a convenient function &lt;code&gt;thetas&lt;/code&gt; to produce such a weight matrix (because we need a theta for each of the training feature).&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;## marker classes for HEK293T2011
+m &amp;lt;- unique(fData(HEK293T2011)$markers.tl)
+m &amp;lt;- m[m != &amp;quot;unknown&amp;quot;]
+th &amp;lt;- thetas(length(m), length.out=4)&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;optimizing-weigth&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Optimizing weigth&lt;/h2&gt;
+&lt;p&gt;We can do a grid search to determine which is the best &lt;code&gt;th&lt;/code&gt;, with the &lt;code&gt;knntlOptimisation&lt;/code&gt; function of the &lt;em&gt;&lt;a href=&#34;https://bioconductor.org/packages/3.10/pRoloc&#34;&gt;pRoloc&lt;/a&gt;&lt;/em&gt; package.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;topt &amp;lt;- knntlOptimisation(HEK293T2011, HEK293T2011goset,
+                          th = th,
+                          k = c(3, 3),
+                          fcol = &amp;quot;markers.tl&amp;quot;,
+                          times = 50, 
+                          method = &amp;quot;Breckels&amp;quot; )&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;For the sake of time, we can reduce our initial data, as it will take a long time to do this grid search (even if &lt;code&gt;knntlOptimisation&lt;/code&gt; uses parallelisation by default).&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;set.seed(2021)
+i &amp;lt;- sample(nrow(th), 50)
+topt &amp;lt;- knntlOptimisation(HEK293T2011, HEK293T2011goset,
+                          th = th[i, ],
+                          k = c(3, 3),
+                          fcol = &amp;quot;markers.tl&amp;quot;,
+                          times = 5)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The optimisation is performed on the labelled marker examples only. &lt;code&gt;topt&lt;/code&gt; result stores all the result from the optimisation step, and in particular the observed theta weights, which can be directly plotted as shown on the bubble plot.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;plot(topt)&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;figure&#34;&gt;
+&lt;img src=&#34;https://raw.githubusercontent.com/lgatto/pRoloc/master/vignettes/Figures/bubble-andy.png&#34; alt=&#34;&#34; /&gt;
+&lt;p class=&#34;caption&#34;&gt;Result stocores for the optimisation step. Note that this figure is the result using extensive optimisation on the whole HEK293T2011 dataset and auxiliary HEK293T2011goset dataset, not only with only a random subset of 50 candidate weights.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p&gt;We see that the cytosol and cytosol/nucleus and ER are predominantly scored with high heights, consistent with high reliability of the primary data. Golgi, PM and the 40S ribosomal clusters are scored with smaller scores, indicating a substantial benefit of the auxiliary data.&lt;/p&gt;
+&lt;p&gt;The best grid search parameters can be accessed with:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;getParams(topt)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Note that the data &lt;code&gt;HEK293T2011&lt;/code&gt; &lt;em&gt;gets annotated&lt;/em&gt; with the best parameters at the knntlOptimisation
+step. We can get the best weights with:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;bw &amp;lt;- experimentData(HEK293T2011)@other$knntl$thetas&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;performing-transfer-learning&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Performing transfer learning&lt;/h2&gt;
+&lt;p&gt;To apply the best weights and learn from the auxiliary data to classify the unlabelled proteins into sub-cellular niches (present in &lt;code&gt;markers.tl&lt;/code&gt; column), we can pass the primary and auxiliary data sets, best weights, best k’s and the metadata feature data taht contains the markers definitions to the &lt;code&gt;knntlClassification&lt;/code&gt; function.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;HEK293T2011 &amp;lt;- knntlClassification(HEK293T2011, HEK293T2011goset,
+                                bestTheta = bw,
+                                k = c(3, 3),
+                                fcol = &amp;quot;markers.tl&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In this step, annotation predictors scores and parameters get added into the MSnSet data. We can access the predicted localization conveniently using the &lt;code&gt;getPredictions&lt;/code&gt; assessor.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;HEK293T2011 &amp;lt;- getPredictions(HEK293T2011, fcol = &amp;quot;knntl&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;plotting-the-results&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Plotting the results&lt;/h2&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# These functions allow to get/set the colours/points to plot organelle features 
+setStockcol(paste0(getStockcol(), &amp;quot;80&amp;quot;))
+#this defines the point size
+ptsze &amp;lt;- exp(fData(HEK293T2011)$knntl.scores) - 1
+plot2D(HEK293T2011, fcol = &amp;quot;knntl&amp;quot;, cex = ptsze)
+setStockcol(NULL)
+addLegend(HEK293T2011, where = &amp;quot;topright&amp;quot;,
+          fcol = &amp;quot;markers.tl&amp;quot;,
+          bty = &amp;quot;n&amp;quot;, cex = .7)&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;figure&#34;&gt;
+&lt;img src=&#34;TL_PCA.png&#34; alt=&#34;&#34; /&gt;
+&lt;p class=&#34;caption&#34;&gt;PCA plot of &lt;code&gt;HEK293T2011&lt;/code&gt; after transfer learning classification. The size of the points is proportional to the classification scores.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&#34;conclusions&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Conclusions&lt;/h1&gt;
+&lt;p&gt;A &lt;em&gt;weighted k-nearest neighbour transfer learning&lt;/em&gt; algorithm can be very useful to predict of protein
+sub-cellular localisation using quantitative proteomics data as primary data source and Gene Ontology-derived binary data as auxiliary data source.&lt;/p&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>EuroBioc</title>
+      <link>/es/talk/2020-11-26-eurobioc/</link>
+      <pubDate>Mon, 14 Dec 2020 00:00:00 +0000</pubDate>
+      <guid>/es/talk/2020-11-26-eurobioc/</guid>
+      <description>
+&lt;link href=&#34;../../../rmarkdown-libs/anchor-sections/anchor-sections.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;script src=&#34;../../../rmarkdown-libs/anchor-sections/anchor-sections.js&#34;&gt;&lt;/script&gt;
+
+
+
+</description>
+    </item>
+    
+    <item>
+      <title>ISCB</title>
+      <link>/es/talk/2020-11-21-iscb/</link>
+      <pubDate>Fri, 04 Dec 2020 00:00:00 +0000</pubDate>
+      <guid>/es/talk/2020-11-21-iscb/</guid>
+      <description>
+&lt;link href=&#34;../../../rmarkdown-libs/anchor-sections/anchor-sections.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;script src=&#34;../../../rmarkdown-libs/anchor-sections/anchor-sections.js&#34;&gt;&lt;/script&gt;
+
+
+&lt;div id=&#34;presentation-slides&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Presentation slides&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Selected talk
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://docs.google.com/presentation/d/16WN2ldl0r4f5Iv1pR5DAdSIC29H5JcM1Dr0RrYH9qx4/edit?usp=sharing&#34;&gt;Talk slides: Peptide Correlation Analysis (PeCorA) Reveals Differential Proteoform Regulation&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

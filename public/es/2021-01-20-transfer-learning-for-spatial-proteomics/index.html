@@ -1,0 +1,1345 @@
+<!DOCTYPE html><html lang="es" >
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Source Themes Academic 4.8.0">
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  <meta name="author" content="Maria Dermit">
+
+  
+  
+  
+    
+  
+  <meta name="description" content="Exploration of how a transfer learning algorithm can predict proteins sub-cellular localisation.">
+
+  
+  <link rel="alternate" hreflang="en" href="../../2021-01-20-transfer-learning-for-spatial-proteomics/">
+  
+  <link rel="alternate" hreflang="es" href="../../es/2021-01-20-transfer-learning-for-spatial-proteomics/">
+
+  
+
+
+  
+  
+  
+  <meta name="theme-color" content="#278757">
+  
+
+  
+  
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.8.6/css/academicons.min.css" integrity="sha256-uFVgMKfistnJAfoCUQigIl+JfUaP47GrRKjf6CTPVmw=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.0-1/css/all.min.css" integrity="sha256-4w9DunooKSr3MFXHXWyFER38WmPdm361bQS/2KUWZbU=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+    
+    
+    
+      
+    
+    
+      
+      
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/atelier-estuary-light.min.css" crossorigin="anonymous" title="hl-light">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/atelier-estuary-light.min.css" crossorigin="anonymous" title="hl-dark" disabled>
+      
+    
+
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.5.1/leaflet.css" integrity="sha256-SHMGCYmST46SoyGgo4YR/9AlK1vf3ff84Aq9yK4hdqM=" crossorigin="anonymous">
+    
+
+    
+
+    
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/lazysizes/5.1.2/lazysizes.min.js" integrity="sha256-Md1qLToewPeKjfAHU1zyPwOutccPAm5tahnaw7Osw0A=" crossorigin="anonymous" async></script>
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+        
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora:400,700%7CRoboto+Mono%7CRoboto:400,700%7COpen Sans:400,700%7CFira+Sans%7CFira:400,700&display=swap">
+  
+
+  
+  
+  
+  
+  <link rel="stylesheet" href="../../css/academic.css">
+
+  
+
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5LS876JJVT"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+      dataLayer.push(arguments);
+  }
+
+  function trackOutboundLink(url, target) {
+    gtag('event', 'click', {
+         'event_category': 'outbound',
+         'event_label': url,
+         'transport_type': 'beacon',
+         'event_callback': function () {
+           if (target !== '_blank') {
+             document.location = url;
+           }
+         }
+    });
+    console.debug("Outbound link clicked: " + url);
+  }
+
+  function onClickCallback(event) {
+    if ((event.target.tagName !== 'A') || (event.target.host === window.location.host)) {
+      return;
+    }
+    trackOutboundLink(event.target, event.target.getAttribute('target'));  
+  }
+
+  gtag('js', new Date());
+  gtag('config', 'G-5LS876JJVT', {});
+
+  
+  document.addEventListener('click', onClickCallback, false);
+</script>
+
+
+  
+
+
+  
+  
+
+  
+
+  <link rel="manifest" href="../../es/index.webmanifest">
+  <link rel="icon" type="image/png" href="../../images/icon_hu89765a528fbe3e89fbea23b995128687_292554_32x32_fill_lanczos_center_2.png">
+  <link rel="apple-touch-icon" type="image/png" href="../../images/icon_hu89765a528fbe3e89fbea23b995128687_292554_192x192_fill_lanczos_center_2.png">
+
+  <link rel="canonical" href="../../es/2021-01-20-transfer-learning-for-spatial-proteomics/">
+
+  
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <meta property="twitter:card" content="summary_large_image">
+  
+  <meta property="twitter:site" content="@dermitmaria">
+  <meta property="twitter:creator" content="@dermitmaria">
+  
+  <meta property="og:site_name" content="Sitio en español">
+  <meta property="og:url" content="/es/2021-01-20-transfer-learning-for-spatial-proteomics/">
+  <meta property="og:title" content="Transfer learning for spatial proteomics | Sitio en español">
+  <meta property="og:description" content="Exploration of how a transfer learning algorithm can predict proteins sub-cellular localisation."><meta property="og:image" content="/es/2021-01-20-transfer-learning-for-spatial-proteomics/featured.jpg">
+  <meta property="twitter:image" content="/es/2021-01-20-transfer-learning-for-spatial-proteomics/featured.jpg"><meta property="og:locale" content="es">
+  
+    
+      <meta property="article:published_time" content="2021-01-20T00:00:00&#43;00:00">
+    
+    <meta property="article:modified_time" content="2021-01-24T00:00:00&#43;00:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/es/2021-01-20-transfer-learning-for-spatial-proteomics/"
+  },
+  "headline": "Transfer learning for spatial proteomics",
+  
+  "image": [
+    "/es/2021-01-20-transfer-learning-for-spatial-proteomics/featured.jpg"
+  ],
+  
+  "datePublished": "2021-01-20T00:00:00Z",
+  "dateModified": "2021-01-24T00:00:00Z",
+  
+  "author": {
+    "@type": "Person",
+    "name": "Maria Dermit"
+  },
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "Sitio en español",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/images/icon_hu89765a528fbe3e89fbea23b995128687_292554_192x192_fill_lanczos_center_2.png"
+    }
+  },
+  "description": "Exploration of how a transfer learning algorithm can predict proteins sub-cellular localisation."
+}
+</script>
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  <title>Transfer learning for spatial proteomics | Sitio en español</title>
+
+</head>
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" >
+
+  <aside class="search-results" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Buscar</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Buscar..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search">
+        
+      </div>
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+  
+
+
+
+
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light compensate-for-scrollbar" id="navbar-main">
+  <div class="container">
+
+    
+    <div class="d-none d-lg-inline-flex">
+      <a class="navbar-brand" href="../../es">Sitio en español</a>
+    </div>
+    
+
+    
+    <button type="button" class="navbar-toggler" data-toggle="collapse"
+            data-target="#navbar-content" aria-controls="navbar" aria-expanded="false" aria-label="Barra de navegación">
+    <span><i class="fas fa-bars"></i></span>
+    </button>
+    
+
+    
+    <div class="navbar-brand-mobile-wrapper d-inline-flex d-lg-none">
+      <a class="navbar-brand" href="../../es">Sitio en español</a>
+    </div>
+    
+
+    
+    
+    <div class="navbar-collapse main-menu-item collapse justify-content-start" id="navbar-content">
+
+      
+      <ul class="navbar-nav d-md-inline-flex">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="../../es/#talks"><span>Charlas</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="../../es/#posts"><span>Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="../../es/#publications"><span>Publicaciones</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+      </ul>
+    </div>
+
+    <ul class="nav-icons navbar-nav flex-row ml-auto d-flex pl-md-2">
+      
+      <li class="nav-item">
+        <a class="nav-link js-search" href="#"><i class="fas fa-search" aria-hidden="true"></i></a>
+      </li>
+      
+
+      
+      <li class="nav-item dropdown theme-dropdown">
+        <a href="#" class="nav-link js-theme-selector" data-toggle="dropdown" aria-haspopup="true">
+          <i class="fas fa-palette" aria-hidden="true"></i>
+        </a>
+        <div class="dropdown-menu">
+          <a href="#" class="dropdown-item js-set-theme-light">
+            <span>Light</span>
+          </a>
+          <a href="#" class="dropdown-item js-set-theme-dark">
+            <span>Dark</span>
+          </a>
+          <a href="#" class="dropdown-item js-set-theme-auto">
+            <span>Automatic</span>
+          </a>
+        </div>
+      </li>
+      
+
+      
+      <li class="nav-item dropdown i18n-dropdown">
+        <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true">
+          <i class="fas fa-globe mr-1" aria-hidden="true"></i><span class="d-none d-lg-inline">Español</span>
+        </a>
+        <div class="dropdown-menu">
+          <div class="dropdown-item dropdown-item-active">
+            <span>Español</span>
+          </div>
+          
+          <a class="dropdown-item" href="../../2021-01-20-transfer-learning-for-spatial-proteomics/">
+            <span>English</span>
+          </a>
+          
+        </div>
+      </li>
+      
+
+    </ul>
+
+  </div>
+</nav>
+
+
+  <article class="article">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+
+<div class="article-container pt-3">
+  <h1>Transfer learning for spatial proteomics</h1>
+
+  
+  <p class="page-subtitle">Exploration of how a transfer learning algorithm can predict proteins sub-cellular localisations.</p>
+  
+
+  
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+          Última actualización el
+      
+    
+    Jan 24, 2021
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    7 min de lectura
+  </span>
+  
+
+  
+  
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="../../es/categories/r/">R</a></span>
+  
+
+</div>
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="btn-links mb-3">
+  
+  
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+    
+  
+  
+  
+  
+  
+    
+  
+  <a class="btn btn-outline-primary my-1 mr-1" href="https://lgatto.github.io/pRoloc/index.html" target="_blank" rel="noopener">
+    
+    Applying transfer learning on proteomics datasets
+  </a>
+
+
+</div>
+
+
+</div>
+
+
+<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 720px; max-height: 460px;">
+  <div style="position: relative">
+    <img src="../../es/2021-01-20-transfer-learning-for-spatial-proteomics/featured_hu519b39aa522bb56289d18af3adfe73dc_57301_720x0_resize_q90_lanczos.jpg" alt="" class="featured-image">
+    <span class="article-header-caption">PCA plot of a proteomics dataset after transfer learning classification</span>
+  </div>
+</div>
+
+
+
+  <div class="article-container">
+
+    <div class="article-style">
+      
+<script src="../../es/2021-01-20-transfer-learning-for-spatial-proteomics/index_files/header-attrs/header-attrs.js"></script>
+
+<div id="TOC">
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#getting-the-data">Getting the data</a></li>
+<li><a href="#quetting-auxiliary-annotation-biomart-query">Quetting auxiliary annotation (Biomart Query)</a></li>
+<li><a href="#nearest-neighbour-transfer-learning">Nearest neighbour transfer learning</a></li>
+<li><a href="#conclusions">Conclusions</a></li>
+</ul>
+</div>
+
+<pre class="r"><code># loading libraries
+# clearing environment bc https://support.bioconductor.org/p/p132709/
+rm(list = ls())
+library(pRoloc)
+library(pRolocdata)
+library(BiocStyle)</code></pre>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>Within the cell, the localization of a given protein is determined by its biological
+function. Subcellular proteomics is the method to study protein sub-cellular
+localization in a systematic manner. There are two complementary ways to analysis localized proteins:</p>
+<ul>
+<li><p>On one hand biochemical sub-cellular fractionation experiments allow empirical quantification of protein across sub-cellular and sub-organellar compartments. Proteins are allocated to a given subcellular niche
+if the detected intensity is higher than a threshold. We can say that this type of data has high signal-to-noise ratio, but is available in limited amounts (<em>primary</em> data).</p></li>
+<li><p>On the other hand, databases such as <a href="http://geneontology.org/">GO</a> contain large amount of information about sub-cellular proteins localisation, but this is information is blended for a many biological systems. We can say that this type of data has high low signal-to-noise, but is available in large amounts (<em>auxiliary</em> data).</p></li>
+</ul>
+<p>So we want to know <em>how to optimally combine</em> primary and auxiliary data.💹</p>
+<p>To do so, we need to weight both types of data. If we imagine a multivariate
+distribution (like a <a href="https://github.com/TommyJones/tidylda">Dirichlet distribution</a>) were all the components take values between (0,1) and all values sum up to one, we can imagine that a weight of 1 indicates that the final annotation rely exclusively on the experimental data and ignore completely the auxiliary data and a weight of 0 represents the opposite situation, where the primary data is ignored and only the auxiliary data is considered.</p>
+<p>We could use a <em>transfer learning</em> algorithm to efficiently complement the primary data with auxiliary data without compromising the integrity of the former. This is implemented in the <code>pRoloc</code> package and it was published by <a href="https://lgatto.github.io/pRoloc/reference/knntlClassification.html">Breckels et al</a> and expanded by
+<a href="https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1006516">Crook et al</a> using a Bayesian approach. In this post I will step-by-step walk through KNN transfer learning.</p>
+</div>
+<div id="getting-the-data" class="section level1">
+<h1>Getting the data</h1>
+<p>We start with <code>HEK293T2011</code> proteomics data available in the <em><a href="https://bioconductor.org/packages/3.10/pRolocdata">pRolocdata</a></em> package.</p>
+<pre class="r"><code>data(HEK293T2011)</code></pre>
+<p>The class of (HEK293T2011) isMSnSet instance, an efficient and established to <a href="http://www.bioconductor.org/packages/release/bioc/html/MSnbase.html">store and handle MS data and metainformation efficiently</a>. I am not going to discuss much about this class of objects since the field is moving towards other types of data storage such as <a href="https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html">SummarizedExperiment objects</a></p>
+<p>We can also get an overview experimental data and query how many proteins across how many conditions were quantified.</p>
+<pre class="r"><code>head(exprs(HEK293T2011),2)</code></pre>
+<pre><code>##             X113      X114       X115      X116      X117       X118       X119
+## O00767 0.1360547 0.1495961 0.10623931 0.1465050 0.2773137 0.14294025 0.03796970
+## P51648 0.1914456 0.2052463 0.05661169 0.1651138 0.2366302 0.09964387 0.01803788
+##               X121
+## O00767 0.003381233
+## P51648 0.027270640</code></pre>
+<pre class="r"><code>dim(exprs(HEK293T2011))</code></pre>
+<pre><code>## [1] 1371    8</code></pre>
+<p>What is important to know is that 1371 proteins were quantified across eight iTRAQ 8-plex labelled fractions (
+one could know a bit more about the experiment with <code>?HEK293T2011</code>)</p>
+<p>Next thing we can do is see how well these organelles have been resolved in the experiment using a PCA plot</p>
+<pre class="r"><code>plot2D(HEK293T2011)
+addLegend(HEK293T2011, where = &quot;topright&quot;, cex = 0.6)</code></pre>
+<div class="figure"><span id="fig:unnamed-chunk-4"></span>
+<img src="../../es/2021-01-20-transfer-learning-for-spatial-proteomics/index_files/figure-html/unnamed-chunk-4-1.png" alt="PCA plot of `HEK293T2011 subcellular proteomics dataset`" width="672" />
+<p class="caption">
+Figure 1: PCA plot of <code>HEK293T2011 subcellular proteomics dataset</code>
+</p>
+</div>
+<p>We see that some organelles such as cytosol and cytosol/nucleus are well resolved - and so they will get a high weigh- while others such as the Golgi or the ER are less so - so they will get a low weight.
+There are some proteins that do not get annotation because the resolution of the experiment did not allow so.</p>
+</div>
+<div id="quetting-auxiliary-annotation-biomart-query" class="section level1">
+<h1>Quetting auxiliary annotation (Biomart Query)</h1>
+<p>Next thing we can do is get auxiliary data. We can do so by querying <em><a href="https://bioconductor.org/packages/3.10/biomaRt">biomaRt</a></em> and storing the annotation as an <code>AnnotationParams</code> object. Again, this is part of the <em><a href="https://bioconductor.org/packages/3.10/pRoloc">pRoloc</a></em> package, and it has been created for efficient data handling.</p>
+<pre class="r"><code>ap &lt;- setAnnotationParams(inputs =
+                              c(&quot;Human genes&quot;,
+                                &quot;UniProtKB/Swiss-Prot ID&quot;))</code></pre>
+<pre><code>## Connecting to Biomart...</code></pre>
+<p>We can access this instance with</p>
+<pre class="r"><code>getAnnotationParams()</code></pre>
+<pre><code>## Object of class &quot;AnnotationParams&quot;
+##  Using the &#39;ENSEMBL_MART_ENSEMBL&#39; BioMart database
+##  Using the &#39;hsapiens_gene_ensembl&#39; dataset
+##  Using &#39;uniprotswissprot&#39; as filter
+##  Created on Tue Jan 26 15:47:22 2021</code></pre>
+<p>We can annotate our innitial <code>HEK293T2011</code> data by creating a new <code>MSnSet</code> instance populated with a GO term as a binary matrix (so the auxiliary data with information about 889 cellular compartment GO terms has been added).</p>
+<pre class="r"><code>HEK293T2011goset  &lt;- makeGoSet(HEK293T2011)</code></pre>
+</div>
+<div id="nearest-neighbour-transfer-learning" class="section level1">
+<h1>Nearest neighbour transfer learning</h1>
+<div id="deciding-the-weight" class="section level2">
+<h2>Deciding the weight</h2>
+<p>We could define more or less weight values between 0 and 1 depending on how granular we want to be with
+our search (more weight will give finer-grained integration).For example for 3 classes, 3 weights will generate:</p>
+<pre class="r"><code>gtools::permutations(length(seq(0, 1, 0.5)), 3, seq(0, 1, 0.5), repeats.allowed = TRUE) </code></pre>
+<pre><code>##       [,1] [,2] [,3]
+##  [1,]  0.0  0.0  0.0
+##  [2,]  0.0  0.0  0.5
+##  [3,]  0.0  0.0  1.0
+##  [4,]  0.0  0.5  0.0
+##  [5,]  0.0  0.5  0.5
+##  [6,]  0.0  0.5  1.0
+##  [7,]  0.0  1.0  0.0
+##  [8,]  0.0  1.0  0.5
+##  [9,]  0.0  1.0  1.0
+## [10,]  0.5  0.0  0.0
+## [11,]  0.5  0.0  0.5
+## [12,]  0.5  0.0  1.0
+## [13,]  0.5  0.5  0.0
+## [14,]  0.5  0.5  0.5
+## [15,]  0.5  0.5  1.0
+## [16,]  0.5  1.0  0.0
+## [17,]  0.5  1.0  0.5
+## [18,]  0.5  1.0  1.0
+## [19,]  1.0  0.0  0.0
+## [20,]  1.0  0.0  0.5
+## [21,]  1.0  0.0  1.0
+## [22,]  1.0  0.5  0.0
+## [23,]  1.0  0.5  0.5
+## [24,]  1.0  0.5  1.0
+## [25,]  1.0  1.0  0.0
+## [26,]  1.0  1.0  0.5
+## [27,]  1.0  1.0  1.0</code></pre>
+<p>As we sayed before, HEK293T2011goset experiment has 10 subcellular compartments, and so the total combinations for 10 classes, 4 weights will be:</p>
+<pre class="r"><code>th &lt;- gtools::permutations(length(seq(0, 1, length.out = 4)), 10, seq(0, 1, length.out = 4), repeats.allowed = TRUE)</code></pre>
+<p>Total combination of weights for HEK293T2011goset experiment will be 1048576.</p>
+<p><em><a href="https://bioconductor.org/packages/3.10/pRoloc">pRoloc</a></em> package comes with a convenient function <code>thetas</code> to produce such a weight matrix (because we need a theta for each of the training feature).</p>
+<pre class="r"><code>## marker classes for HEK293T2011
+m &lt;- unique(fData(HEK293T2011)$markers.tl)
+m &lt;- m[m != &quot;unknown&quot;]
+th &lt;- thetas(length(m), length.out=4)</code></pre>
+</div>
+<div id="optimizing-weigth" class="section level2">
+<h2>Optimizing weigth</h2>
+<p>We can do a grid search to determine which is the best <code>th</code>, with the <code>knntlOptimisation</code> function of the <em><a href="https://bioconductor.org/packages/3.10/pRoloc">pRoloc</a></em> package.</p>
+<pre class="r"><code>topt &lt;- knntlOptimisation(HEK293T2011, HEK293T2011goset,
+                          th = th,
+                          k = c(3, 3),
+                          fcol = &quot;markers.tl&quot;,
+                          times = 50, 
+                          method = &quot;Breckels&quot; )</code></pre>
+<p>For the sake of time, we can reduce our initial data, as it will take a long time to do this grid search (even if <code>knntlOptimisation</code> uses parallelisation by default).</p>
+<pre class="r"><code>set.seed(2021)
+i &lt;- sample(nrow(th), 50)
+topt &lt;- knntlOptimisation(HEK293T2011, HEK293T2011goset,
+                          th = th[i, ],
+                          k = c(3, 3),
+                          fcol = &quot;markers.tl&quot;,
+                          times = 5)</code></pre>
+<p>The optimisation is performed on the labelled marker examples only. <code>topt</code> result stores all the result from the optimisation step, and in particular the observed theta weights, which can be directly plotted as shown on the bubble plot.</p>
+<pre class="r"><code>plot(topt)</code></pre>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/lgatto/pRoloc/master/vignettes/Figures/bubble-andy.png" alt="" />
+<p class="caption">Result stocores for the optimisation step. Note that this figure is the result using extensive optimisation on the whole HEK293T2011 dataset and auxiliary HEK293T2011goset dataset, not only with only a random subset of 50 candidate weights.</p>
+</div>
+<p>We see that the cytosol and cytosol/nucleus and ER are predominantly scored with high heights, consistent with high reliability of the primary data. Golgi, PM and the 40S ribosomal clusters are scored with smaller scores, indicating a substantial benefit of the auxiliary data.</p>
+<p>The best grid search parameters can be accessed with:</p>
+<pre class="r"><code>getParams(topt)</code></pre>
+<p>Note that the data <code>HEK293T2011</code> <em>gets annotated</em> with the best parameters at the knntlOptimisation
+step. We can get the best weights with:</p>
+<pre class="r"><code>bw &lt;- experimentData(HEK293T2011)@other$knntl$thetas</code></pre>
+</div>
+<div id="performing-transfer-learning" class="section level2">
+<h2>Performing transfer learning</h2>
+<p>To apply the best weights and learn from the auxiliary data to classify the unlabelled proteins into sub-cellular niches (present in <code>markers.tl</code> column), we can pass the primary and auxiliary data sets, best weights, best k’s and the metadata feature data taht contains the markers definitions to the <code>knntlClassification</code> function.</p>
+<pre class="r"><code>HEK293T2011 &lt;- knntlClassification(HEK293T2011, HEK293T2011goset,
+                                bestTheta = bw,
+                                k = c(3, 3),
+                                fcol = &quot;markers.tl&quot;)</code></pre>
+<p>In this step, annotation predictors scores and parameters get added into the MSnSet data. We can access the predicted localization conveniently using the <code>getPredictions</code> assessor.</p>
+<pre class="r"><code>HEK293T2011 &lt;- getPredictions(HEK293T2011, fcol = &quot;knntl&quot;)</code></pre>
+</div>
+<div id="plotting-the-results" class="section level2">
+<h2>Plotting the results</h2>
+<pre class="r"><code># These functions allow to get/set the colours/points to plot organelle features 
+setStockcol(paste0(getStockcol(), &quot;80&quot;))
+#this defines the point size
+ptsze &lt;- exp(fData(HEK293T2011)$knntl.scores) - 1
+plot2D(HEK293T2011, fcol = &quot;knntl&quot;, cex = ptsze)
+setStockcol(NULL)
+addLegend(HEK293T2011, where = &quot;topright&quot;,
+          fcol = &quot;markers.tl&quot;,
+          bty = &quot;n&quot;, cex = .7)</code></pre>
+<div class="figure">
+<img src="TL_PCA.png" alt="" />
+<p class="caption">PCA plot of <code>HEK293T2011</code> after transfer learning classification. The size of the points is proportional to the classification scores.</p>
+</div>
+</div>
+</div>
+<div id="conclusions" class="section level1">
+<h1>Conclusions</h1>
+<p>A <em>weighted k-nearest neighbour transfer learning</em> algorithm can be very useful to predict of protein
+sub-cellular localisation using quantitative proteomics data as primary data source and Gene Ontology-derived binary data as auxiliary data source.</p>
+</div>
+
+    </div>
+
+    
+
+
+
+
+
+<div class="article-tags">
+  
+  <a class="badge badge-light" href="../../es/tags/r/">r</a>
+  
+  <a class="badge badge-light" href="../../es/tags/computational-proteomics/">computational proteomics</a>
+  
+  <a class="badge badge-light" href="../../es/tags/bioconductor/">bioconductor</a>
+  
+</div>
+
+
+
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=../../es/2021-01-20-transfer-learning-for-spatial-proteomics/&amp;text=Transfer%20learning%20for%20spatial%20proteomics" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=/es/2021-01-20-transfer-learning-for-spatial-proteomics/&amp;t=Transfer%20learning%20for%20spatial%20proteomics" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=Transfer%20learning%20for%20spatial%20proteomics&amp;body=/es/2021-01-20-transfer-learning-for-spatial-proteomics/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=../../es/2021-01-20-transfer-learning-for-spatial-proteomics/&amp;title=Transfer%20learning%20for%20spatial%20proteomics" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=Transfer%20learning%20for%20spatial%20proteomics%20/es/2021-01-20-transfer-learning-for-spatial-proteomics/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://service.weibo.com/share/share.php?url=../../es/2021-01-20-transfer-learning-for-spatial-proteomics/&amp;title=Transfer%20learning%20for%20spatial%20proteomics" target="_blank" rel="noopener" class="share-btn-weibo">
+          <i class="fab fa-weibo"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+  
+    
+    
+    
+      
+    
+    
+    
+    <div class="media author-card content-widget-hr">
+      
+        
+        <img class="avatar mr-3 avatar-circle" src="../../es/authors/maria/avatar_hub70a68398416d4ef6109d91f659513f2_5268_270x270_fill_lanczos_center_2.png" alt="Maria Dermit">
+      
+
+      <div class="media-body">
+        <h5 class="card-title"><a href="../../">Maria Dermit</a></h5>
+        <h6 class="card-subtitle">Postdoctoral Research Scientist</h6>
+        <p class="card-text">Postdoctoral researcher interested in translation control and data science for biomedical research.</p>
+        <ul class="network-icon" aria-hidden="true">
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://twitter.com/dermitmaria" target="_blank" rel="noopener">
+        <i class="fab fa-twitter"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://github.com/demar01" target="_blank" rel="noopener">
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="http://orcid.org/0000-0002-6287-8367" target="_blank" rel="noopener">
+        <i class="ai ai-orcid"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://scholar.google.com/citations?hl=en&amp;user=c161dhUAAAAJ&amp;view_op=list_works&amp;sortby=pubdate" target="_blank" rel="noopener">
+        <i class="ai ai-google-scholar"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://linkedin.com/in/mariadermit" target="_blank" rel="noopener">
+        <i class="fab fa-linkedin"></i>
+      </a>
+    </li>
+  
+</ul>
+
+      </div>
+    </div>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <div class="article-widget content-widget-hr">
+    <h3>Relacionado</h3>
+    <ul>
+      
+      <li><a href="../../es/2021-01-20-rstudio-instructor-certification-tidyverse/">Joining the RStudio Tidyverse Instructor community</a></li>
+      
+    </ul>
+  </div>
+  
+
+
+
+  </div>
+</article>
+
+      
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js" integrity="sha256-eOgo0OtLL4cdq7RdwRUiGKLX9XsIJ7nGhWEKbohmVAQ=" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/languages/r.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/languages/yaml.min.js"></script>
+        
+      
+
+    
+
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.5.1/leaflet.js" integrity="sha256-EErZamuLefUnbMBQbsEqu1USa+btR2oIlCpBJbyD4/g=" crossorigin="anonymous"></script>
+    
+
+    
+    
+    <script>const code_highlighting = true;</script>
+    
+
+    
+    
+    <script>const isSiteThemeDark = false;</script>
+    
+
+    
+    
+    
+    
+    
+    
+    <script>
+      const search_config = {"indexURI":"/es/index.json","minLength":1,"threshold":0.3};
+      const i18n = {"no_results":"No se encontraron resultados","placeholder":"Buscar...","results":"resultados encontrados"};
+      const content_type = {
+        'post': "Posts",
+        'project': "Proyectos",
+        'publication' : "Publicaciones",
+        'talk' : "Charlas"
+        };
+    </script>
+    
+
+    
+    
+
+    
+    
+    <script id="search-hit-fuse-template" type="text/x-template">
+      <div class="search-hit" id="summary-{{key}}">
+      <div class="search-hit-content">
+        <div class="search-hit-name">
+          <a href="{{relpermalink}}">{{title}}</a>
+          <div class="article-metadata search-hit-type">{{type}}</div>
+          <p class="search-hit-description">{{snippet}}</p>
+        </div>
+      </div>
+      </div>
+    </script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      
+    
+    
+    
+    
+    <script src="../../js/academic.min.37431be2d92d7fb0160054761ab79602.js"></script>
+
+    
+
+
+
+
+
+
+  
+  
+  <div class="container">
+    <footer class="site-footer">
+  
+
+  <p class="powered-by">
+    © Maria Dermit, {2020} &middot; 
+
+    <i class="fas fa-lightbulb" style="color:#e5be00"></i></a>
+    Created with curiosity, 
+    <a href="https://github.com/demar01/mariadermit" target="_blank" rel="noopener">
+      <i class="fas fa-code-branch" style="color:#e5be00"></i></a>, the
+    <a href="https://cran.r-project.org/" target="_blank" rel="noopener">
+      <i class="fab fa-r-project"></i> </a>
+    <a href="https://github.com/rstudio/blogdown" target="_blank" rel="noopener">blogdown</a> package, and the
+    <a href="https://sourcethemes.com/academic/" target="_blank" rel="noopener">Academic theme</a> for
+    <a href="https://gohugo.io" target="_blank" rel="noopener">Hugo</a>.
+
+    
+    <span class="float-right" aria-hidden="true">
+      <a href="#" class="back-to-top">
+        <span class="button_icon">
+          <i class="fas fa-chevron-up fa-2x"></i>
+        </span>
+      </a>
+    </span>
+    
+  </p>
+</footer>
+
+  </div>
+  
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Citar</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copiar
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Descargar
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

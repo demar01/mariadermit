@@ -1,0 +1,54 @@
+---
+title: 'Subcellular mRNA Localization Regulates Ribosome Biogenesis in Migrating Cells'
+author: Maria Dermit
+date: '2020-11-09'
+slug: maddie-ehr-delivery-episode-algorithm
+categories: []
+tags:
+  - Ribosome
+  - RPmRNA
+  - Proteomics
+  - Cancer
+authors:
+  - Maria Dermit  
+doi: ''
+publishDate: '2020-11-09'
+publication_types:
+  - '2'
+publication: 'Developmental Cell'
+publication_short: 'Dev Cell'
+abstract: "**Abstract** Translation of ribosomal protein-coding mRNAs (RP-mRNAs) constitutes a key step in ribosome biogenesis, but the mechanisms that modulate RP-mRNA translation in coordination with other cellular processes are poorly defined. Here, we show that subcellular localization of RP-mRNAs acts as a key regulator of their translation during cell migration. As cells migrate into their surroundings, RP-mRNAs localize to the actin-rich cell protrusions. This localization is mediated by La-related protein 6 (LARP6), an RNA-binding protein that is enriched in protrusions. Protrusions act as hotspots of translation for RP-mRNAs, enhancing RP synthesis, ribosome biogenesis, and the overall protein synthesis in migratory cells. In human breast carcinomas, epithelial-to-mesenchymal transition (EMT) upregulates LARP6 expression to enhance protein synthesis and support invasive growth. Our findings reveal LARP6-mediated mRNA localization as a key regulator of ribosome biogenesis during cell migration and demonstrate a role for this process in cancer progression downstream of EMT.<br><br>"
+featured: yes
+url_pdf: 
+url_code: ~
+url_dataset: ~
+url_poster: ~
+url_project: ~
+url_slides: ~
+url_source:
+url_video: ~
+image:
+  caption: '[Dermit et al. Developmental Cell (2020)](featured.png)'
+  placement: 2
+  focal_point: 'Center'
+  preview_only: no
+projects: []
+slides: ''
+links:
+- icon: doi
+  icon_pack: ai
+  name: Full Publication
+  url: https://doi.org/10.1016/j.devcel.2020.10.006
+- icon: file-pdf
+  icon_pack: fas
+  name: RPmRNA 2020 Poster
+  url: RPmRNA_poster.pdf
+- icon: external-link-alt
+  icon_pack: fas
+  name: bioRxiv Preprint
+  url: https://www.biorxiv.org/content/10.1101/829739v1
+---
+**Abstract** Translation of ribosomal protein-coding mRNAs (RP-mRNAs) constitutes a key step in ribosome biogenesis, but the mechanisms that modulate RP-mRNA translation in coordination with other cellular processes are poorly defined. Here, we show that subcellular localization of RP-mRNAs acts as a key regulator of their translation during cell migration. As cells migrate into their surroundings, RP-mRNAs localize to the actin-rich cell protrusions. This localization is mediated by La-related protein 6 (LARP6), an RNA-binding protein that is enriched in protrusions. Protrusions act as hotspots of translation for RP-mRNAs, enhancing RP synthesis, ribosome biogenesis, and the overall protein synthesis in migratory cells. In human breast carcinomas, epithelial-to-mesenchymal transition (EMT) upregulates LARP6 expression to enhance protein synthesis and support invasive growth. Our findings reveal LARP6-mediated mRNA localization as a key regulator of ribosome biogenesis during cell migration and demonstrate a role for this process in cancer progression downstream of EMT.
+
+
+![[RPmRNA Poster ( presented at RNAUK2020)](RPmRNA_poster.pdf)](RPmRNA_poster.png)
