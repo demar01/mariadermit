@@ -165,7 +165,7 @@ Veamos si eso permite cambiar el nombre:
 ```{r}
 x=c(3,6)
 df<- tibble(n=3)
-adding_cv(df,x,"pretty_name")
+adding_cv(df,x,"nombre_bonito")
 ```
 ![](https://media.giphy.com/media/Zb63DjukhzkT1d0VoZ/giphy.gif)
 
