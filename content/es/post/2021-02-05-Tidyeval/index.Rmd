@@ -1,7 +1,7 @@
 ---
 title: Paso a paso en TidyEval
 author: maria
-date: '2021-02-06'
+date: '2021-02-11'
 categories:
   - R
 tags:
@@ -12,7 +12,7 @@ tags:
 slug: Actiones Tidyeval
 subtitle: Entendiendo Tidyeval gradualmente
 summary: Unos pocos ejemplos de cómo funciona Tidyeval.
-lastmod: '2021-02-06'
+lastmod: '2021-02-11'
 featured: yes
 draft: no
 image:
