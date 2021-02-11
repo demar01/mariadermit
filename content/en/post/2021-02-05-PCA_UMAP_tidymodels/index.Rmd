@@ -13,7 +13,7 @@ tags:
 slug:  unsupervised machine learning with Tidymodels
 subtitle: Comparing the steps followed in Tidymodels and base R to do dimensionality reduction.
 summary: Create a recipe, prep it and juice it to do PCA and UMAP with Tidymodels.
-lastmod: '2021-02-04'
+lastmod: '2021-02-06'
 featured: yes
 draft: no
 image:

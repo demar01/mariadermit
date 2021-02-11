@@ -49,7 +49,7 @@
   
   <url>
     <loc>/es/categories/</loc>
-    <lastmod>2021-02-04T00:00:00+00:00</lastmod>
+    <lastmod>2021-02-06T00:00:00+00:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
@@ -59,6 +59,141 @@
                 rel="alternate"
                 hreflang="es"
                 href="/es/categories/"
+                />
+  </url>
+  
+  <url>
+    <loc>/es/tags/metaprogramming/</loc>
+    <lastmod>2021-02-06T00:00:00+00:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="/tags/metaprogramming/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="es"
+                href="/es/tags/metaprogramming/"
+                />
+  </url>
+  
+  <url>
+    <loc>/es/post/</loc>
+    <lastmod>2021-02-06T00:00:00+00:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="/post/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="es"
+                href="/es/post/"
+                />
+  </url>
+  
+  <url>
+    <loc>/es/categories/r/</loc>
+    <lastmod>2021-02-06T00:00:00+00:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="/categories/r/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="es"
+                href="/es/categories/r/"
+                />
+  </url>
+  
+  <url>
+    <loc>/es/tags/r/</loc>
+    <lastmod>2021-02-06T00:00:00+00:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="/tags/r/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="es"
+                href="/es/tags/r/"
+                />
+  </url>
+  
+  <url>
+    <loc>/es/tags/rlang/</loc>
+    <lastmod>2021-02-06T00:00:00+00:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="/tags/rlang/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="es"
+                href="/es/tags/rlang/"
+                />
+  </url>
+  
+  <url>
+    <loc>/es/</loc>
+    <lastmod>2021-02-06T00:00:00+00:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="es"
+                href="/es/"
+                />
+  </url>
+  
+  <url>
+    <loc>/es/2021-02-06-tidyeval-actions/</loc>
+    <lastmod>2021-02-06T00:00:00+00:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="/2021-02-06-tidyeval-actions/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="es"
+                href="/es/2021-02-06-tidyeval-actions/"
+                />
+  </url>
+  
+  <url>
+    <loc>/es/tags/</loc>
+    <lastmod>2021-02-06T00:00:00+00:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="/tags/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="es"
+                href="/es/tags/"
+                />
+  </url>
+  
+  <url>
+    <loc>/es/tags/tidyevaluation/</loc>
+    <lastmod>2021-02-06T00:00:00+00:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="/tags/tidyevaluation/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="es"
+                href="/es/tags/tidyevaluation/"
                 />
   </url>
   
@@ -104,81 +239,6 @@
                 rel="alternate"
                 hreflang="es"
                 href="/es/tags/pca/"
-                />
-  </url>
-  
-  <url>
-    <loc>/es/post/</loc>
-    <lastmod>2021-02-04T00:00:00+00:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/post/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="es"
-                href="/es/post/"
-                />
-  </url>
-  
-  <url>
-    <loc>/es/categories/r/</loc>
-    <lastmod>2021-02-04T00:00:00+00:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/categories/r/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="es"
-                href="/es/categories/r/"
-                />
-  </url>
-  
-  <url>
-    <loc>/es/tags/r/</loc>
-    <lastmod>2021-02-04T00:00:00+00:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/tags/r/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="es"
-                href="/es/tags/r/"
-                />
-  </url>
-  
-  <url>
-    <loc>/es/</loc>
-    <lastmod>2021-02-04T00:00:00+00:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="es"
-                href="/es/"
-                />
-  </url>
-  
-  <url>
-    <loc>/es/tags/</loc>
-    <lastmod>2021-02-04T00:00:00+00:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/tags/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="es"
-                href="/es/tags/"
                 />
   </url>
   

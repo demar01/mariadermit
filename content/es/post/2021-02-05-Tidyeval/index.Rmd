@@ -1,0 +1,194 @@
+---
+title: Paso a paso en TidyEval
+author: maria
+date: '2021-02-06'
+categories:
+  - R
+tags:
+  - r
+  - tidyevaluation
+  - metaprogramming
+  - rlang
+slug: Actiones Tidyeval
+subtitle: Entendiendo Tidyeval gradualmente
+summary: Unos pocos ejemplos de cómo funciona Tidyeval.
+lastmod: '2021-02-06'
+featured: yes
+draft: no
+image:
+  placement: 1
+  caption: '[Illustration from unsplash](https://unsplash.com/photos/Cqe5Vvss-VQ)'
+  focal_point: Center
+  preview_only: no
+output:
+  blogdown::html_page:
+    toc: yes
+    number_sections: no
+    toc_depth: 1
+links:
+  - icon: 
+    icon_pack: fab
+    name: Para saber más sobre metaprogramación (en)
+    url: https://adv-r.hadley.nz/metaprogramming.html
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+```{r import, results=FALSE,message=FALSE, echo=FALSE}
+library(rlang)
+library(tidyverse)
+library(testthat)
+```
+
+# Motivación
+Provide some examples of using [Tidy evaluation (also called non-standard evaluation (NSE) or **delayed evaluation**)](https://tidyeval.tidyverse.org/).
+
+`r emo::ji("information")` Este post te puede resultar beneficioso si has leído los [capítulos 17-20 del libro de Advanced R](https://adv-r.hadley.nz/metaprogramming.html) y estás buscando encontrar más ejemplos adicionales y en es al gran recurso de [Mara] (https://maraaverick.rbind.io/2017/08/tidyeval-resource-roundup/).
+
+
+
+
+Librerias que necesitaremos para este post:
+```{r}
+library(rlang)
+library(tidyverse)
+library(testthat)
+```
+
+
+# Vamos a crear una función para calcular el coeficiente de variación
+
+```{r function}
+cv <- function(var) {
+    sd(var) / mean(var)
+}
+```
+Podemos probar que la función se está comportando correctamente:
+```{r}
+testthat::expect_equal( cv(c(3,3)), 0)
+testthat::expect_equal( round(cv(c(3,6)),2), 0.47)
+```
+
+¡Excelente! ¡La función parece estar haciendo lo que queremos!
+![Pasos de bebé](https://media.giphy.com/media/12FwhN6Qh3cfxm/giphy.gif)
+
+## Capturar y descubrir expresión
+Podemos capturar y hacer expresiones (entrecomillar) de lo que el usuario ha pasado como argumento con [`enexpr`](https://adv-r.hadley.nz/quasiquotation.html). Podemos quitar los entrecomillados con [`bang-bang !!`](https://adv-r.hadley.nz/quasiquotation.html). Si le pasamos el resultado de esto a _expr_ lo seguimos manteniendo como una expresión. Seguimos estando en evaluación retrasada, nada se ha evaluado todavia.
+```{r capture-uncapture}
+cv <- function(var) {
+    var <- enexpr(var) 
+    expr(sd(!!var) / mean(!!var)) 
+}
+```
+
+Veamos qué pasa:
+```{r}
+testthat::expect_equal(eval(cv(c(3,3))), 0) 
+testthat::expect_type((cv(c(3,3))), "language")
+```
+Si evaluamos la función, el cv es igual a 0. Tenga en cuenta que **hemos retrasado la evaluación** hasta el punto cuando usamos _eval_.
+
+Si no evaluamos la función, permanece como un [objeto de llamada o call object](https://adv-r.hadley.nz/expressions.html#calls).
+![](https://media.giphy.com/media/ChzfTLSi47FYc/giphy.gif)
+
+
+# Modificando el medio ambiente, sin problemas
+
+Modifiquemos un poco el `enviroment` o entorno de la función:
+```{r capture-uncapture-2}
+cv <- function(var) {
+    x=6
+    var <- enexpr(var)
+    expr(sd(!!var) / mean(!!var))
+}
+```
+Veamos qué pasa:
+```{r}
+x=3
+testthat::expect_equal( eval(cv(c(3,x))), 0)
+x=6
+testthat::expect_equal(round(eval(cv(c(3,x))),2), 0.47)
+```
+Esto funciona incluso si ponemos x en el entorno donde se escribe la función porque x no es un argumento de la función cv. 
+
+# Modificando el ambiente -  PROBLEMAS!
+
+```{r capture-uncapture-df}
+adding_cv <- function(df,var) {
+    x=c(3,6)
+    var <- enexpr(var)
+    mutate(df, sd(!!var) / mean(!!var))
+}
+```
+Veamos que pasa:
+```{r}
+df<- tibble(n=3)
+x=c(3,3)
+adding_cv(df,x)
+```
+¡¿Cómo?! La nueva columna contiene el coeficiente de variación. Si x = c (3,3), el valor en la nueva columna debería haber sido 0. Sin embargo, agregar_cv está usando x = c (3,6) incluido en el entorno de la función y no x = c (3,3).
+
+![](https://media.giphy.com/media/d9rGLfxrh1Rfy/giphy.gif)
+
+# Capturando con enquo
+
+Para capturar la función y el entorno, necesitamos [enquo](https://adv-r.hadley.nz/evaluation.html?q=enquo#creating)
+```{r}
+adding_cv <- function(df,var) {
+    x=c(3,6)
+    var <- enquo(var)
+    mutate(df, sd(!!var) / mean(!!var))
+}
+```
+Veamos que pasa ahora:
+```{r}
+df<- tibble(n=3)
+x=c(3,3)
+adding_cv(df,x)
+```
+
+![](https://media.giphy.com/media/jsm9GubElH2X04lRNn/giphy.gif)
+
+# Cambiando el nombre con  with :=
+Podemos hacer que el nombre de la nueva columna sea más bonito con [**: = **](https://adv-r.hadley.nz/quasiquotation.html#tidy-dots)
+```{r}
+adding_cv <- function(df,var,nm) {
+    x=c(3,3)
+    nm_name <- quo_name(nm)
+    var <- enquo(var)
+    mutate(df, !!nm_name:= sd(!!var) / mean(!!var))
+}
+```
+Veamos si eso permite cambiar el nombre:
+```{r}
+x=c(3,6)
+df<- tibble(n=3)
+adding_cv(df,x,"pretty_name")
+```
+![](https://media.giphy.com/media/Zb63DjukhzkT1d0VoZ/giphy.gif)
+
+# Insertando una lista de expresiones en una llamada
+
+¿Qué pasa si queremos hacer un filtrado _detraído_? Necesitamos quitar las comillas de varios argumentos. Para esto podemos usar [!!!](https://adv-r.hadley.nz/quasiquotation.html#unquoting-many-arguments).
+```{r}
+adding_cv <- function(df,var,nm, ...) {
+    x=c(3,6)
+    nm_name <- quo_name(nm)
+    var <- enquo(var)
+    filtering <- enquos(...)
+    df %>%  filter(!!!filtering) %>% 
+    mutate( !!nm_name:= sd(!!var) / mean(!!var))}
+```
+Veamos si podemos filtrar las filas 3 y 6 de la columna de nuestro df.
+```{r}
+df<- tibble(n=c(3,6,9),m=c(3,6,9))
+x=c(3,3)
+adding_cv(df,x,"pretty_name", n %in% c(3,6))
+```
+
+![](https://media.giphy.com/media/xTiTnCf8IJvjldRaxi/giphy.gif)
+
+# Conclusiones
+Estos fueron solo algunos ejemplos para ilustrar por qué [tidyeval](https://tidyeval.tidyverse.org/) puede ser útil y cuándo podría ser necesario. ¡Espero que te haya ayudado!

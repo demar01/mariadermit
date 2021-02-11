@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>metaprogramming | Sitio en español</title>
+    <link>/es/tags/metaprogramming/</link>
+      <atom:link href="/es/tags/metaprogramming/index.xml" rel="self" type="application/rss+xml" />
+    <description>metaprogramming</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>es</language><copyright>© Maria Dermit, {2020}</copyright><lastBuildDate>Sat, 06 Feb 2021 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>/images/icon_hu89765a528fbe3e89fbea23b995128687_292554_512x512_fill_lanczos_center_2.png</url>
+      <title>metaprogramming</title>
+      <link>/es/tags/metaprogramming/</link>
+    </image>
+    
+    <item>
+      <title>Step-by-step actions in Tidyeval</title>
+      <link>/es/2021-02-06-tidyeval-actions/</link>
+      <pubDate>Sat, 06 Feb 2021 00:00:00 +0000</pubDate>
+      <guid>/es/2021-02-06-tidyeval-actions/</guid>
+      <description>
+&lt;script src=&#34;../../../es/2021-02-06-tidyeval-actions/index_files/header-attrs/header-attrs.js&#34;&gt;&lt;/script&gt;
+
+&lt;div id=&#34;TOC&#34;&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;#motivation&#34;&gt;Motivation&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#standard-function-for-coefficient-of-variation&#34;&gt;Standard function for coefficient of variation&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#modiying-the-enviroment---no-issues&#34;&gt;Modiying the enviroment - no issues&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#modiying-the-enviroment---issues&#34;&gt;Modiying the enviroment - ISSUES!&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#capturing-with-enquo&#34;&gt;Capturing with enquo&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#changing-name-with&#34;&gt;Changing name with :=&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#insert-a-list-of-expressions-into-a-call&#34;&gt;Insert a list of expressions into a call&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#conclusions&#34;&gt;Conclusions&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(rlang)
+library(tidyverse)
+library(testthat)&lt;/code&gt;&lt;/pre&gt;
+&lt;div id=&#34;motivation&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Motivation&lt;/h1&gt;
+&lt;p&gt;Provide some examples of using &lt;a href=&#34;https://tidyeval.tidyverse.org/&#34;&gt;Tidy evaluation (or NSE)&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;ℹ️ You may find this useful if you have read &lt;a href=&#34;https://adv-r.hadley.nz/metaprogramming.html&#34;&gt;Chapters 17-20 of Advanced R book&lt;/a&gt; and you are looking to find more additional examples to the great resource put together by &lt;a href=&#34;https://maraaverick.rbind.io/2017/08/tidyeval-resource-roundup/&#34;&gt;Mara&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;standard-function-for-coefficient-of-variation&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Standard function for coefficient of variation&lt;/h1&gt;
+&lt;p&gt;Let’s write a function for coefficient of variation:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;cv &amp;lt;- function(var) {
+    sd(var) / mean(var)
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can test that the function is behaving correctly&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;testthat::expect_equal( cv(c(3,3)), 0)
+testthat::expect_equal( round(cv(c(3,6)),2), 0.47)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Great! The function seems to be doing what we want!
+&lt;img src=&#34;https://media.giphy.com/media/12FwhN6Qh3cfxm/giphy.gif&#34; alt=&#34;Baby steps&#34; /&gt;&lt;/p&gt;
+&lt;div id=&#34;capture-and-uncapture-expression&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Capture and uncapture expression&lt;/h2&gt;
+&lt;p&gt;We can capture and uncapture expressions with &lt;a href=&#34;https://adv-r.hadley.nz/quasiquotation.html&#34;&gt;&lt;code&gt;enexpr&lt;/code&gt; and bang-bang !!&lt;/a&gt;.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;cv &amp;lt;- function(var) {
+    var &amp;lt;- enexpr(var) # this captures what the caller supplied to the function
+    expr(sd(!!var) / mean(!!var)) ##!! is gonna unquote it. Then expr is gonna capture that.
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Let’s see what happens:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;testthat::expect_equal( eval(cv(c(3,3))), 0)
+testthat::expect_type((cv(c(3,3))), &amp;quot;language&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If we evaluate the function, the cv is equal to 0. If we don’t evaluate the function it remains as a &lt;a href=&#34;https://adv-r.hadley.nz/expressions.html#calls&#34;&gt;call object&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://media.giphy.com/media/ChzfTLSi47FYc/giphy.gif&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&#34;modiying-the-enviroment---no-issues&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Modiying the enviroment - no issues&lt;/h1&gt;
+&lt;p&gt;Let’s modify the function envoriment:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;cv &amp;lt;- function(var) {
+    x=6
+    var &amp;lt;- enexpr(var)
+    expr(sd(!!var) / mean(!!var))
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Let’s see what happens:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;x=3
+testthat::expect_equal( eval(cv(c(3,x))), 0)
+x=6
+testthat::expect_equal(round(eval(cv(c(3,x))),2), 0.47)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This works even if we put x in the environment where the function is written because x is not an argument of cv function.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;modiying-the-enviroment---issues&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Modiying the enviroment - ISSUES!&lt;/h1&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;adding_cv &amp;lt;- function(df,var) {
+    x=c(3,6)
+    var &amp;lt;- enexpr(var)
+    mutate(df, sd(!!var) / mean(!!var))
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Let’s see what happens:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;df&amp;lt;- tibble(n=3)
+x=c(3,3)
+adding_cv(df,x)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 1 x 2
+##       n `sd(x)/mean(x)`
+##   &amp;lt;dbl&amp;gt;           &amp;lt;dbl&amp;gt;
+## 1     3           0.471&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Wait, what?! New columns with CV should be 0. However adding_cv is using &lt;code&gt;x&lt;/code&gt; included in the function enviroment.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://media.giphy.com/media/d9rGLfxrh1Rfy/giphy.gif&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;capturing-with-enquo&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Capturing with enquo&lt;/h1&gt;
+&lt;p&gt;To capture the function and the environment we need &lt;a href=&#34;https://adv-r.hadley.nz/evaluation.html?q=enquo#creating&#34;&gt;enquo&lt;/a&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;adding_cv &amp;lt;- function(df,var) {
+    x=c(3,6)
+    var &amp;lt;- enquo(var)
+    mutate(df, sd(!!var) / mean(!!var))
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Let’s see what happens now:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;df&amp;lt;- tibble(n=3)
+x=c(3,3)
+adding_cv(df,x)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 1 x 2
+##       n `sd(x)/mean(x)`
+##   &amp;lt;dbl&amp;gt;           &amp;lt;dbl&amp;gt;
+## 1     3               0&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;https://media.giphy.com/media/jsm9GubElH2X04lRNn/giphy.gif&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;changing-name-with&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Changing name with :=&lt;/h1&gt;
+&lt;p&gt;We can make the name of the new column prettier with &lt;a href=&#34;https://adv-r.hadley.nz/quasiquotation.html#tidy-dots&#34;&gt;&lt;strong&gt;:=&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;adding_cv &amp;lt;- function(df,var,nm) {
+    x=c(3,3)
+    nm_name &amp;lt;- quo_name(nm)
+    var &amp;lt;- enquo(var)
+    mutate(df, !!nm_name:= sd(!!var) / mean(!!var))
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Let’s see if that allows changing the name:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;x=c(3,6)
+df&amp;lt;- tibble(n=3)
+adding_cv(df,x,&amp;quot;pretty_name&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 1 x 2
+##       n pretty_name
+##   &amp;lt;dbl&amp;gt;       &amp;lt;dbl&amp;gt;
+## 1     3       0.471&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;https://media.giphy.com/media/Zb63DjukhzkT1d0VoZ/giphy.gif&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;insert-a-list-of-expressions-into-a-call&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Insert a list of expressions into a call&lt;/h1&gt;
+&lt;p&gt;What if we want to allow say filtering indirectly? We need to unquote multiple arguments. For this we can use &lt;a href=&#34;https://adv-r.hadley.nz/quasiquotation.html#unquoting-many-arguments&#34;&gt;!!!&lt;/a&gt;.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;adding_cv &amp;lt;- function(df,var,nm, ...) {
+    x=c(3,6)
+    nm_name &amp;lt;- quo_name(nm)
+    var &amp;lt;- enquo(var)
+    filtering &amp;lt;- quos(...)
+    df %&amp;gt;%  filter(!!!filtering) %&amp;gt;% 
+    mutate( !!nm_name:= sd(!!var) / mean(!!var))}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Let’s see if we can filter rows 3 and 6 from column n of our df.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;df&amp;lt;- tibble(n=c(3,6,9),m=c(3,6,9))
+x=c(3,3)
+adding_cv(df,x,&amp;quot;pretty_name&amp;quot;, n %in% c(3,6))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 2 x 3
+##       n     m pretty_name
+##   &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt;       &amp;lt;dbl&amp;gt;
+## 1     3     3           0
+## 2     6     6           0&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;https://media.giphy.com/media/xTiTnCf8IJvjldRaxi/giphy.gif&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;conclusions&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Conclusions&lt;/h1&gt;
+&lt;p&gt;These were just few examples to illustrate why &lt;a href=&#34;%5Bhttps://tidyeval.tidyverse.org/&#34;&gt;tidyeval&lt;/a&gt; can be useful and when it might be needed. I hope it helped you!&lt;/p&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

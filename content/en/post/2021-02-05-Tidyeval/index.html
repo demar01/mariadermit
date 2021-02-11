@@ -1,0 +1,188 @@
+---
+title: Step-by-step actions in Tidyeval
+author: maria
+date: '2021-02-06'
+categories:
+  - R
+tags:
+  - r
+  - tidyevaluation
+  - metaprogramming
+  - rlang
+slug:  Tidyeval actions
+subtitle: Understanding Tidyeval gradually
+summary: Few examples of how Tidyeval works.
+lastmod: '2021-02-06'
+featured: yes
+draft: no
+image:
+  placement: 1
+  caption: '[Illustration from unsplash](https://unsplash.com/photos/Cqe5Vvss-VQ)'
+  focal_point: Center
+  preview_only: no
+output:
+  blogdown::html_page:
+    toc: yes
+    number_sections: no
+    toc_depth: 1
+links:
+  - icon: 
+    icon_pack: fab
+    name: To know more about metaprogramming
+    url: https://adv-r.hadley.nz/metaprogramming.html
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+<div id="TOC">
+<ul>
+<li><a href="#motivation">Motivation</a></li>
+<li><a href="#standard-function-to-coefficient-of-variation">Standard function to coefficient of variation</a></li>
+<li><a href="#modiying-the-enviroment---no-issues">Modiying the enviroment - no issues</a></li>
+<li><a href="#modiying-the-enviroment---issues">Modiying the enviroment - ISSUES!</a></li>
+<li><a href="#capturing-with-enquo">Capturing with enquo</a></li>
+<li><a href="#changing-name-with">Changing name with :=</a></li>
+<li><a href="#insert-a-list-of-expressions-into-a-call">Insert a list of expressions into a call</a></li>
+<li><a href="#conclusions">Conclusions</a></li>
+</ul>
+</div>
+
+<pre class="r"><code>library(rlang)
+library(tidyverse)
+library(testthat)</code></pre>
+<div id="motivation" class="section level1">
+<h1>Motivation</h1>
+<p>Provide some examples of using <a href="https://tidyeval.tidyverse.org/">Tidy evaluation</a> (also called non-standard evaluation (NSE) or <strong>delayed evaluation</strong>).</p>
+<p>ℹ️ This post may be useful for your if you have read <a href="https://adv-r.hadley.nz/metaprogramming.html">Chapters 17-20 of Advanced R book</a> and you are looking to find more additional examples of Tidyeval. You may also want to have a look at the great Tidyeval resource put together by <a href="https://maraaverick.rbind.io/2017/08/tidyeval-resource-roundup/">Mara</a>.</p>
+<p>Libraries I’m gonna need for this post</p>
+<pre class="r"><code>library(rlang)
+library(tidyverse)
+library(testthat)</code></pre>
+</div>
+<div id="standard-function-to-coefficient-of-variation" class="section level1">
+<h1>Standard function to coefficient of variation</h1>
+<p>Let’s write a function that calculates coefficient of variation:</p>
+<pre class="r"><code>cv &lt;- function(var) {
+    sd(var) / mean(var)
+}</code></pre>
+<p>We can test that the function is behaving correctly</p>
+<pre class="r"><code>testthat::expect_equal( cv(c(3,3)), 0)
+testthat::expect_equal( round(cv(c(3,6)),2), 0.47)</code></pre>
+<p>Great! The function seems to be doing what we want!
+<img src="https://media.giphy.com/media/12FwhN6Qh3cfxm/giphy.gif" alt="Baby steps" /></p>
+<div id="capture-and-uncapture-expression" class="section level2">
+<h2>Capture and uncapture expression</h2>
+<p>We can capture and uncapture expressions with <a href="https://adv-r.hadley.nz/quasiquotation.html"><code>enexpr</code> and bang-bang !!</a></p>
+<pre class="r"><code>cv &lt;- function(var) {
+    var &lt;- enexpr(var) 
+    expr(sd(!!var) / mean(!!var)) 
+}</code></pre>
+<p>There is a lot is going on here:</p>
+<ul>
+<li><strong>enexpr</strong>: it captures what the caller supplied to the function and allows delayed evaluation.</li>
+<li><strong>!!</strong>: it unquotes. Sort of like make available what it was captured by enexpr. No evaluation has happened yet.</li>
+<li><strong>expr</strong>: it captures what it was unquoted by !!. No evaluation has happened yet.</li>
+</ul>
+<p>Let’s see what happens:</p>
+<pre class="r"><code>testthat::expect_equal(eval(cv(c(3,3))), 0) 
+testthat::expect_type((cv(c(3,3))), &quot;language&quot;)</code></pre>
+<p>If we evaluate the function, the cv is equal to 0. Note that we <strong>have delayed the evaluation</strong> up the point when used eval.</p>
+<p>If we don’t evaluate the function it remains as a <a href="https://adv-r.hadley.nz/expressions.html#calls">call object</a>.</p>
+<p><img src="https://media.giphy.com/media/ChzfTLSi47FYc/giphy.gif" /></p>
+</div>
+</div>
+<div id="modiying-the-enviroment---no-issues" class="section level1">
+<h1>Modiying the enviroment - no issues</h1>
+<p>Let’s modify the function’s environment a little:</p>
+<pre class="r"><code>cv &lt;- function(var) {
+    x=6
+    var &lt;- enexpr(var)
+    expr(sd(!!var) / mean(!!var))
+}</code></pre>
+<p>Let’s see what happens:</p>
+<pre class="r"><code>x=3
+testthat::expect_equal( eval(cv(c(3,x))), 0)
+x=6
+testthat::expect_equal(round(eval(cv(c(3,x))),2), 0.47)</code></pre>
+<p>This works even if we put x in the environment where the function is written because x is not an argument of cv function.</p>
+</div>
+<div id="modiying-the-enviroment---issues" class="section level1">
+<h1>Modiying the enviroment - ISSUES!</h1>
+<pre class="r"><code>adding_cv &lt;- function(df,var) {
+    x=c(3,6)
+    var &lt;- enexpr(var)
+    mutate(df, sd(!!var) / mean(!!var))
+}</code></pre>
+<p>Let’s see what happens:</p>
+<pre class="r"><code>df&lt;- tibble(n=3)
+x=c(3,3)
+adding_cv(df,x)</code></pre>
+<pre><code>## # A tibble: 1 x 2
+##       n `sd(x)/mean(x)`
+##   &lt;dbl&gt;           &lt;dbl&gt;
+## 1     3           0.471</code></pre>
+<p>Wait, what?! The new column contains coefficient of variation. If x=c(3,3) the value in the new column should have been 0. However adding_cv is using x=c(3,6) included in the function environment and not x=c(3,3).</p>
+<p><img src="https://media.giphy.com/media/d9rGLfxrh1Rfy/giphy.gif" /></p>
+</div>
+<div id="capturing-with-enquo" class="section level1">
+<h1>Capturing with enquo</h1>
+<p>To capture the function and the environment we need <a href="https://adv-r.hadley.nz/evaluation.html?q=enquo#creating">enquo</a></p>
+<pre class="r"><code>adding_cv &lt;- function(df,var) {
+    x=c(3,6)
+    var &lt;- enquo(var)
+    mutate(df, sd(!!var) / mean(!!var))
+}</code></pre>
+<p>Let’s see what happens now:</p>
+<pre class="r"><code>df&lt;- tibble(n=3)
+x=c(3,3)
+adding_cv(df,x)</code></pre>
+<pre><code>## # A tibble: 1 x 2
+##       n `sd(x)/mean(x)`
+##   &lt;dbl&gt;           &lt;dbl&gt;
+## 1     3               0</code></pre>
+<p><img src="https://media.giphy.com/media/jsm9GubElH2X04lRNn/giphy.gif" /></p>
+</div>
+<div id="changing-name-with" class="section level1">
+<h1>Changing name with :=</h1>
+<p>We can make the name of the new column prettier with <a href="https://adv-r.hadley.nz/quasiquotation.html#tidy-dots"><strong>:=</strong></a></p>
+<pre class="r"><code>adding_cv &lt;- function(df,var,nm) {
+    x=c(3,3)
+    nm_name &lt;- quo_name(nm)
+    var &lt;- enquo(var)
+    mutate(df, !!nm_name:= sd(!!var) / mean(!!var))
+}</code></pre>
+<p>Let’s see if that allows changing the name:</p>
+<pre class="r"><code>x=c(3,6)
+df&lt;- tibble(n=3)
+adding_cv(df,x,&quot;pretty_name&quot;)</code></pre>
+<pre><code>## # A tibble: 1 x 2
+##       n pretty_name
+##   &lt;dbl&gt;       &lt;dbl&gt;
+## 1     3       0.471</code></pre>
+<p><img src="https://media.giphy.com/media/Zb63DjukhzkT1d0VoZ/giphy.gif" /></p>
+</div>
+<div id="insert-a-list-of-expressions-into-a-call" class="section level1">
+<h1>Insert a list of expressions into a call</h1>
+<p>What if we want to do <em>delayed</em> filtering? We need to unquote multiple arguments. For this we can use <a href="https://adv-r.hadley.nz/quasiquotation.html#unquoting-many-arguments">!!!</a></p>
+<pre class="r"><code>adding_cv &lt;- function(df,var,nm, ...) {
+    x=c(3,6)
+    nm_name &lt;- quo_name(nm)
+    var &lt;- enquo(var)
+    filtering &lt;- enquos(...)
+    df %&gt;%  filter(!!!filtering) %&gt;% 
+    mutate( !!nm_name:= sd(!!var) / mean(!!var))}</code></pre>
+<p>Let’s see if we can filter rows 3 and 6 from column n of our df:</p>
+<pre class="r"><code>df&lt;- tibble(n=c(3,6,9),m=c(3,6,9))
+x=c(3,3)
+adding_cv(df,x,&quot;pretty_name&quot;, n %in% c(3,6))</code></pre>
+<pre><code>## # A tibble: 2 x 3
+##       n     m pretty_name
+##   &lt;dbl&gt; &lt;dbl&gt;       &lt;dbl&gt;
+## 1     3     3           0
+## 2     6     6           0</code></pre>
+<p><img src="https://media.giphy.com/media/xTiTnCf8IJvjldRaxi/giphy.gif" /></p>
+</div>
+<div id="conclusions" class="section level1">
+<h1>Conclusions</h1>
+<p>These were just few examples to illustrate why <a href="%5Bhttps://tidyeval.tidyverse.org/">tidyeval</a> can be useful and when it might be needed. I hope it helped you!</p>
+</div>
