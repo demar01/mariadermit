@@ -28,7 +28,7 @@ output:
 links:
   - icon: 
     icon_pack: fab
-    name: To know more about metaprogramming
+    name: More about metaprogramming here
     url: https://adv-r.hadley.nz/metaprogramming.html
 ---
 
@@ -36,7 +36,7 @@ links:
 knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 ```
 
-```{r import, results=FALSE,message=FALSE}
+```{r import, results=FALSE,message=FALSE, echo=FALSE}
 library(rlang)
 library(tidyverse)
 library(testthat)
@@ -47,7 +47,7 @@ Provide some examples of using [Tidy evaluation](https://tidyeval.tidyverse.org/
 
 `r emo::ji("information")` This post may be useful for your if you have read [Chapters 17-20 of Advanced R book ](https://adv-r.hadley.nz/metaprogramming.html) and you are looking to find more additional examples of Tidyeval. You may also want to have a look at the great Tidyeval resource put together by [Mara](https://maraaverick.rbind.io/2017/08/tidyeval-resource-roundup/).
 
-Libraries I'm gonna need for this post
+Libraries needed for this post
 
 ```{r}
 library(rlang)

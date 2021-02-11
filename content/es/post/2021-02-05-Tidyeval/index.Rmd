@@ -28,7 +28,7 @@ output:
 links:
   - icon: 
     icon_pack: fab
-    name: Para saber más sobre metaprogramación (en)
+    name: Más sobre metaprogramación aqui (en)
     url: https://adv-r.hadley.nz/metaprogramming.html
 ---
 
@@ -45,7 +45,7 @@ library(testthat)
 # Motivación
 Provide some examples of using [Tidy evaluation (also called non-standard evaluation (NSE) or **delayed evaluation**)](https://tidyeval.tidyverse.org/).
 
-`r emo::ji("information")` Este post te puede resultar beneficioso si has leído los [capítulos 17-20 del libro de Advanced R](https://adv-r.hadley.nz/metaprogramming.html) y estás buscando encontrar más ejemplos adicionales y en es al gran recurso de [Mara] (https://maraaverick.rbind.io/2017/08/tidyeval-resource-roundup/).
+`r emo::ji("information")` Este post te puede resultar beneficioso si has leído los [capítulos 17-20 del libro de Advanced R](https://adv-r.hadley.nz/metaprogramming.html) y estás buscando encontrar más ejemplos adicionales y en español al gran recurso de [Mara] (https://maraaverick.rbind.io/2017/08/tidyeval-resource-roundup/).
 
 
 
