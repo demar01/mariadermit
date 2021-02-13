@@ -77,17 +77,16 @@
 
 &lt;div id=&#34;motivation&#34; class=&#34;section level1&#34;&gt;
 &lt;h1&gt;Motivation&lt;/h1&gt;
-&lt;p&gt;Exploration of the Common Framework for Analyzing Single-Cell RNA-seq data.&lt;/p&gt;
-&lt;p&gt;The workflow of the 10X Single-Cell RNA-seq library prep for single-cell expression profiling looks like this:&lt;/p&gt;
+&lt;p&gt;The aim of this post is to show an overview of the common framework for analyzing Single-Cell RNA-seq (scRNAseq) data. Before diving in the data analysis, let’s look at the library prep on a 10X Genomics machine for scRNAseq:&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://medicine.uiowa.edu/humangenetics/genomics-sequencing-division/genome-sequencing/single-cell-expression-analysis-scrna-seq&#34;&gt;&lt;img src=&#34;10X.png&#34; /&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;Dr. Eric Chow gives a fantastic overview of Droseq (&lt;a href=&#34;https://www.youtube.com/watch?v=k9VFNLLQP8c&amp;amp;t=1083s&#34;&gt;min 7:08&lt;/a&gt;).&lt;br /&gt;
+&lt;p&gt;Dr. Eric Chow gives a fantastic overview of how cells and barcodes are sorted with the Droseq method (&lt;a href=&#34;https://www.youtube.com/watch?v=k9VFNLLQP8c&amp;amp;t=1083s&#34;&gt;min 7:08&lt;/a&gt;).&lt;br /&gt;
 &lt;br /&gt;
-Once the data is generated the sequencial steps to handle scRNAseq are the following:&lt;/p&gt;
+Once the data is generated the sequential steps to handle scRNAseq are summarized in this carton from Bioconductor site:&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;scrnaseqframework.png&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;The central object of the pipeline is &lt;code&gt;SingleCellExperiment&lt;/code&gt;, which looks like this:&lt;/p&gt;
+&lt;p&gt;The central object of the pipeline is &lt;code&gt;SingleCellExperiment&lt;/code&gt;, which holds all the raw data and experiment information, and it looks like this:&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;http://biocworkshops2019.bioconductor.org.s3-website-us-east-1.amazonaws.com/page/OSCABioc2019__OSCABioc2019/&#34;&gt;&lt;img src=&#34;SingleCellExperiment.png&#34; alt=&#34;SingleCellExperiment object&#34; /&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;The &lt;a href=&#34;http://bioconductor.org/books/release/OSCA/&#34;&gt;OSCA book&lt;/a&gt; is an amazing resource to fully understand the math behind scRNAseq analysis workflow. It has 18 cases studies of scRNAseq.&lt;/p&gt;
-&lt;p&gt;The main steps followed in scRNAseq are:&lt;/p&gt;
+&lt;p&gt;The main steps followed in scRNAseq analysis are the following:&lt;/p&gt;
 &lt;ol style=&#34;list-style-type: decimal&#34;&gt;
 &lt;li&gt;&lt;p&gt;Data Loading&lt;/p&gt;&lt;/li&gt;
 &lt;li&gt;&lt;p&gt;QC&lt;/p&gt;&lt;/li&gt;
@@ -97,6 +96,7 @@ Once the data is generated the sequencial steps to handle scRNAseq are the follo
 &lt;li&gt;&lt;p&gt;Clustering&lt;/p&gt;&lt;/li&gt;
 &lt;li&gt;&lt;p&gt;Interpretation&lt;/p&gt;&lt;/li&gt;
 &lt;/ol&gt;
+&lt;p&gt;Let’s dive in each step to understand what happens at each stage.&lt;/p&gt;
 &lt;/div&gt;
 &lt;div id=&#34;data-loading&#34; class=&#34;section level1&#34; style=&#34;color: black&#34;&gt;
 &lt;h1&gt;Data loading&lt;/h1&gt;

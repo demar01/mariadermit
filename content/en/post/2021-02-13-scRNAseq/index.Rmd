@@ -16,7 +16,7 @@ featured: yes
 draft: no
 image:
   placement: 1
-  caption: '[Un dimanche après-midi à lÎle de la Grande Jatte](https://en.wikipedia.org/wiki/A_Sunday_Afternoon_on_the_Island_of_La_Grande_Jatte)'
+  caption: '[Un dimanche après-midi à lÎle de la Grande Jatte (Seurat)](https://en.wikipedia.org/wiki/A_Sunday_Afternoon_on_the_Island_of_La_Grande_Jatte)'
   focal_point: Center
   preview_only: no
 output:
@@ -42,25 +42,23 @@ library(igraph)
 
 # Motivation
 
-Exploration of the Common Framework for Analyzing Single-Cell RNA-seq data.
-
-The workflow of the 10X Single-Cell RNA-seq library prep for single-cell expression profiling looks like this:
+The aim of this post is to show an overview of the common framework for analyzing Single-Cell RNA-seq (scRNAseq) data. Before diving in the data analysis, let's look at the library prep on a 10X Genomics machine for scRNAseq:
 
 [![](10x.png)](https://medicine.uiowa.edu/humangenetics/genomics-sequencing-division/genome-sequencing/single-cell-expression-analysis-scrna-seq)
 
-Dr. Eric Chow gives a fantastic overview of Droseq ([min 7:08](https://www.youtube.com/watch?v=k9VFNLLQP8c&t=1083s)).\
+Dr. Eric Chow gives a fantastic overview of how cells and barcodes are sorted with the Droseq method ([min 7:08](https://www.youtube.com/watch?v=k9VFNLLQP8c&t=1083s)).\
 \
-Once the data is generated the sequencial steps to handle scRNAseq are the following:
+Once the data is generated the sequential steps to handle scRNAseq are summarized in this carton from Bioconductor site:
 
 ![](scrnaseqframework.png)
 
-The central object of the pipeline is `SingleCellExperiment`, which looks like this:
+The central object of the pipeline is `SingleCellExperiment`, which holds all the raw data and experiment information, and it looks like this:
 
 [![SingleCellExperiment object](SingleCellExperiment.png)](http://biocworkshops2019.bioconductor.org.s3-website-us-east-1.amazonaws.com/page/OSCABioc2019__OSCABioc2019/)
 
 The [OSCA book](http://bioconductor.org/books/release/OSCA/) is an amazing resource to fully understand the math behind scRNAseq analysis workflow. It has 18 cases studies of scRNAseq.
 
-The main steps followed in scRNAseq are:
+The main steps followed in scRNAseq analysis are the following:
 
 1.  Data Loading
 
@@ -76,8 +74,9 @@ The main steps followed in scRNAseq are:
 
 7.  Interpretation
 
-# Data loading {style="color: black"}
+Let's dive in each step to understand what happens at each stage.
 
+# Data loading {style="color: black"}
 Here, I am going to use an example of 10X Genomics data the counts matrix and associated metadata (cell barcodes, data path, etc.). This is based on [Chapter 27 in OSCA book](http://bioconductor.org/books/release/OSCA/unfiltered-human-pbmcs-10x-genomics.html). The [*DropletTestFiles*](https://bioconductor.org/packages/3.12/DropletTestFiles) package contains files that are the raw output of pipelines like 10X Genomics' CellRanger software suite, that can be then imported via the [*DropletUtils*](https://bioconductor.org/packages/3.12/DropletUtils) package's `read10xCounts()` function.
 
 ```{r}
