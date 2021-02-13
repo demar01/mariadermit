@@ -5,7 +5,7 @@
     <link>/categories/r/</link>
       <atom:link href="/categories/r/index.xml" rel="self" type="application/rss+xml" />
     <description>R</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>© Maria Dermit, {2020}</copyright><lastBuildDate>Sat, 06 Feb 2021 00:00:00 +0000</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>© Maria Dermit, {2020}</copyright><lastBuildDate>Sat, 13 Feb 2021 00:00:00 +0000</lastBuildDate>
     <image>
       <url>/images/icon_hu89765a528fbe3e89fbea23b995128687_292554_512x512_fill_lanczos_center_2.png</url>
       <title>R</title>
@@ -13,17 +13,307 @@
     </image>
     
     <item>
-      <title>Step-by-step actions in Tidyeval</title>
-      <link>/2021-02-06-tidyeval-actions/</link>
-      <pubDate>Sat, 06 Feb 2021 00:00:00 +0000</pubDate>
-      <guid>/2021-02-06-tidyeval-actions/</guid>
+      <title>Overview of scRNAseq analysis</title>
+      <link>/2021-02-13-scrnaseq/</link>
+      <pubDate>Sat, 13 Feb 2021 00:00:00 +0000</pubDate>
+      <guid>/2021-02-13-scrnaseq/</guid>
       <description>
-&lt;script src=&#34;../../2021-02-06-tidyeval-actions/index_files/header-attrs/header-attrs.js&#34;&gt;&lt;/script&gt;
+&lt;script src=&#34;../../2021-02-13-scrnaseq/index_files/header-attrs/header-attrs.js&#34;&gt;&lt;/script&gt;
 
 &lt;div id=&#34;TOC&#34;&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;#motivation&#34;&gt;Motivation&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;#standard-function-for-coefficient-of-variation&#34;&gt;Standard function for coefficient of variation&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#data-loading&#34;&gt;Data loading&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#qc&#34;&gt;QC&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#normalization&#34;&gt;Normalization&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#variance-modellingfeature-selection&#34;&gt;Variance modelling/feature selection&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#dimensionality-reduction&#34;&gt;Dimensionality reduction&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#clustering&#34;&gt;Clustering&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#interpretation&#34;&gt;Interpretation&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+
+&lt;div id=&#34;motivation&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Motivation&lt;/h1&gt;
+&lt;p&gt;Exploration of the Common Framework for Analyzing Single-Cell RNA-seq data.&lt;/p&gt;
+&lt;p&gt;The workflow of the 10X Single-Cell RNA-seq library prep for single-cell expression profiling looks like this:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://medicine.uiowa.edu/humangenetics/genomics-sequencing-division/genome-sequencing/single-cell-expression-analysis-scrna-seq&#34;&gt;&lt;img src=&#34;10X.png&#34; /&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Dr. Eric Chow gives a fantastic overview of Droseq (&lt;a href=&#34;https://www.youtube.com/watch?v=k9VFNLLQP8c&amp;amp;t=1083s&#34;&gt;min 7:08&lt;/a&gt;).&lt;br /&gt;
+&lt;br /&gt;
+Once the data is generated the sequencial steps to handle scRNAseq are the following:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;scrnaseqframework.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;The central object of the pipeline is &lt;code&gt;SingleCellExperiment&lt;/code&gt;, which looks like this:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;http://biocworkshops2019.bioconductor.org.s3-website-us-east-1.amazonaws.com/page/OSCABioc2019__OSCABioc2019/&#34;&gt;&lt;img src=&#34;SingleCellExperiment.png&#34; alt=&#34;SingleCellExperiment object&#34; /&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;The &lt;a href=&#34;http://bioconductor.org/books/release/OSCA/&#34;&gt;OSCA book&lt;/a&gt; is an amazing resource to fully understand the math behind scRNAseq analysis workflow. It has 18 cases studies of scRNAseq.&lt;/p&gt;
+&lt;p&gt;The main steps followed in scRNAseq are:&lt;/p&gt;
+&lt;ol style=&#34;list-style-type: decimal&#34;&gt;
+&lt;li&gt;&lt;p&gt;Data Loading&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;QC&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Normalization&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Variance modeling&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Dimensionality reduction&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Clustering&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Interpretation&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/div&gt;
+&lt;div id=&#34;data-loading&#34; class=&#34;section level1&#34; style=&#34;color: black&#34;&gt;
+&lt;h1&gt;Data loading&lt;/h1&gt;
+&lt;p&gt;Here, I am going to use an example of 10X Genomics data the counts matrix and associated metadata (cell barcodes, data path, etc.). This is based on &lt;a href=&#34;http://bioconductor.org/books/release/OSCA/unfiltered-human-pbmcs-10x-genomics.html&#34;&gt;Chapter 27 in OSCA book&lt;/a&gt;. The &lt;a href=&#34;https://bioconductor.org/packages/3.12/DropletTestFiles&#34;&gt;&lt;em&gt;DropletTestFiles&lt;/em&gt;&lt;/a&gt; package contains files that are the raw output of pipelines like 10X Genomics’ CellRanger software suite, that can be then imported via the &lt;a href=&#34;https://bioconductor.org/packages/3.12/DropletUtils&#34;&gt;&lt;em&gt;DropletUtils&lt;/em&gt;&lt;/a&gt; package’s &lt;code&gt;read10xCounts()&lt;/code&gt; function.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(DropletTestFiles)
+raw.path &amp;lt;- getTestFile(&amp;quot;tenx-2.1.0-pbmc4k/1.0.0/raw.tar.gz&amp;quot;)
+out.path &amp;lt;- file.path(tempdir(), &amp;quot;pbmc4k&amp;quot;)
+untar(raw.path, exdir=out.path)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(DropletUtils)
+fname &amp;lt;- file.path(out.path, &amp;quot;raw_gene_bc_matrices/GRCh38&amp;quot;)
+sce.pbmc &amp;lt;- read10xCounts(fname, col.names=TRUE)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We need to make sure that we convert the easy interpretable gene symbol to a standard identifier that is guaranteed to be unique and valid (e.g., Ensembl).&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(scater)
+rownames(sce.pbmc) &amp;lt;- uniquifyFeatureNames(
+    rowData(sce.pbmc)$ID, rowData(sce.pbmc)$Symbol)
+library(EnsDb.Hsapiens.v86)
+location &amp;lt;- mapIds(EnsDb.Hsapiens.v86, keys=rowData(sce.pbmc)$ID, 
+    column=&amp;quot;SEQNAME&amp;quot;, keytype=&amp;quot;GENEID&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In addition to this, the &lt;a href=&#34;https://bioconductor.org/packages/release/data/experiment/vignettes/scRNAseq/inst/doc/scRNAseq.html&#34;&gt;scRNAseq package&lt;/a&gt; provides convenient access to several publicly available data sets in the form of &lt;code&gt;SingleCellExperiment&lt;/code&gt; object.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(scRNAseq)
+out &amp;lt;- listDatasets()
+dim(out)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## [1] 46  5&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;head(out)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## DataFrame with 6 rows and 5 columns
+##                Reference  Taxonomy                 Part    Number
+##              &amp;lt;character&amp;gt; &amp;lt;integer&amp;gt;          &amp;lt;character&amp;gt; &amp;lt;integer&amp;gt;
+## 1 @aztekin2019identifi..      8355                 tail     13199
+## 2 @bach2017differentia..     10090        mammary gland     25806
+## 3   @baron2016singlecell      9606             pancreas      8569
+## 4   @baron2016singlecell     10090             pancreas      1886
+## 5 @buettner2015computa..     10090 embryonic stem cells       288
+## 6 @campbell2017molecular     10090                brain     21086
+##                     Call
+##              &amp;lt;character&amp;gt;
+## 1      AztekinTailData()
+## 2      BachMammaryData()
+## 3 BaronPancreasData(&amp;#39;h..
+## 4 BaronPancreasData(&amp;#39;m..
+## 5      BuettnerESCData()
+## 6    CampbellBrainData()&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;qc&#34; class=&#34;section level1&#34; style=&#34;color:black&#34;&gt;
+&lt;h1&gt;QC&lt;/h1&gt;
+&lt;p&gt;An unique aspect of droplet-based data is that we have no prior knowledge about whether a particular library (i.e., cell barcode) corresponds to cell-containing or empty droplets. We use the &lt;code&gt;emptyDrops()&lt;/code&gt; function to test whether the expression profile for each cell barcode is significantly different from the ambient RNA pool. &lt;code&gt;emptyDrops()&lt;/code&gt; assumes that barcodes with low total UMI counts are empty droplets. &lt;code&gt;emptyDrops()&lt;/code&gt; uses Monte Carlo simulations to compute p-values for the multinomial sampling transcripts from the ambient pool.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;set.seed(100) #seed forreproducible results, emptyDrops performas a simulation.
+e.out &amp;lt;- emptyDrops(counts(sce.pbmc))
+sce.pbmc &amp;lt;- sce.pbmc[,which(e.out$FDR &amp;lt;= 0.001)] #we exclude dropplets that have low UMI counts &lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;These are the unfiltered, non-empty drops&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;unfiltered &amp;lt;- sce.pbmc&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;For each cell, we calculate these QC metrics using the &lt;code&gt;perCellQCMetrics()&lt;/code&gt; function from the &lt;a href=&#34;https://bioconductor.org/packages/3.12/scater&#34;&gt;&lt;em&gt;scater&lt;/em&gt;&lt;/a&gt; package. The &lt;code&gt;sum&lt;/code&gt; column contains the total count for each cell and the &lt;code&gt;detected&lt;/code&gt; column contains the number of detected genes. Mitochondrial counts are informative, because small mitochondrial percentages, large spike-in percentages and small library sizes are likely to be stripped nuclei, i.e., they have been so extensively damaged that they have lost all cytoplasmic content, therefore are low quality cells. Here we use a relaxed QC strategy and only remove cells with large mitochondrial proportions, using it as a proxy for cell damage. This reduces the risk of removing cell types with low RNA content, especially in a heterogeneous PBMC population with many different cell types.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;stats &amp;lt;- perCellQCMetrics(sce.pbmc, subsets=list(Mito=which(location==&amp;quot;MT&amp;quot;)))
+high.mito &amp;lt;- isOutlier(stats$subsets_Mito_percent, type=&amp;quot;higher&amp;quot;)
+sce.pbmc &amp;lt;- sce.pbmc[,!high.mito]&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;summary(high.mito)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##    Mode   FALSE    TRUE 
+## logical    3985     315&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;colData(unfiltered) &amp;lt;- cbind(colData(unfiltered), stats)
+unfiltered$discard &amp;lt;- high.mito
+
+gridExtra::grid.arrange(
+    plotColData(unfiltered, y=&amp;quot;sum&amp;quot;, colour_by=&amp;quot;discard&amp;quot;) +
+        scale_y_log10() + ggtitle(&amp;quot;Total count&amp;quot;),
+    plotColData(unfiltered, y=&amp;quot;detected&amp;quot;, colour_by=&amp;quot;discard&amp;quot;) +
+        scale_y_log10() + ggtitle(&amp;quot;Detected features&amp;quot;),
+    plotColData(unfiltered, y=&amp;quot;subsets_Mito_percent&amp;quot;,
+        colour_by=&amp;quot;discard&amp;quot;) + ggtitle(&amp;quot;Mito percent&amp;quot;),
+    ncol=2
+)&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;figure&#34;&gt;&lt;span id=&#34;fig:unref-unfiltered-pbmc-qc&#34;&gt;&lt;/span&gt;
+&lt;img src=&#34;../../2021-02-13-scrnaseq/index_files/figure-html/unref-unfiltered-pbmc-qc-1.png&#34; alt=&#34;Distribution of various QC metrics in the PBMC dataset after cell calling. Each point is a cell and is colored according to whether it was discarded by the mitochondrial filter.&#34; width=&#34;672&#34; /&gt;
+&lt;p class=&#34;caption&#34;&gt;
+Figure 1: Distribution of various QC metrics in the PBMC dataset after cell calling. Each point is a cell and is colored according to whether it was discarded by the mitochondrial filter.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;plotColData(unfiltered, x=&amp;quot;sum&amp;quot;, y=&amp;quot;subsets_Mito_percent&amp;quot;,
+    colour_by=&amp;quot;discard&amp;quot;) + scale_x_log10()&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;figure&#34;&gt;&lt;span id=&#34;fig:unref-unfiltered-pbmc-mito&#34;&gt;&lt;/span&gt;
+&lt;img src=&#34;../../2021-02-13-scrnaseq/index_files/figure-html/unref-unfiltered-pbmc-mito-1.png&#34; alt=&#34;Proportion of mitochondrial reads in each cell of the PBMC dataset compared to its total count.&#34; width=&#34;672&#34; /&gt;
+&lt;p class=&#34;caption&#34;&gt;
+Figure 2: Proportion of mitochondrial reads in each cell of the PBMC dataset compared to its total count.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&#34;normalization&#34; class=&#34;section level1&#34; style=&#34;color:black&#34;&gt;
+&lt;h1&gt;Normalization&lt;/h1&gt;
+&lt;p&gt;There are a number of &lt;a href=&#34;http://bioconductor.org/books/release/OSCA/normalization.html&#34;&gt;normalization methods&lt;/a&gt;. We use a pre-clustering step with &lt;code&gt;quickCluster()&lt;/code&gt; where cells in each cluster are normalized separately and the size factors are rescaled to be comparable across clusters. This avoids the assumption that most genes are non-DE across the entire population - only a non-DE majority is required between pairs of clusters, which is a weaker assumption for highly heterogeneous populations. By default, &lt;code&gt;quickCluster()&lt;/code&gt; will use an approximate algorithm for PCA based on methods from the &lt;a href=&#34;https://cran.r-project.org/package=irlba&#34;&gt;&lt;em&gt;irlba&lt;/em&gt;&lt;/a&gt; package. The approximation relies on stochastic initialization so we need to set the random seed (via &lt;code&gt;set.seed()&lt;/code&gt;) for reproducibility. &lt;code&gt;computeSumFactors&lt;/code&gt; performs a scaling normalization of single-cell RNA-seq data by deconvolving size factors from cell pools. Once we have computed the size factors, we use the &lt;code&gt;logNormCounts()&lt;/code&gt; function from &lt;a href=&#34;https://bioconductor.org/packages/3.12/scater&#34;&gt;&lt;em&gt;scater&lt;/em&gt;&lt;/a&gt; to compute normalized expression values for each cell. This is done by dividing the count for each gene/spike-in transcript with the appropriate size factor for that cell. The function also log-transforms the normalized values, creating a new assay called &lt;code&gt;&#34;logcounts&#34;&lt;/code&gt;. (Technically, these are “log-transformed normalized expression values”, but that’s too much of a mouthful to fit into the assay name.) These log-values will be the basis of our downstream analyses.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(scran)
+set.seed(1000)
+clusters &amp;lt;- quickCluster(sce.pbmc)
+sce.pbmc &amp;lt;- computeSumFactors(sce.pbmc, cluster=clusters)
+sce.pbmc &amp;lt;- logNormCounts(sce.pbmc)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;summary(sizeFactors(sce.pbmc))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+##  0.00749  0.71207  0.87490  1.00000  1.09900 12.25412&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can plot The “library size factor” for each cell. As for bulk RNAseq, library
+size normalization is the simplest strategy for performing scaling normalization.
+However, library size normalization is usually sufficient in many applications where the aim is to identify clusters and the top markers that define each cluster.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;plot(librarySizeFactors(sce.pbmc), sizeFactors(sce.pbmc), pch=16,
+    xlab=&amp;quot;Library size factors&amp;quot;, ylab=&amp;quot;Deconvolution factors&amp;quot;, log=&amp;quot;xy&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;figure&#34;&gt;&lt;span id=&#34;fig:unref-unfiltered-pbmc-norm&#34;&gt;&lt;/span&gt;
+&lt;img src=&#34;../../2021-02-13-scrnaseq/index_files/figure-html/unref-unfiltered-pbmc-norm-1.png&#34; alt=&#34;Relationship between the library size factors and the deconvolution size factors in the PBMC dataset.&#34; width=&#34;672&#34; /&gt;
+&lt;p class=&#34;caption&#34;&gt;
+Figure 3: Relationship between the library size factors and the deconvolution size factors in the PBMC dataset.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&#34;variance-modellingfeature-selection&#34; class=&#34;section level1&#34; style=&#34;color:black&#34;&gt;
+&lt;h1&gt;Variance modelling/feature selection&lt;/h1&gt;
+&lt;p&gt;Several methods are available to quantify the variation per gene and to select an appropriate set of &lt;strong&gt;highly variable genes (HVGs)&lt;/strong&gt;. UMI counts typically exhibit near-Poisson variation if we only consider technical noise from library preparation and sequencing. This can be used to construct a mean-variance trend in the log-counts with the &lt;code&gt;modelGeneVarByPoisson&lt;/code&gt; function. We can then select the top 10% of genes with the highest biological components.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;set.seed(1001)
+dec.pbmc &amp;lt;- modelGeneVarByPoisson(sce.pbmc)
+top.pbmc &amp;lt;- getTopHVGs(dec.pbmc, prop=0.1)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;plot(dec.pbmc$mean, dec.pbmc$total, pch=16, cex=0.5,
+    xlab=&amp;quot;Mean of log-expression&amp;quot;, ylab=&amp;quot;Variance of log-expression&amp;quot;)
+curfit &amp;lt;- metadata(dec.pbmc)
+curve(curfit$trend(x), col=&amp;#39;dodgerblue&amp;#39;, add=TRUE, lwd=2)&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;figure&#34;&gt;&lt;span id=&#34;fig:unref-unfiltered-pbmc-var&#34;&gt;&lt;/span&gt;
+&lt;img src=&#34;../../2021-02-13-scrnaseq/index_files/figure-html/unref-unfiltered-pbmc-var-1.png&#34; alt=&#34;Per-gene variance as a function of the mean for the log-expression values in the PBMC dataset. Each point represents a gene (black) with the mean-variance trend (blue) fitted to simulated Poisson counts.&#34; width=&#34;672&#34; /&gt;
+&lt;p class=&#34;caption&#34;&gt;
+Figure 4: Per-gene variance as a function of the mean for the log-expression values in the PBMC dataset. Each point represents a gene (black) with the mean-variance trend (blue) fitted to simulated Poisson counts.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&#34;dimensionality-reduction&#34; class=&#34;section level1&#34; style=&#34;color:black&#34;&gt;
+&lt;h1&gt;Dimensionality reduction&lt;/h1&gt;
+&lt;p&gt;Now we want to compare cells based on the values of gene expression. We can use
+&lt;code&gt;denoisePCA&lt;/code&gt; function, that “de-noises” log-expression data by removing principal components corresponding to technical noise.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;set.seed(10000)
+sce.pbmc &amp;lt;- denoisePCA(sce.pbmc, subset.row=top.pbmc, technical=dec.pbmc)
+set.seed(100000)
+sce.pbmc &amp;lt;- runTSNE(sce.pbmc, dimred=&amp;quot;PCA&amp;quot;) 
+set.seed(1000000)
+sce.pbmc &amp;lt;- runUMAP(sce.pbmc, dimred=&amp;quot;PCA&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We verify how many PCs were retained.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ncol(reducedDim(sce.pbmc, &amp;quot;PCA&amp;quot;))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## [1] 9&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;clustering&#34; class=&#34;section level1&#34; style=&#34;color:black&#34;&gt;
+&lt;h1&gt;Clustering&lt;/h1&gt;
+&lt;p&gt;We can now create nearest-neighbor graphs with the &lt;code&gt;buildSNNGraph&lt;/code&gt; function and
+&lt;code&gt;cluster_walktrap&lt;/code&gt; function. &lt;code&gt;cluster_walktrap&lt;/code&gt; will assign membership of densely connected subgraphs, also called “communities”.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;g &amp;lt;- buildSNNGraph(sce.pbmc, k=10, use.dimred = &amp;#39;PCA&amp;#39;)
+clust &amp;lt;- igraph::cluster_walktrap(g)$membership
+colLabels(sce.pbmc) &amp;lt;- factor(clust)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;table(colLabels(sce.pbmc))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## 
+##   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16 
+## 205 508 541  56 374 125  46 432 302 867  47 155 166  61  84  16&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;plotTSNE(sce.pbmc, colour_by=&amp;quot;label&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;figure&#34;&gt;&lt;span id=&#34;fig:unref-unfiltered-pbmc-tsne&#34;&gt;&lt;/span&gt;
+&lt;img src=&#34;../../2021-02-13-scrnaseq/index_files/figure-html/unref-unfiltered-pbmc-tsne-1.png&#34; alt=&#34;Obligatory $t$-SNE plot of the PBMC dataset, where each point represents a cell and is colored according to the assigned cluster.&#34; width=&#34;672&#34; /&gt;
+&lt;p class=&#34;caption&#34;&gt;
+Figure 5: Obligatory &lt;span class=&#34;math inline&#34;&gt;\(t\)&lt;/span&gt;-SNE plot of the PBMC dataset, where each point represents a cell and is colored according to the assigned cluster.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&#34;interpretation&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Interpretation&lt;/h1&gt;
+&lt;p&gt;To interpret the clustering results, we need to identify the genes that drive separation between clusters. In the most obvious case, the marker genes for each cluster are a priori associated with particular cell types, allowing us to treat the clustering as a proxy for cell type identity. The same principle can be applied to discover more subtle differences between clusters (e.g., changes in activation or differentiation state) based on the behavior of genes in the affected pathways.
+We perform pairwise t-tests between clusters for each gene using the &lt;code&gt;findMarkers&lt;/code&gt; function, which uses a Welch t-test to perform DE testing between clusters and returns a list of DataFrames containing ranked candidate markers for each cluster.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;markers &amp;lt;- findMarkers(sce.pbmc, pval.type=&amp;quot;some&amp;quot;, direction=&amp;quot;up&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Let’s say that we want to examine the markers for cluster 8 in more detail.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;marker.set &amp;lt;- markers[[&amp;quot;8&amp;quot;]]
+as.data.frame(marker.set[1:30,1:3])&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##                     p.value           FDR summary.logFC
+## CSTA          7.170624e-222 2.015964e-217     2.4178954
+## MNDA          1.196631e-221 2.015964e-217     2.6614935
+## FCN1          2.375980e-213 2.668543e-209     2.6380934
+## S100A12       4.393470e-212 3.700839e-208     3.0808902
+## VCAN          1.711043e-199 1.153038e-195     2.2603760
+## TYMP          1.173532e-154 6.590164e-151     2.0237930
+## AIF1          3.673649e-149 1.768285e-145     2.4603604
+## LGALS2        4.004740e-137 1.686696e-133     1.8927606
+## MS4A6A        5.639909e-134 2.111457e-130     1.5457061
+## FGL2          2.044513e-124 6.888781e-121     1.3859366
+## RP11-1143G9.4 6.891551e-122 2.110945e-118     2.8042347
+## AP1S2         1.786019e-112 5.014842e-109     1.7703547
+## CD14          1.195352e-110 3.098169e-107     1.4259764
+## CFD           6.870490e-109 1.653531e-105     1.3560255
+## GPX1          9.048825e-107 2.032607e-103     2.4013937
+## TNFSF13B       3.920319e-95  8.255701e-92     1.1151275
+## KLF4           3.309726e-94  6.559876e-91     1.2049050
+## GRN            4.801206e-91  8.987324e-88     1.3814668
+## NAMPT          2.489624e-90  4.415020e-87     1.1438687
+## CLEC7A         7.736088e-88  1.303299e-84     1.0616120
+## S100A8         3.124930e-84  5.013875e-81     4.8051993
+## SERPINA1       1.580359e-82  2.420392e-79     1.3842689
+## CD36           8.018347e-79  1.174653e-75     1.0538169
+## MPEG1          8.481588e-79  1.190744e-75     0.9778095
+## CD68           5.118714e-78  6.898798e-75     0.9481203
+## CYBB           1.200516e-77  1.555776e-74     1.0300245
+## S100A11        1.174556e-72  1.465759e-69     1.8962486
+## RBP7           2.467027e-71  2.968714e-68     0.9666127
+## BLVRB          3.762610e-71  4.371634e-68     0.9701168
+## CD302          9.859086e-71  1.107307e-67     0.8792077&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The high expression of &lt;em&gt;MNDA&lt;/em&gt;, &lt;em&gt;CD14&lt;/em&gt; and &lt;em&gt;CD68&lt;/em&gt; suggests that cluster 8 contains monocytes.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;marker.set &amp;lt;- markers[[&amp;quot;15&amp;quot;]]
+as.data.frame(marker.set[1:30,1:3])&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##                p.value          FDR summary.logFC
+## AIF1      6.912466e-82 2.329086e-77      3.678553
+## FCGR3A    3.606603e-64 6.076045e-60      3.041108
+## SERPINA1  6.149257e-64 6.906436e-60      2.375549
+## FTL       2.857395e-63 2.406927e-59      2.061453
+## LST1      4.161324e-62 2.804233e-58      1.892121
+## COTL1     1.582271e-61 8.885507e-58      1.305713
+## CTSS      3.143428e-55 1.513067e-51      1.880227
+## S100A11   1.719244e-54 7.241024e-51      2.030715
+## TYMP      4.395645e-50 1.645632e-46      2.101758
+## MS4A7     7.348647e-48 2.476053e-44      2.173820
+## NAP1L1    2.806622e-47 8.596939e-44      1.142910
+## FTH1      5.856763e-47 1.644481e-43      1.188781
+## CD68      2.661218e-46 6.897469e-43      2.048530
+## STXBP2    5.783395e-45 1.391898e-41      2.075910
+## SAT1      9.269854e-43 2.082256e-39      1.541614
+## TYROBP    3.459416e-42 7.285097e-39      1.152396
+## PSAP      1.582943e-40 3.137392e-37      1.403571
+## CSTB      3.871723e-40 7.247436e-37      1.129131
+## CFD       4.529809e-39 8.033020e-36      1.999696
+## FKBP1A    5.042155e-39 8.494519e-36      1.301575
+## CEBPB     6.875529e-39 1.103162e-35      1.683662
+## LINC01272 7.357858e-38 1.126889e-34      1.840199
+## FCER1G    2.802003e-37 4.104813e-34      1.301967
+## SPI1      9.236815e-36 1.296772e-32      1.890047
+## S100A4    4.102320e-35 5.528943e-32      4.356299
+## NEAT1     5.928869e-33 7.683358e-30      1.358303
+## IFITM3    6.875461e-33 8.580066e-30      1.871086
+## LYZ       8.944290e-32 1.076317e-28      1.804654
+## LRRC25    1.072482e-31 1.246077e-28      1.242115
+## RNASET2   7.560048e-31 8.490942e-28      1.090212&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The high expression of &lt;em&gt;FCGR3A&lt;/em&gt; suggests that cluster 15 contains macrophagues.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Checking the cluster is what we wanted.
+marker.set &amp;lt;- markers[[&amp;quot;8&amp;quot;]]
+topset &amp;lt;- rownames(marker.set)[1:30]
+stopifnot(all(c(&amp;quot;CD14&amp;quot;, &amp;quot;CD68&amp;quot;, &amp;quot;MNDA&amp;quot;) %in% topset))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;plotExpression(sce.pbmc, features=c(&amp;quot;CD14&amp;quot;, &amp;quot;CD68&amp;quot;,
+    &amp;quot;MNDA&amp;quot;, &amp;quot;FCGR3A&amp;quot;), x=&amp;quot;label&amp;quot;, colour_by=&amp;quot;label&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;figure&#34;&gt;&lt;span id=&#34;fig:unref-mono-pbmc-markers&#34;&gt;&lt;/span&gt;
+&lt;img src=&#34;../../2021-02-13-scrnaseq/index_files/figure-html/unref-mono-pbmc-markers-1.png&#34; alt=&#34;Distribution of expression values for monocyte and macrophage markers across clusters in the PBMC dataset.&#34; width=&#34;672&#34; /&gt;
+&lt;p class=&#34;caption&#34;&gt;
+Figure 6: Distribution of expression values for monocyte and macrophage markers across clusters in the PBMC dataset.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Step-by-step actions in Tidyeval</title>
+      <link>/2021-02-11-tidyeval-actions/</link>
+      <pubDate>Thu, 11 Feb 2021 00:00:00 +0000</pubDate>
+      <guid>/2021-02-11-tidyeval-actions/</guid>
+      <description>
+&lt;script src=&#34;../../2021-02-11-tidyeval-actions/index_files/header-attrs/header-attrs.js&#34;&gt;&lt;/script&gt;
+
+&lt;div id=&#34;TOC&#34;&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;#motivation&#34;&gt;Motivation&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#standard-function-to-coefficient-of-variation&#34;&gt;Standard function to coefficient of variation&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;#modiying-the-enviroment---no-issues&#34;&gt;Modiying the enviroment - no issues&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;#modiying-the-enviroment---issues&#34;&gt;Modiying the enviroment - ISSUES!&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;#capturing-with-enquo&#34;&gt;Capturing with enquo&lt;/a&gt;&lt;/li&gt;
@@ -33,17 +323,18 @@
 &lt;/ul&gt;
 &lt;/div&gt;
 
+&lt;div id=&#34;motivation&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Motivation&lt;/h1&gt;
+&lt;p&gt;Provide some examples of using &lt;a href=&#34;https://tidyeval.tidyverse.org/&#34;&gt;Tidy evaluation&lt;/a&gt; (also called non-standard evaluation (NSE) or &lt;strong&gt;delayed evaluation&lt;/strong&gt;).&lt;/p&gt;
+&lt;p&gt;ℹ️ This post may be useful for your if you have read &lt;a href=&#34;https://adv-r.hadley.nz/metaprogramming.html&#34;&gt;Chapters 17-20 of Advanced R book&lt;/a&gt; and you are looking to find more additional examples of Tidyeval. You may also want to have a look at the great Tidyeval resource put together by &lt;a href=&#34;https://maraaverick.rbind.io/2017/08/tidyeval-resource-roundup/&#34;&gt;Mara&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Libraries needed for this post&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(rlang)
 library(tidyverse)
 library(testthat)&lt;/code&gt;&lt;/pre&gt;
-&lt;div id=&#34;motivation&#34; class=&#34;section level1&#34;&gt;
-&lt;h1&gt;Motivation&lt;/h1&gt;
-&lt;p&gt;Provide some examples of using &lt;a href=&#34;https://tidyeval.tidyverse.org/&#34;&gt;Tidy evaluation (also called non-standard evaluation (NSE) or &lt;strong&gt;delayed evaluation&lt;/strong&gt;)&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;ℹ️ This post may be useful for your if you have read &lt;a href=&#34;https://adv-r.hadley.nz/metaprogramming.html&#34;&gt;Chapters 17-20 of Advanced R book&lt;/a&gt; and you are looking to find more additional examples of Tidyeval. You may also want to have a look at the great resource put together by &lt;a href=&#34;https://maraaverick.rbind.io/2017/08/tidyeval-resource-roundup/&#34;&gt;Mara&lt;/a&gt;.&lt;/p&gt;
 &lt;/div&gt;
-&lt;div id=&#34;standard-function-for-coefficient-of-variation&#34; class=&#34;section level1&#34;&gt;
-&lt;h1&gt;Standard function for coefficient of variation&lt;/h1&gt;
-&lt;p&gt;Let’s write a function for coefficient of variation:&lt;/p&gt;
+&lt;div id=&#34;standard-function-to-coefficient-of-variation&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Standard function to coefficient of variation&lt;/h1&gt;
+&lt;p&gt;Let’s write a function that calculates coefficient of variation:&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;cv &amp;lt;- function(var) {
     sd(var) / mean(var)
 }&lt;/code&gt;&lt;/pre&gt;
@@ -54,7 +345,7 @@ testthat::expect_equal( round(cv(c(3,6)),2), 0.47)&lt;/code&gt;&lt;/pre&gt;
 &lt;img src=&#34;https://media.giphy.com/media/12FwhN6Qh3cfxm/giphy.gif&#34; alt=&#34;Baby steps&#34; /&gt;&lt;/p&gt;
 &lt;div id=&#34;capture-and-uncapture-expression&#34; class=&#34;section level2&#34;&gt;
 &lt;h2&gt;Capture and uncapture expression&lt;/h2&gt;
-&lt;p&gt;We can capture and uncapture expressions with &lt;a href=&#34;https://adv-r.hadley.nz/quasiquotation.html&#34;&gt;&lt;code&gt;enexpr&lt;/code&gt; and bang-bang !!&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;We can capture and uncapture expressions with &lt;a href=&#34;https://adv-r.hadley.nz/quasiquotation.html&#34;&gt;&lt;code&gt;enexpr&lt;/code&gt; and bang-bang !!&lt;/a&gt;&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;cv &amp;lt;- function(var) {
     var &amp;lt;- enexpr(var) 
     expr(sd(!!var) / mean(!!var)) 
@@ -68,7 +359,8 @@ testthat::expect_equal( round(cv(c(3,6)),2), 0.47)&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Let’s see what happens:&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;testthat::expect_equal(eval(cv(c(3,3))), 0) 
 testthat::expect_type((cv(c(3,3))), &amp;quot;language&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;If we evaluate the function (note that we &lt;strong&gt;have delayed the evaluation&lt;/strong&gt; up to now, when we finally used eval), the cv is equal to 0. If we don’t evaluate the function it remains as a &lt;a href=&#34;https://adv-r.hadley.nz/expressions.html#calls&#34;&gt;call object&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;If we evaluate the function, the cv is equal to 0. Note that we &lt;strong&gt;have delayed the evaluation&lt;/strong&gt; up the point when used eval.&lt;/p&gt;
+&lt;p&gt;If we don’t evaluate the function it remains as a &lt;a href=&#34;https://adv-r.hadley.nz/expressions.html#calls&#34;&gt;call object&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://media.giphy.com/media/ChzfTLSi47FYc/giphy.gif&#34; /&gt;&lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
@@ -102,7 +394,7 @@ adding_cv(df,x)&lt;/code&gt;&lt;/pre&gt;
 ##       n `sd(x)/mean(x)`
 ##   &amp;lt;dbl&amp;gt;           &amp;lt;dbl&amp;gt;
 ## 1     3           0.471&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Wait, what?! New columns with CV should be 0. However adding_cv is using &lt;code&gt;x&lt;/code&gt; included in the function environment.&lt;/p&gt;
+&lt;p&gt;Wait, what?! The new column contains coefficient of variation. If x=c(3,3) the value in the new column should have been 0. However adding_cv is using x=c(3,6) included in the function environment and not x=c(3,3).&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://media.giphy.com/media/d9rGLfxrh1Rfy/giphy.gif&#34; /&gt;&lt;/p&gt;
 &lt;/div&gt;
 &lt;div id=&#34;capturing-with-enquo&#34; class=&#34;section level1&#34;&gt;
@@ -144,7 +436,7 @@ adding_cv(df,x,&amp;quot;pretty_name&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 &lt;div id=&#34;insert-a-list-of-expressions-into-a-call&#34; class=&#34;section level1&#34;&gt;
 &lt;h1&gt;Insert a list of expressions into a call&lt;/h1&gt;
-&lt;p&gt;What if we want to do &lt;em&gt;delayed&lt;/em&gt; filtering? We need to unquote multiple arguments. For this we can use &lt;a href=&#34;https://adv-r.hadley.nz/quasiquotation.html#unquoting-many-arguments&#34;&gt;!!!&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;What if we want to do &lt;em&gt;delayed&lt;/em&gt; filtering? We need to unquote multiple arguments. For this we can use &lt;a href=&#34;https://adv-r.hadley.nz/quasiquotation.html#unquoting-many-arguments&#34;&gt;!!!&lt;/a&gt;&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;adding_cv &amp;lt;- function(df,var,nm, ...) {
     x=c(3,6)
     nm_name &amp;lt;- quo_name(nm)
@@ -152,7 +444,7 @@ adding_cv(df,x,&amp;quot;pretty_name&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
     filtering &amp;lt;- enquos(...)
     df %&amp;gt;%  filter(!!!filtering) %&amp;gt;% 
     mutate( !!nm_name:= sd(!!var) / mean(!!var))}&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Let’s see if we can filter rows 3 and 6 from column n of our df.&lt;/p&gt;
+&lt;p&gt;Let’s see if we can filter rows 3 and 6 from column n of our df:&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;df&amp;lt;- tibble(n=c(3,6,9),m=c(3,6,9))
 x=c(3,3)
 adding_cv(df,x,&amp;quot;pretty_name&amp;quot;, n %in% c(3,6))&lt;/code&gt;&lt;/pre&gt;

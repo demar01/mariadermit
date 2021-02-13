@@ -1,0 +1,276 @@
+---
+title: Overview of scRNAseq analysis
+author: maria
+date: '2021-02-13'
+categories:
+  - R
+tags:
+  - r
+  - Bioconductor
+  - scRNAseq
+slug:  scRNAseq
+subtitle: scRNAseq case study form the OSCA book
+summary: Example of scRNAseq workflow.
+lastmod: '2021-02-13'
+featured: yes
+draft: no
+image:
+  placement: 1
+  caption: '[Un dimanche après-midi à lÎle de la Grande Jatte](https://en.wikipedia.org/wiki/A_Sunday_Afternoon_on_the_Island_of_La_Grande_Jatte)'
+  focal_point: Center
+  preview_only: no
+output:
+  blogdown::html_page:
+    toc: yes
+    number_sections: no
+    toc_depth: 1
+links:
+  - icon: 
+    icon_pack: fab
+    name: OSCA book
+    url: http://bioconductor.org/books/release/OSCA/
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+```{r import, results=FALSE,message=FALSE, echo=FALSE}
+library(lubridate)
+library(igraph)
+```
+
+# Motivation
+
+Exploration of the Common Framework for Analyzing Single-Cell RNA-seq data.
+
+The workflow of the 10X Single-Cell RNA-seq library prep for single-cell expression profiling looks like this:
+
+[![](10x.png)](https://medicine.uiowa.edu/humangenetics/genomics-sequencing-division/genome-sequencing/single-cell-expression-analysis-scrna-seq)
+
+Dr. Eric Chow gives a fantastic overview of Droseq ([min 7:08](https://www.youtube.com/watch?v=k9VFNLLQP8c&t=1083s)).\
+\
+Once the data is generated the sequencial steps to handle scRNAseq are the following:
+
+![](scrnaseqframework.png)
+
+The central object of the pipeline is `SingleCellExperiment`, which looks like this:
+
+[![SingleCellExperiment object](SingleCellExperiment.png)](http://biocworkshops2019.bioconductor.org.s3-website-us-east-1.amazonaws.com/page/OSCABioc2019__OSCABioc2019/)
+
+The [OSCA book](http://bioconductor.org/books/release/OSCA/) is an amazing resource to fully understand the math behind scRNAseq analysis workflow. It has 18 cases studies of scRNAseq.
+
+The main steps followed in scRNAseq are:
+
+1.  Data Loading
+
+2.  QC
+
+3.  Normalization
+
+4.  Variance modeling
+
+5.  Dimensionality reduction
+
+6.  Clustering
+
+7.  Interpretation
+
+# Data loading {style="color: black"}
+
+Here, I am going to use an example of 10X Genomics data the counts matrix and associated metadata (cell barcodes, data path, etc.). This is based on [Chapter 27 in OSCA book](http://bioconductor.org/books/release/OSCA/unfiltered-human-pbmcs-10x-genomics.html). The [*DropletTestFiles*](https://bioconductor.org/packages/3.12/DropletTestFiles) package contains files that are the raw output of pipelines like 10X Genomics' CellRanger software suite, that can be then imported via the [*DropletUtils*](https://bioconductor.org/packages/3.12/DropletUtils) package's `read10xCounts()` function.
+
+```{r}
+library(DropletTestFiles)
+raw.path <- getTestFile("tenx-2.1.0-pbmc4k/1.0.0/raw.tar.gz")
+out.path <- file.path(tempdir(), "pbmc4k")
+untar(raw.path, exdir=out.path)
+
+```
+
+```{r}
+library(DropletUtils)
+fname <- file.path(out.path, "raw_gene_bc_matrices/GRCh38")
+sce.pbmc <- read10xCounts(fname, col.names=TRUE)
+```
+
+We need to make sure that we convert the easy interpretable gene symbol to a standard identifier that is guaranteed to be unique and valid (e.g., Ensembl).
+
+```{r gene-annotation, message=FALSE}
+library(scater)
+rownames(sce.pbmc) <- uniquifyFeatureNames(
+    rowData(sce.pbmc)$ID, rowData(sce.pbmc)$Symbol)
+library(EnsDb.Hsapiens.v86)
+location <- mapIds(EnsDb.Hsapiens.v86, keys=rowData(sce.pbmc)$ID, 
+    column="SEQNAME", keytype="GENEID")
+```
+
+In addition to this, the [scRNAseq package](https://bioconductor.org/packages/release/data/experiment/vignettes/scRNAseq/inst/doc/scRNAseq.html) provides convenient access to several publicly available data sets in the form of `SingleCellExperiment` object.
+
+```{r}
+library(scRNAseq)
+out <- listDatasets()
+dim(out)
+head(out)
+```
+
+# QC {style="color:black"}
+
+An unique aspect of droplet-based data is that we have no prior knowledge about whether a particular library (i.e., cell barcode) corresponds to cell-containing or empty droplets. We use the `emptyDrops()` function to test whether the expression profile for each cell barcode is significantly different from the ambient RNA pool. `emptyDrops()` assumes that barcodes with low total UMI counts are empty droplets. `emptyDrops()` uses Monte Carlo simulations to compute p-values for the multinomial sampling transcripts from the ambient pool.
+
+```{r}
+set.seed(100) #seed forreproducible results, emptyDrops performas a simulation.
+e.out <- emptyDrops(counts(sce.pbmc))
+sce.pbmc <- sce.pbmc[,which(e.out$FDR <= 0.001)] #we exclude dropplets that have low UMI counts 
+```
+
+These are the unfiltered, non-empty drops
+
+```{r}
+unfiltered <- sce.pbmc
+```
+
+For each cell, we calculate these QC metrics using the `perCellQCMetrics()` function from the [*scater*](https://bioconductor.org/packages/3.12/scater) package. The `sum` column contains the total count for each cell and the `detected` column contains the number of detected genes. Mitochondrial counts are informative, because small mitochondrial percentages, large spike-in percentages and small library sizes are likely to be stripped nuclei, i.e., they have been so extensively damaged that they have lost all cytoplasmic content, therefore are low quality cells. Here we use a relaxed QC strategy and only remove cells with large mitochondrial proportions, using it as a proxy for cell damage. This reduces the risk of removing cell types with low RNA content, especially in a heterogeneous PBMC population with many different cell types.
+
+```{r}
+stats <- perCellQCMetrics(sce.pbmc, subsets=list(Mito=which(location=="MT")))
+high.mito <- isOutlier(stats$subsets_Mito_percent, type="higher")
+sce.pbmc <- sce.pbmc[,!high.mito]
+```
+
+```{r}
+summary(high.mito)
+```
+
+```{r unref-unfiltered-pbmc-qc, fig.wide=TRUE, fig.asp=1, fig.cap="Distribution of various QC metrics in the PBMC dataset after cell calling. Each point is a cell and is colored according to whether it was discarded by the mitochondrial filter."}
+colData(unfiltered) <- cbind(colData(unfiltered), stats)
+unfiltered$discard <- high.mito
+
+gridExtra::grid.arrange(
+    plotColData(unfiltered, y="sum", colour_by="discard") +
+        scale_y_log10() + ggtitle("Total count"),
+    plotColData(unfiltered, y="detected", colour_by="discard") +
+        scale_y_log10() + ggtitle("Detected features"),
+    plotColData(unfiltered, y="subsets_Mito_percent",
+        colour_by="discard") + ggtitle("Mito percent"),
+    ncol=2
+)
+```
+
+```{r unref-unfiltered-pbmc-mito, fig.cap="Proportion of mitochondrial reads in each cell of the PBMC dataset compared to its total count."}
+plotColData(unfiltered, x="sum", y="subsets_Mito_percent",
+    colour_by="discard") + scale_x_log10()
+```
+
+# Normalization {style="color:black"}
+
+There are a number of [normalization methods](http://bioconductor.org/books/release/OSCA/normalization.html). We use a pre-clustering step with `quickCluster()` where cells in each cluster are normalized separately and the size factors are rescaled to be comparable across clusters. This avoids the assumption that most genes are non-DE across the entire population - only a non-DE majority is required between pairs of clusters, which is a weaker assumption for highly heterogeneous populations. By default, `quickCluster()` will use an approximate algorithm for PCA based on methods from the [*irlba*](https://cran.r-project.org/package=irlba) package. The approximation relies on stochastic initialization so we need to set the random seed (via `set.seed()`) for reproducibility. `computeSumFactors` performs a scaling normalization of single-cell RNA-seq data by deconvolving size factors from cell pools. Once we have computed the size factors, we use the `logNormCounts()` function from [*scater*](https://bioconductor.org/packages/3.12/scater) to compute normalized expression values for each cell. This is done by dividing the count for each gene/spike-in transcript with the appropriate size factor for that cell. The function also log-transforms the normalized values, creating a new assay called `"logcounts"`. (Technically, these are "log-transformed normalized expression values", but that's too much of a mouthful to fit into the assay name.) These log-values will be the basis of our downstream analyses.
+
+```{r normalization}
+library(scran)
+set.seed(1000)
+clusters <- quickCluster(sce.pbmc)
+sce.pbmc <- computeSumFactors(sce.pbmc, cluster=clusters)
+sce.pbmc <- logNormCounts(sce.pbmc)
+```
+
+```{r}
+summary(sizeFactors(sce.pbmc))
+
+```
+
+We can plot The "library size factor" for each cell. As for bulk RNAseq, library 
+size normalization is the simplest strategy for performing scaling normalization.
+However, library size normalization is usually sufficient in many applications where the aim is to identify clusters and the top markers that define each cluster.
+
+```{r unref-unfiltered-pbmc-norm, fig.cap="Relationship between the library size factors and the deconvolution size factors in the PBMC dataset."}
+plot(librarySizeFactors(sce.pbmc), sizeFactors(sce.pbmc), pch=16,
+    xlab="Library size factors", ylab="Deconvolution factors", log="xy")
+```
+
+# Variance modelling/feature selection {style="color:black"}
+
+Several methods are available to quantify the variation per gene and to select an appropriate set of **highly variable genes (HVGs)**. UMI counts typically exhibit near-Poisson variation if we only consider technical noise from library preparation and sequencing. This can be used to construct a mean-variance trend in the log-counts with the `modelGeneVarByPoisson` function. We can then select the top 10% of genes with the highest biological components.
+
+```{r}
+set.seed(1001)
+dec.pbmc <- modelGeneVarByPoisson(sce.pbmc)
+top.pbmc <- getTopHVGs(dec.pbmc, prop=0.1)
+
+```
+
+```{r unref-unfiltered-pbmc-var, fig.cap="Per-gene variance as a function of the mean for the log-expression values in the PBMC dataset. Each point represents a gene (black) with the mean-variance trend (blue) fitted to simulated Poisson counts."}
+plot(dec.pbmc$mean, dec.pbmc$total, pch=16, cex=0.5,
+    xlab="Mean of log-expression", ylab="Variance of log-expression")
+curfit <- metadata(dec.pbmc)
+curve(curfit$trend(x), col='dodgerblue', add=TRUE, lwd=2)
+```
+
+# Dimensionality reduction {style="color:black"}
+
+Now we want to compare cells based on the values of gene expression. We can use
+`denoisePCA` function, that "de-noises" log-expression data by removing principal components corresponding to technical noise.
+```{r dimensionality-reduction}
+set.seed(10000)
+sce.pbmc <- denoisePCA(sce.pbmc, subset.row=top.pbmc, technical=dec.pbmc)
+set.seed(100000)
+sce.pbmc <- runTSNE(sce.pbmc, dimred="PCA") 
+set.seed(1000000)
+sce.pbmc <- runUMAP(sce.pbmc, dimred="PCA")
+```
+We verify how many PCs were retained.
+
+```{r}
+ncol(reducedDim(sce.pbmc, "PCA"))
+```
+
+# Clustering {style="color:black"}
+We can now create  nearest-neighbor graphs with the `buildSNNGraph` function and
+`cluster_walktrap` function. `cluster_walktrap` will assign membership of densely connected subgraphs, also called "communities".
+```{r clustering}
+g <- buildSNNGraph(sce.pbmc, k=10, use.dimred = 'PCA')
+clust <- igraph::cluster_walktrap(g)$membership
+colLabels(sce.pbmc) <- factor(clust)
+```
+
+```{r}
+table(colLabels(sce.pbmc))
+```
+
+```{r unref-unfiltered-pbmc-tsne, fig.cap="Obligatory $t$-SNE plot of the PBMC dataset, where each point represents a cell and is colored according to the assigned cluster."}
+plotTSNE(sce.pbmc, colour_by="label")
+```
+
+# Interpretation
+To interpret the clustering results, we need to identify the genes that drive separation between clusters. In the most obvious case, the marker genes for each cluster are a priori associated with particular cell types, allowing us to treat the clustering as a proxy for cell type identity. The same principle can be applied to discover more subtle differences between clusters (e.g., changes in activation or differentiation state) based on the behavior of genes in the affected pathways.
+We perform pairwise t-tests between clusters for each gene using the `findMarkers` function, which uses a Welch t-test to perform  DE testing between clusters and  returns a list of DataFrames containing ranked candidate markers for each cluster.
+```{r}
+markers <- findMarkers(sce.pbmc, pval.type="some", direction="up")
+```
+
+Let's say that we want to examine the markers for cluster 8 in more detail.
+
+```{r}
+marker.set <- markers[["8"]]
+as.data.frame(marker.set[1:30,1:3])
+```
+The high expression of _MNDA_, _CD14_ and _CD68_ suggests that cluster 8 contains monocytes. 
+
+```{r}
+marker.set <- markers[["15"]]
+as.data.frame(marker.set[1:30,1:3])
+```
+The high expression of _FCGR3A_ suggests that cluster 15 contains macrophagues. 
+
+```{r}
+# Checking the cluster is what we wanted.
+marker.set <- markers[["8"]]
+topset <- rownames(marker.set)[1:30]
+stopifnot(all(c("CD14", "CD68", "MNDA") %in% topset))
+```
+
+```{r unref-mono-pbmc-markers, fig.cap="Distribution of expression values for monocyte and macrophage markers across clusters in the PBMC dataset.", fig.wide=TRUE, fig.asp=0.8}
+plotExpression(sce.pbmc, features=c("CD14", "CD68",
+    "MNDA", "FCGR3A"), x="label", colour_by="label")
+```
+

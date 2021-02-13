@@ -1,0 +1,314 @@
+---
+title: Overview of scRNAseq analysis
+author: maria
+date: '2021-02-13'
+categories:
+  - R
+tags:
+  - r
+  - Bioconductor
+  - scRNAseq
+slug:  scRNAseq
+subtitle: scRNAseq case study form the OSCA book
+summary: Example of scRNAseq workflow.
+lastmod: '2021-02-13'
+featured: yes
+draft: no
+image:
+  placement: 1
+  caption: '[Un dimanche après-midi à lÎle de la Grande Jatte](https://en.wikipedia.org/wiki/A_Sunday_Afternoon_on_the_Island_of_La_Grande_Jatte)'
+  focal_point: Center
+  preview_only: no
+output:
+  blogdown::html_page:
+    toc: yes
+    number_sections: no
+    toc_depth: 1
+links:
+  - icon: 
+    icon_pack: fab
+    name: OSCA book
+    url: http://bioconductor.org/books/release/OSCA/
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+<div id="TOC">
+<ul>
+<li><a href="#motivation">Motivation</a></li>
+<li><a href="#data-loading">Data loading</a></li>
+<li><a href="#qc">QC</a></li>
+<li><a href="#normalization">Normalization</a></li>
+<li><a href="#variance-modellingfeature-selection">Variance modelling/feature selection</a></li>
+<li><a href="#dimensionality-reduction">Dimensionality reduction</a></li>
+<li><a href="#clustering">Clustering</a></li>
+<li><a href="#interpretation">Interpretation</a></li>
+</ul>
+</div>
+
+<div id="motivation" class="section level1">
+<h1>Motivation</h1>
+<p>Exploration of the Common Framework for Analyzing Single-Cell RNA-seq data.</p>
+<p>The workflow of the 10X Single-Cell RNA-seq library prep for single-cell expression profiling looks like this:</p>
+<p><a href="https://medicine.uiowa.edu/humangenetics/genomics-sequencing-division/genome-sequencing/single-cell-expression-analysis-scrna-seq"><img src="10X.png" /></a></p>
+<p>Dr. Eric Chow gives a fantastic overview of Droseq (<a href="https://www.youtube.com/watch?v=k9VFNLLQP8c&amp;t=1083s">min 7:08</a>).<br />
+<br />
+Once the data is generated the sequencial steps to handle scRNAseq are the following:</p>
+<p><img src="scrnaseqframework.png" /></p>
+<p>The central object of the pipeline is <code>SingleCellExperiment</code>, which looks like this:</p>
+<p><a href="http://biocworkshops2019.bioconductor.org.s3-website-us-east-1.amazonaws.com/page/OSCABioc2019__OSCABioc2019/"><img src="SingleCellExperiment.png" alt="SingleCellExperiment object" /></a></p>
+<p>The <a href="http://bioconductor.org/books/release/OSCA/">OSCA book</a> is an amazing resource to fully understand the math behind scRNAseq analysis workflow. It has 18 cases studies of scRNAseq.</p>
+<p>The main steps followed in scRNAseq are:</p>
+<ol style="list-style-type: decimal">
+<li><p>Data Loading</p></li>
+<li><p>QC</p></li>
+<li><p>Normalization</p></li>
+<li><p>Variance modeling</p></li>
+<li><p>Dimensionality reduction</p></li>
+<li><p>Clustering</p></li>
+<li><p>Interpretation</p></li>
+</ol>
+</div>
+<div id="data-loading" class="section level1" style="color: black">
+<h1>Data loading</h1>
+<p>Here, I am going to use an example of 10X Genomics data the counts matrix and associated metadata (cell barcodes, data path, etc.). This is based on <a href="http://bioconductor.org/books/release/OSCA/unfiltered-human-pbmcs-10x-genomics.html">Chapter 27 in OSCA book</a>. The <a href="https://bioconductor.org/packages/3.12/DropletTestFiles"><em>DropletTestFiles</em></a> package contains files that are the raw output of pipelines like 10X Genomics’ CellRanger software suite, that can be then imported via the <a href="https://bioconductor.org/packages/3.12/DropletUtils"><em>DropletUtils</em></a> package’s <code>read10xCounts()</code> function.</p>
+<pre class="r"><code>library(DropletTestFiles)
+raw.path &lt;- getTestFile(&quot;tenx-2.1.0-pbmc4k/1.0.0/raw.tar.gz&quot;)
+out.path &lt;- file.path(tempdir(), &quot;pbmc4k&quot;)
+untar(raw.path, exdir=out.path)</code></pre>
+<pre class="r"><code>library(DropletUtils)
+fname &lt;- file.path(out.path, &quot;raw_gene_bc_matrices/GRCh38&quot;)
+sce.pbmc &lt;- read10xCounts(fname, col.names=TRUE)</code></pre>
+<p>We need to make sure that we convert the easy interpretable gene symbol to a standard identifier that is guaranteed to be unique and valid (e.g., Ensembl).</p>
+<pre class="r"><code>library(scater)
+rownames(sce.pbmc) &lt;- uniquifyFeatureNames(
+    rowData(sce.pbmc)$ID, rowData(sce.pbmc)$Symbol)
+library(EnsDb.Hsapiens.v86)
+location &lt;- mapIds(EnsDb.Hsapiens.v86, keys=rowData(sce.pbmc)$ID, 
+    column=&quot;SEQNAME&quot;, keytype=&quot;GENEID&quot;)</code></pre>
+<p>In addition to this, the <a href="https://bioconductor.org/packages/release/data/experiment/vignettes/scRNAseq/inst/doc/scRNAseq.html">scRNAseq package</a> provides convenient access to several publicly available data sets in the form of <code>SingleCellExperiment</code> object.</p>
+<pre class="r"><code>library(scRNAseq)
+out &lt;- listDatasets()
+dim(out)</code></pre>
+<pre><code>## [1] 46  5</code></pre>
+<pre class="r"><code>head(out)</code></pre>
+<pre><code>## DataFrame with 6 rows and 5 columns
+##                Reference  Taxonomy                 Part    Number
+##              &lt;character&gt; &lt;integer&gt;          &lt;character&gt; &lt;integer&gt;
+## 1 @aztekin2019identifi..      8355                 tail     13199
+## 2 @bach2017differentia..     10090        mammary gland     25806
+## 3   @baron2016singlecell      9606             pancreas      8569
+## 4   @baron2016singlecell     10090             pancreas      1886
+## 5 @buettner2015computa..     10090 embryonic stem cells       288
+## 6 @campbell2017molecular     10090                brain     21086
+##                     Call
+##              &lt;character&gt;
+## 1      AztekinTailData()
+## 2      BachMammaryData()
+## 3 BaronPancreasData(&#39;h..
+## 4 BaronPancreasData(&#39;m..
+## 5      BuettnerESCData()
+## 6    CampbellBrainData()</code></pre>
+</div>
+<div id="qc" class="section level1" style="color:black">
+<h1>QC</h1>
+<p>An unique aspect of droplet-based data is that we have no prior knowledge about whether a particular library (i.e., cell barcode) corresponds to cell-containing or empty droplets. We use the <code>emptyDrops()</code> function to test whether the expression profile for each cell barcode is significantly different from the ambient RNA pool. <code>emptyDrops()</code> assumes that barcodes with low total UMI counts are empty droplets. <code>emptyDrops()</code> uses Monte Carlo simulations to compute p-values for the multinomial sampling transcripts from the ambient pool.</p>
+<pre class="r"><code>set.seed(100) #seed forreproducible results, emptyDrops performas a simulation.
+e.out &lt;- emptyDrops(counts(sce.pbmc))
+sce.pbmc &lt;- sce.pbmc[,which(e.out$FDR &lt;= 0.001)] #we exclude dropplets that have low UMI counts </code></pre>
+<p>These are the unfiltered, non-empty drops</p>
+<pre class="r"><code>unfiltered &lt;- sce.pbmc</code></pre>
+<p>For each cell, we calculate these QC metrics using the <code>perCellQCMetrics()</code> function from the <a href="https://bioconductor.org/packages/3.12/scater"><em>scater</em></a> package. The <code>sum</code> column contains the total count for each cell and the <code>detected</code> column contains the number of detected genes. Mitochondrial counts are informative, because small mitochondrial percentages, large spike-in percentages and small library sizes are likely to be stripped nuclei, i.e., they have been so extensively damaged that they have lost all cytoplasmic content, therefore are low quality cells. Here we use a relaxed QC strategy and only remove cells with large mitochondrial proportions, using it as a proxy for cell damage. This reduces the risk of removing cell types with low RNA content, especially in a heterogeneous PBMC population with many different cell types.</p>
+<pre class="r"><code>stats &lt;- perCellQCMetrics(sce.pbmc, subsets=list(Mito=which(location==&quot;MT&quot;)))
+high.mito &lt;- isOutlier(stats$subsets_Mito_percent, type=&quot;higher&quot;)
+sce.pbmc &lt;- sce.pbmc[,!high.mito]</code></pre>
+<pre class="r"><code>summary(high.mito)</code></pre>
+<pre><code>##    Mode   FALSE    TRUE 
+## logical    3985     315</code></pre>
+<pre class="r"><code>colData(unfiltered) &lt;- cbind(colData(unfiltered), stats)
+unfiltered$discard &lt;- high.mito
+
+gridExtra::grid.arrange(
+    plotColData(unfiltered, y=&quot;sum&quot;, colour_by=&quot;discard&quot;) +
+        scale_y_log10() + ggtitle(&quot;Total count&quot;),
+    plotColData(unfiltered, y=&quot;detected&quot;, colour_by=&quot;discard&quot;) +
+        scale_y_log10() + ggtitle(&quot;Detected features&quot;),
+    plotColData(unfiltered, y=&quot;subsets_Mito_percent&quot;,
+        colour_by=&quot;discard&quot;) + ggtitle(&quot;Mito percent&quot;),
+    ncol=2
+)</code></pre>
+<div class="figure"><span id="fig:unref-unfiltered-pbmc-qc"></span>
+<img src="{{< blogdown/postref >}}index_files/figure-html/unref-unfiltered-pbmc-qc-1.png" alt="Distribution of various QC metrics in the PBMC dataset after cell calling. Each point is a cell and is colored according to whether it was discarded by the mitochondrial filter." width="672" />
+<p class="caption">
+Figure 1: Distribution of various QC metrics in the PBMC dataset after cell calling. Each point is a cell and is colored according to whether it was discarded by the mitochondrial filter.
+</p>
+</div>
+<pre class="r"><code>plotColData(unfiltered, x=&quot;sum&quot;, y=&quot;subsets_Mito_percent&quot;,
+    colour_by=&quot;discard&quot;) + scale_x_log10()</code></pre>
+<div class="figure"><span id="fig:unref-unfiltered-pbmc-mito"></span>
+<img src="{{< blogdown/postref >}}index_files/figure-html/unref-unfiltered-pbmc-mito-1.png" alt="Proportion of mitochondrial reads in each cell of the PBMC dataset compared to its total count." width="672" />
+<p class="caption">
+Figure 2: Proportion of mitochondrial reads in each cell of the PBMC dataset compared to its total count.
+</p>
+</div>
+</div>
+<div id="normalization" class="section level1" style="color:black">
+<h1>Normalization</h1>
+<p>There are a number of <a href="http://bioconductor.org/books/release/OSCA/normalization.html">normalization methods</a>. We use a pre-clustering step with <code>quickCluster()</code> where cells in each cluster are normalized separately and the size factors are rescaled to be comparable across clusters. This avoids the assumption that most genes are non-DE across the entire population - only a non-DE majority is required between pairs of clusters, which is a weaker assumption for highly heterogeneous populations. By default, <code>quickCluster()</code> will use an approximate algorithm for PCA based on methods from the <a href="https://cran.r-project.org/package=irlba"><em>irlba</em></a> package. The approximation relies on stochastic initialization so we need to set the random seed (via <code>set.seed()</code>) for reproducibility. <code>computeSumFactors</code> performs a scaling normalization of single-cell RNA-seq data by deconvolving size factors from cell pools. Once we have computed the size factors, we use the <code>logNormCounts()</code> function from <a href="https://bioconductor.org/packages/3.12/scater"><em>scater</em></a> to compute normalized expression values for each cell. This is done by dividing the count for each gene/spike-in transcript with the appropriate size factor for that cell. The function also log-transforms the normalized values, creating a new assay called <code>"logcounts"</code>. (Technically, these are “log-transformed normalized expression values”, but that’s too much of a mouthful to fit into the assay name.) These log-values will be the basis of our downstream analyses.</p>
+<pre class="r"><code>library(scran)
+set.seed(1000)
+clusters &lt;- quickCluster(sce.pbmc)
+sce.pbmc &lt;- computeSumFactors(sce.pbmc, cluster=clusters)
+sce.pbmc &lt;- logNormCounts(sce.pbmc)</code></pre>
+<pre class="r"><code>summary(sizeFactors(sce.pbmc))</code></pre>
+<pre><code>##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+##  0.00749  0.71207  0.87490  1.00000  1.09900 12.25412</code></pre>
+<p>We can plot The “library size factor” for each cell. As for bulk RNAseq, library
+size normalization is the simplest strategy for performing scaling normalization.
+However, library size normalization is usually sufficient in many applications where the aim is to identify clusters and the top markers that define each cluster.</p>
+<pre class="r"><code>plot(librarySizeFactors(sce.pbmc), sizeFactors(sce.pbmc), pch=16,
+    xlab=&quot;Library size factors&quot;, ylab=&quot;Deconvolution factors&quot;, log=&quot;xy&quot;)</code></pre>
+<div class="figure"><span id="fig:unref-unfiltered-pbmc-norm"></span>
+<img src="{{< blogdown/postref >}}index_files/figure-html/unref-unfiltered-pbmc-norm-1.png" alt="Relationship between the library size factors and the deconvolution size factors in the PBMC dataset." width="672" />
+<p class="caption">
+Figure 3: Relationship between the library size factors and the deconvolution size factors in the PBMC dataset.
+</p>
+</div>
+</div>
+<div id="variance-modellingfeature-selection" class="section level1" style="color:black">
+<h1>Variance modelling/feature selection</h1>
+<p>Several methods are available to quantify the variation per gene and to select an appropriate set of <strong>highly variable genes (HVGs)</strong>. UMI counts typically exhibit near-Poisson variation if we only consider technical noise from library preparation and sequencing. This can be used to construct a mean-variance trend in the log-counts with the <code>modelGeneVarByPoisson</code> function. We can then select the top 10% of genes with the highest biological components.</p>
+<pre class="r"><code>set.seed(1001)
+dec.pbmc &lt;- modelGeneVarByPoisson(sce.pbmc)
+top.pbmc &lt;- getTopHVGs(dec.pbmc, prop=0.1)</code></pre>
+<pre class="r"><code>plot(dec.pbmc$mean, dec.pbmc$total, pch=16, cex=0.5,
+    xlab=&quot;Mean of log-expression&quot;, ylab=&quot;Variance of log-expression&quot;)
+curfit &lt;- metadata(dec.pbmc)
+curve(curfit$trend(x), col=&#39;dodgerblue&#39;, add=TRUE, lwd=2)</code></pre>
+<div class="figure"><span id="fig:unref-unfiltered-pbmc-var"></span>
+<img src="{{< blogdown/postref >}}index_files/figure-html/unref-unfiltered-pbmc-var-1.png" alt="Per-gene variance as a function of the mean for the log-expression values in the PBMC dataset. Each point represents a gene (black) with the mean-variance trend (blue) fitted to simulated Poisson counts." width="672" />
+<p class="caption">
+Figure 4: Per-gene variance as a function of the mean for the log-expression values in the PBMC dataset. Each point represents a gene (black) with the mean-variance trend (blue) fitted to simulated Poisson counts.
+</p>
+</div>
+</div>
+<div id="dimensionality-reduction" class="section level1" style="color:black">
+<h1>Dimensionality reduction</h1>
+<p>Now we want to compare cells based on the values of gene expression. We can use
+<code>denoisePCA</code> function, that “de-noises” log-expression data by removing principal components corresponding to technical noise.</p>
+<pre class="r"><code>set.seed(10000)
+sce.pbmc &lt;- denoisePCA(sce.pbmc, subset.row=top.pbmc, technical=dec.pbmc)
+set.seed(100000)
+sce.pbmc &lt;- runTSNE(sce.pbmc, dimred=&quot;PCA&quot;) 
+set.seed(1000000)
+sce.pbmc &lt;- runUMAP(sce.pbmc, dimred=&quot;PCA&quot;)</code></pre>
+<p>We verify how many PCs were retained.</p>
+<pre class="r"><code>ncol(reducedDim(sce.pbmc, &quot;PCA&quot;))</code></pre>
+<pre><code>## [1] 9</code></pre>
+</div>
+<div id="clustering" class="section level1" style="color:black">
+<h1>Clustering</h1>
+<p>We can now create nearest-neighbor graphs with the <code>buildSNNGraph</code> function and
+<code>cluster_walktrap</code> function. <code>cluster_walktrap</code> will assign membership of densely connected subgraphs, also called “communities”.</p>
+<pre class="r"><code>g &lt;- buildSNNGraph(sce.pbmc, k=10, use.dimred = &#39;PCA&#39;)
+clust &lt;- igraph::cluster_walktrap(g)$membership
+colLabels(sce.pbmc) &lt;- factor(clust)</code></pre>
+<pre class="r"><code>table(colLabels(sce.pbmc))</code></pre>
+<pre><code>## 
+##   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16 
+## 205 508 541  56 374 125  46 432 302 867  47 155 166  61  84  16</code></pre>
+<pre class="r"><code>plotTSNE(sce.pbmc, colour_by=&quot;label&quot;)</code></pre>
+<div class="figure"><span id="fig:unref-unfiltered-pbmc-tsne"></span>
+<img src="{{< blogdown/postref >}}index_files/figure-html/unref-unfiltered-pbmc-tsne-1.png" alt="Obligatory $t$-SNE plot of the PBMC dataset, where each point represents a cell and is colored according to the assigned cluster." width="672" />
+<p class="caption">
+Figure 5: Obligatory <span class="math inline">\(t\)</span>-SNE plot of the PBMC dataset, where each point represents a cell and is colored according to the assigned cluster.
+</p>
+</div>
+</div>
+<div id="interpretation" class="section level1">
+<h1>Interpretation</h1>
+<p>To interpret the clustering results, we need to identify the genes that drive separation between clusters. In the most obvious case, the marker genes for each cluster are a priori associated with particular cell types, allowing us to treat the clustering as a proxy for cell type identity. The same principle can be applied to discover more subtle differences between clusters (e.g., changes in activation or differentiation state) based on the behavior of genes in the affected pathways.
+We perform pairwise t-tests between clusters for each gene using the <code>findMarkers</code> function, which uses a Welch t-test to perform DE testing between clusters and returns a list of DataFrames containing ranked candidate markers for each cluster.</p>
+<pre class="r"><code>markers &lt;- findMarkers(sce.pbmc, pval.type=&quot;some&quot;, direction=&quot;up&quot;)</code></pre>
+<p>Let’s say that we want to examine the markers for cluster 8 in more detail.</p>
+<pre class="r"><code>marker.set &lt;- markers[[&quot;8&quot;]]
+as.data.frame(marker.set[1:30,1:3])</code></pre>
+<pre><code>##                     p.value           FDR summary.logFC
+## CSTA          7.170624e-222 2.015964e-217     2.4178954
+## MNDA          1.196631e-221 2.015964e-217     2.6614935
+## FCN1          2.375980e-213 2.668543e-209     2.6380934
+## S100A12       4.393470e-212 3.700839e-208     3.0808902
+## VCAN          1.711043e-199 1.153038e-195     2.2603760
+## TYMP          1.173532e-154 6.590164e-151     2.0237930
+## AIF1          3.673649e-149 1.768285e-145     2.4603604
+## LGALS2        4.004740e-137 1.686696e-133     1.8927606
+## MS4A6A        5.639909e-134 2.111457e-130     1.5457061
+## FGL2          2.044513e-124 6.888781e-121     1.3859366
+## RP11-1143G9.4 6.891551e-122 2.110945e-118     2.8042347
+## AP1S2         1.786019e-112 5.014842e-109     1.7703547
+## CD14          1.195352e-110 3.098169e-107     1.4259764
+## CFD           6.870490e-109 1.653531e-105     1.3560255
+## GPX1          9.048825e-107 2.032607e-103     2.4013937
+## TNFSF13B       3.920319e-95  8.255701e-92     1.1151275
+## KLF4           3.309726e-94  6.559876e-91     1.2049050
+## GRN            4.801206e-91  8.987324e-88     1.3814668
+## NAMPT          2.489624e-90  4.415020e-87     1.1438687
+## CLEC7A         7.736088e-88  1.303299e-84     1.0616120
+## S100A8         3.124930e-84  5.013875e-81     4.8051993
+## SERPINA1       1.580359e-82  2.420392e-79     1.3842689
+## CD36           8.018347e-79  1.174653e-75     1.0538169
+## MPEG1          8.481588e-79  1.190744e-75     0.9778095
+## CD68           5.118714e-78  6.898798e-75     0.9481203
+## CYBB           1.200516e-77  1.555776e-74     1.0300245
+## S100A11        1.174556e-72  1.465759e-69     1.8962486
+## RBP7           2.467027e-71  2.968714e-68     0.9666127
+## BLVRB          3.762610e-71  4.371634e-68     0.9701168
+## CD302          9.859086e-71  1.107307e-67     0.8792077</code></pre>
+<p>The high expression of <em>MNDA</em>, <em>CD14</em> and <em>CD68</em> suggests that cluster 8 contains monocytes.</p>
+<pre class="r"><code>marker.set &lt;- markers[[&quot;15&quot;]]
+as.data.frame(marker.set[1:30,1:3])</code></pre>
+<pre><code>##                p.value          FDR summary.logFC
+## AIF1      6.912466e-82 2.329086e-77      3.678553
+## FCGR3A    3.606603e-64 6.076045e-60      3.041108
+## SERPINA1  6.149257e-64 6.906436e-60      2.375549
+## FTL       2.857395e-63 2.406927e-59      2.061453
+## LST1      4.161324e-62 2.804233e-58      1.892121
+## COTL1     1.582271e-61 8.885507e-58      1.305713
+## CTSS      3.143428e-55 1.513067e-51      1.880227
+## S100A11   1.719244e-54 7.241024e-51      2.030715
+## TYMP      4.395645e-50 1.645632e-46      2.101758
+## MS4A7     7.348647e-48 2.476053e-44      2.173820
+## NAP1L1    2.806622e-47 8.596939e-44      1.142910
+## FTH1      5.856763e-47 1.644481e-43      1.188781
+## CD68      2.661218e-46 6.897469e-43      2.048530
+## STXBP2    5.783395e-45 1.391898e-41      2.075910
+## SAT1      9.269854e-43 2.082256e-39      1.541614
+## TYROBP    3.459416e-42 7.285097e-39      1.152396
+## PSAP      1.582943e-40 3.137392e-37      1.403571
+## CSTB      3.871723e-40 7.247436e-37      1.129131
+## CFD       4.529809e-39 8.033020e-36      1.999696
+## FKBP1A    5.042155e-39 8.494519e-36      1.301575
+## CEBPB     6.875529e-39 1.103162e-35      1.683662
+## LINC01272 7.357858e-38 1.126889e-34      1.840199
+## FCER1G    2.802003e-37 4.104813e-34      1.301967
+## SPI1      9.236815e-36 1.296772e-32      1.890047
+## S100A4    4.102320e-35 5.528943e-32      4.356299
+## NEAT1     5.928869e-33 7.683358e-30      1.358303
+## IFITM3    6.875461e-33 8.580066e-30      1.871086
+## LYZ       8.944290e-32 1.076317e-28      1.804654
+## LRRC25    1.072482e-31 1.246077e-28      1.242115
+## RNASET2   7.560048e-31 8.490942e-28      1.090212</code></pre>
+<p>The high expression of <em>FCGR3A</em> suggests that cluster 15 contains macrophagues.</p>
+<pre class="r"><code># Checking the cluster is what we wanted.
+marker.set &lt;- markers[[&quot;8&quot;]]
+topset &lt;- rownames(marker.set)[1:30]
+stopifnot(all(c(&quot;CD14&quot;, &quot;CD68&quot;, &quot;MNDA&quot;) %in% topset))</code></pre>
+<pre class="r"><code>plotExpression(sce.pbmc, features=c(&quot;CD14&quot;, &quot;CD68&quot;,
+    &quot;MNDA&quot;, &quot;FCGR3A&quot;), x=&quot;label&quot;, colour_by=&quot;label&quot;)</code></pre>
+<div class="figure"><span id="fig:unref-mono-pbmc-markers"></span>
+<img src="{{< blogdown/postref >}}index_files/figure-html/unref-mono-pbmc-markers-1.png" alt="Distribution of expression values for monocyte and macrophage markers across clusters in the PBMC dataset." width="672" />
+<p class="caption">
+Figure 6: Distribution of expression values for monocyte and macrophage markers across clusters in the PBMC dataset.
+</p>
+</div>
+</div>
